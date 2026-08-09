@@ -2,12 +2,11 @@ import React, { useRef, useEffect } from 'react';
 import { UserProfile } from '@cagent/shared';
 import { 
   Settings, 
-  Bot, 
   Palette, 
   FileText, 
   ShieldCheck, 
-  Github, 
   Globe, 
+  Home, 
   LogOut, 
   Copy, 
   Check 
@@ -48,7 +47,7 @@ export function UserProfilePopover({
   if (!isOpen) return null;
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText('ana.silva@deco.cx');
+    navigator.clipboard.writeText('jppfeitosa@gmail.com');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -71,7 +70,7 @@ export function UserProfilePopover({
               {userProfile.name}
             </span>
             <span className="text-[11px] text-slate-400 block truncate font-mono-tech">
-              ana.silva@deco.cx
+              jppfeitosa@gmail.com
             </span>
           </div>
         </div>
@@ -85,8 +84,8 @@ export function UserProfilePopover({
         </button>
       </div>
 
-      {/* Menu Actions (Linear Style) */}
-      <div className="flex flex-col gap-0.5 py-1">
+      {/* Menu Actions (Linear App Style) */}
+      <div className="flex flex-col gap-0.5 py-1 border-t border-b border-slate-800/80 my-1">
         <button
           onClick={() => {
             onClose();
@@ -95,7 +94,7 @@ export function UserProfilePopover({
           className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
         >
           <Settings className="w-4 h-4 text-slate-400" />
-          <span className="font-medium">Preferências de Contexto</span>
+          <span className="font-medium">Preferências</span>
         </button>
 
         <button
@@ -106,18 +105,24 @@ export function UserProfilePopover({
           className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
         >
           <Palette className="w-4 h-4 text-slate-400" />
-          <span className="font-medium">Aparência & Temas</span>
+          <span className="font-medium">Aparência</span>
         </button>
 
-        <a
-          href="https://github.com/pedroffeitosa/cagent"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={onClose}
           className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
         >
-          <Github className="w-4 h-4 text-slate-400" />
-          <span className="font-medium">pedroffeitosa/cagent</span>
-        </a>
+          <FileText className="w-4 h-4 text-slate-400" />
+          <span className="font-medium">Termos de uso</span>
+        </button>
+
+        <button
+          onClick={onClose}
+          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
+        >
+          <ShieldCheck className="w-4 h-4 text-slate-400" />
+          <span className="font-medium">Política de privacidade</span>
+        </button>
 
         <a
           href="https://deco.cx"
@@ -126,14 +131,30 @@ export function UserProfilePopover({
           className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
         >
           <Globe className="w-4 h-4 text-slate-400" />
-          <span className="font-medium">Comunidade Deco</span>
+          <span className="font-medium">Comunidade $Agent</span>
         </a>
+
+        <button
+          onClick={onClose}
+          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
+        >
+          <Home className="w-4 h-4 text-slate-400" />
+          <span className="font-medium">Página inicial</span>
+        </button>
       </div>
 
+      <button
+        onClick={onClose}
+        className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition"
+      >
+        <LogOut className="w-4 h-4 text-red-400" />
+        <span className="font-medium">Sair</span>
+      </button>
+
       {/* Footer Info */}
-      <div className="pt-2 border-t border-slate-800/80 px-3 pb-1 flex items-center justify-between text-[10px] text-slate-500 font-mono-tech">
+      <div className="pt-2 border-t border-slate-800/80 px-3 pb-0.5 flex items-center justify-between text-[10px] text-slate-500 font-mono-tech">
         <span>$Agent Commerce</span>
-        <span>v1.0.0-hackathon</span>
+        <span>v4.193.3</span>
       </div>
     </div>
   );
