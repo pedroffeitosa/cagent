@@ -12,20 +12,29 @@ export function StoreMeshModal({ isOpen, onClose }: StoreMeshModalProps) {
 
   const stores = [
     {
-      name: 'Deco Storefront Mesh (Atual)',
-      tagline: 'Loja Oficial do Canal $Agent',
-      badge: 'Loja Principal',
+      name: 'Deco Sports & Performance',
+      tagline: 'Loja Principal do Canal Agêntico $Agent',
+      badge: 'Loja Atual',
       isCurrent: true,
+      logoStyle: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
     },
     {
-      name: 'Deco Urban Wear Partner',
-      tagline: 'Moda Streetwear & Acessórios Premium',
+      name: 'Nike Brasil Official Partner',
+      tagline: 'Moda Esportiva, Tênis Pegasus Corrida & Chuteiras',
       badge: 'Parceiro Mesh Conectado',
+      logoStyle: 'text-white bg-slate-900 border-slate-700',
     },
     {
-      name: 'Deco Tech & Lifestyle',
-      tagline: 'Eletrônicos & Wearables Inteligentes',
+      name: 'Centauro Esportes Partner',
+      tagline: 'Artigos Esportivos, Camisas de Time & Bolas',
       badge: 'Parceiro Mesh Conectado',
+      logoStyle: 'text-red-400 bg-red-500/10 border-red-500/30',
+    },
+    {
+      name: 'Max Titanium Supplements',
+      tagline: 'Suplementação, Whey Protein & Pré-Treino',
+      badge: 'Parceiro Mesh Conectado',
+      logoStyle: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
     },
   ];
 
@@ -37,7 +46,7 @@ export function StoreMeshModal({ isOpen, onClose }: StoreMeshModalProps) {
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-2">
             <Store className="w-5 h-5 text-cyan-400" />
-            <h3 className="font-heading font-bold text-base text-white">Rede de Lojas Deco Mesh</h3>
+            <h3 className="font-heading font-bold text-base text-white">Rede de Lojas &amp; Marcas Deco Mesh</h3>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white p-1">
             <X className="w-4 h-4" />
@@ -50,20 +59,20 @@ export function StoreMeshModal({ isOpen, onClose }: StoreMeshModalProps) {
           <div>
             <h4 className="font-bold text-cyan-300 text-xs">Deco Interoperable Mesh Network</h4>
             <p className="text-slate-300 text-[11px] leading-relaxed mt-1">
-              Seu saldo de carteira e bônus de cashback podem ser utilizados para realizar compras em qualquer loja parceira da rede Deco Mesh!
+              Seu saldo de carteira e bônus de cashback de marcas como <strong>Nike, Centauro e Max Titanium</strong> funcionam unificados!
             </p>
           </div>
         </div>
 
         {/* Stores List */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 max-h-72 overflow-y-auto custom-scrollbar pr-1">
           {stores.map((s, idx) => (
-            <div key={idx} className={`p-4 rounded-2xl border flex items-center justify-between gap-3 transition ${
+            <div key={idx} className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 transition ${
               s.isCurrent ? 'bg-slate-950 border-emerald-500/40' : 'bg-slate-950 border-slate-800'
             }`}>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
-                  <Building2 className={`w-4 h-4 ${s.isCurrent ? 'text-emerald-400' : 'text-slate-400'}`} />
+                <div className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${s.logoStyle}`}>
+                  <Building2 className="w-4 h-4" />
                 </div>
                 <div>
                   <span className="font-bold text-white text-xs block">{s.name}</span>
@@ -72,20 +81,20 @@ export function StoreMeshModal({ isOpen, onClose }: StoreMeshModalProps) {
               </div>
 
               {s.isCurrent ? (
-                <span className="text-[9px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono-tech shrink-0">
+                <span className="text-[9px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono-tech shrink-0 border border-emerald-500/30">
                   Atual
                 </span>
               ) : (
-                <button className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0">
-                  <ArrowUpRight className="w-4 h-4" />
-                </button>
+                <span className="text-[9px] px-2 py-0.5 rounded bg-slate-900 text-slate-400 font-mono-tech shrink-0 border border-slate-800">
+                  Conectado
+                </span>
               )}
             </div>
           ))}
         </div>
 
         <Button onClick={onClose} variant="secondary" className="w-full">
-          Fechar Rede de Lojas
+          Fechar
         </Button>
 
       </div>
