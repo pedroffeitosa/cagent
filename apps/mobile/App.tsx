@@ -43,10 +43,16 @@ export default function App() {
       <StatusBar barStyle="light-content" backgroundColor="#020617" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         
-        {/* Header with Financial Logo */}
+        {/* Header with White-Label Store Branding */}
         <View style={styles.header}>
-          <Text style={styles.logoText}>$Agent</Text>
-          <Text style={styles.badgeText}>Deco Mobile</Text>
+          <View>
+            <Text style={styles.logoText}>$Agent</Text>
+            <Text style={styles.storeSubtext}>Canal {MOCK_STORE_CONTEXT.storeName.split(' ')[0]}</Text>
+          </View>
+          <View style={styles.perkContainer}>
+            <Text style={styles.perkBadge}>💰 5% Cashback</Text>
+            <Text style={styles.perkBadgeCoupon}>🎟️ Cupom DECO10</Text>
+          </View>
         </View>
 
         {/* Personal Context Profile Card */}
@@ -70,7 +76,7 @@ export default function App() {
         <View style={styles.searchSection}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Perguntar ao $Agent..."
+            placeholder="Perguntar ao $Agent da Loja..."
             placeholderTextColor="#64748b"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -103,8 +109,14 @@ export default function App() {
         {/* Agent Feedback Banner */}
         {agentResponse && (
           <View style={styles.agentBanner}>
-            <Text style={styles.agentBannerTitle}>✨ $Agent Context Filter Ativo</Text>
+            <Text style={styles.agentBannerTitle}>✨ $Agent Context Filter & Marketing Ativo</Text>
             <Text style={styles.agentBannerText}>{agentResponse.naturalLanguageReply}</Text>
+            {agentResponse.appliedCoupon && (
+              <View style={styles.marketingRow}>
+                <Text style={styles.marketingTag}>🎟️ Cupom {agentResponse.appliedCoupon.code} (10% OFF)</Text>
+                <Text style={styles.marketingTagCashback}>💰 + R$ {agentResponse.estimatedCashback} Cashback</Text>
+              </View>
+            )}
             <TouchableOpacity onPress={() => setAgentResponse(null)} style={styles.resetButton}>
               <Text style={styles.resetButtonText}>Limpar Filtro</Text>
             </TouchableOpacity>
@@ -128,7 +140,13 @@ export default function App() {
                 </View>
                 <Text style={styles.productName}>{product.name}</Text>
                 <Text style={styles.productSizes}>Tamanhos: {product.availableSizes.join(', ')}</Text>
-                <Text style={styles.productPrice}>R$ {product.price}</Text>
+                <View style={styles.priceRow}>
+                  <Text style={styles.productPrice}>R$ {Math.round(product.price * 0.9)}</Text>
+                  <Text style={styles.productOriginalPrice}>R$ {product.price}</Text>
+                </View>
+                {product.cashbackReward && (
+                  <Text style={styles.cashbackBadge}>💰 +R$ {product.cashbackReward} Cashback</Text>
+                )}
               </View>
             </View>
           );
@@ -151,24 +169,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
-    paddingVertical: 8,
+    paddingVertical: 4,
   },
   logoText: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '800',
     color: '#34d399',
     letterSpacing: -1,
   },
-  badgeText: {
-    fontSize: 11,
+  storeSubtext: {
+    fontSize: 10,
+    color: '#94a3b8',
+    fontWeight: '600',
+  },
+  perkContainer: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  perkBadge: {
+    fontSize: 10,
     color: '#34d399',
-    backgroundColor: 'rgba(52, 211, 153, 0.15)',
+    backgroundColor: 'rgba(52, 211, 153, 0.12)',
     borderColor: 'rgba(52, 211, 153, 0.3)',
     borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    fontWeight: '600',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    fontWeight: '700',
+  },
+  perkBadgeCoupon: {
+    fontSize: 10,
+    color: '#fbbf24',
+    backgroundColor: 'rgba(251, 191, 36, 0.12)',
+    borderColor: 'rgba(251, 191, 36, 0.3)',
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    fontWeight: '700',
   },
   profileCard: {
     backgroundColor: '#0f172a',
@@ -279,6 +317,21 @@ const styles = StyleSheet.create({
     color: '#e2e8f0',
     lineHeight: 16,
   },
+  marketingRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
+  marketingTag: {
+    fontSize: 10,
+    color: '#fbbf24',
+    fontWeight: '700',
+  },
+  marketingTagCashback: {
+    fontSize: 10,
+    color: '#34d399',
+    fontWeight: '700',
+  },
   resetButton: {
     marginTop: 8,
     alignSelf: 'flex-end',
@@ -308,8 +361,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   productImage: {
-    width: 90,
-    height: 90,
+    width: 95,
+    height: 95,
   },
   productDetails: {
     padding: 12,
@@ -345,9 +398,26 @@ const styles = StyleSheet.create({
     color: '#34d399',
     marginVertical: 2,
   },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 6,
+    marginTop: 2,
+  },
   productPrice: {
     fontSize: 15,
     fontWeight: '800',
     color: '#ffffff',
+  },
+  productOriginalPrice: {
+    fontSize: 11,
+    color: '#64748b',
+    textDecorationLine: 'line-through',
+  },
+  cashbackBadge: {
+    fontSize: 10,
+    color: '#34d399',
+    fontWeight: '700',
+    marginTop: 2,
   },
 });

@@ -1,11 +1,35 @@
-import { UserProfile, Product, StoreContext } from './types';
+import { UserProfile, Product, StoreContext, StoreConfig } from './types';
+
+export const MOCK_STORE_CONFIG: StoreConfig = {
+  storeId: 'deco-merchant-store',
+  storeName: 'Deco Fashion & Style (White-Label Store)',
+  tagline: 'Canal de Vendas Agêntico Oficial • Powered by $Agent',
+  currency: 'BRL',
+  cashbackPercentage: 5,
+  activeCoupons: [
+    {
+      code: 'DECO10',
+      discountType: 'percentage',
+      discountValue: 10,
+      description: '10% OFF exclusivo no Canal Agêntico $Agent',
+    },
+    {
+      code: 'AGENT50',
+      discountType: 'fixed',
+      discountValue: 50,
+      description: 'R$ 50 OFF de bônus de primeira compra agêntica',
+    }
+  ],
+  databaseDriver: 'mock',
+  serverEndpoint: 'https://api.merchant-store.com.br',
+};
 
 export const MOCK_USER_PROFILES: UserProfile[] = [
   {
     id: 'user-ana',
     name: 'Ana Silva',
     avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-    badge: 'Compradora Frequente • Estilo Minimalista',
+    badge: 'Compradora VIP • Saldo Cashback Ativo',
     sizes: {
       clothing: 'M',
       shoes: '37',
@@ -15,6 +39,7 @@ export const MOCK_USER_PROFILES: UserProfile[] = [
     maxBudget: 450,
     restrictions: ['Algodão Orgânico', 'Sem Couro Animal'],
     gender: 'Feminino',
+    walletBalance: 42.50,
   },
   {
     id: 'user-carlos',
@@ -30,21 +55,7 @@ export const MOCK_USER_PROFILES: UserProfile[] = [
     maxBudget: 600,
     restrictions: ['Tecido Respirável'],
     gender: 'Masculino',
-  },
-  {
-    id: 'user-marina',
-    name: 'Marina Ruy',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    badge: 'Foco em Ocasiões Especiais & Premium',
-    sizes: {
-      clothing: 'P',
-      shoes: '36',
-    },
-    stylePreferences: ['Festa', 'Sophisticated', 'Romântico'],
-    favoriteColors: ['Rosa Quartz', 'Dourado', 'Vinho', 'Verde Esmeralda'],
-    maxBudget: 1200,
-    restrictions: ['Alta Costura'],
-    gender: 'Feminino',
+    walletBalance: 15.00,
   }
 ];
 
@@ -61,7 +72,8 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600&auto=format&fit=crop&q=80',
     tags: ['Linho', 'Minimalista', 'Verão', 'Algodão Orgânico'],
     inStock: true,
-    storeName: 'Deco Minimal Store',
+    storeName: 'Deco Fashion',
+    cashbackReward: 16.00,
   },
   {
     id: 'prod-002',
@@ -75,7 +87,8 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&auto=format&fit=crop&q=80',
     tags: ['Elegante', 'Trabalho', 'Sem Couro Animal'],
     inStock: true,
-    storeName: 'Deco Minimal Store',
+    storeName: 'Deco Fashion',
+    cashbackReward: 24.50,
   },
   {
     id: 'prod-003',
@@ -88,7 +101,8 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80',
     tags: ['Tech', 'Streetwear', 'Esportivo', 'Tecido Respirável'],
     inStock: true,
-    storeName: 'Deco Urban & Tech',
+    storeName: 'Deco Fashion',
+    cashbackReward: 9.00,
   },
   {
     id: 'prod-004',
@@ -102,7 +116,8 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1544441893-675973e31985?w=600&auto=format&fit=crop&q=80',
     tags: ['Streetwear', 'Inverno'],
     inStock: true,
-    storeName: 'Deco Urban & Tech',
+    storeName: 'Deco Fashion',
+    cashbackReward: 27.50,
   },
   {
     id: 'prod-005',
@@ -116,7 +131,8 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&auto=format&fit=crop&q=80',
     tags: ['Festa', 'Sophisticated', 'Alta Costura'],
     inStock: true,
-    storeName: 'Deco Luxe & Gala',
+    storeName: 'Deco Fashion',
+    cashbackReward: 49.00,
   },
   {
     id: 'prod-006',
@@ -129,13 +145,15 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&auto=format&fit=crop&q=80',
     tags: ['Minimalista', 'Casual Chic'],
     inStock: true,
-    storeName: 'Deco Minimal Store',
+    storeName: 'Deco Fashion',
+    cashbackReward: 14.50,
   }
 ];
 
 export const MOCK_STORE_CONTEXT: StoreContext = {
-  storeId: 'deco-mesh-main',
-  storeName: 'Rede Deco Storefront Mesh',
-  currency: 'BRL',
+  storeId: MOCK_STORE_CONFIG.storeId,
+  storeName: MOCK_STORE_CONFIG.storeName,
+  currency: MOCK_STORE_CONFIG.currency,
   catalog: MOCK_STORE_PRODUCTS,
+  config: MOCK_STORE_CONFIG,
 };

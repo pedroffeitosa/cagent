@@ -1,8 +1,8 @@
-import { AgentRequestPayload, AgentResponsePayload, AIProviderType } from './types';
+import { AgentRequestPayload, AgentResponsePayload } from './types';
 
 /**
  * Intelligent Rule-based Fallback & Local Filter Engine
- * Used when no API Key is provided or as a baseline comparator.
+ * Includes Store Marketing & Cashback calculation.
  */
 export function runLocalRuleEngine(payload: AgentRequestPayload): AgentResponsePayload {
   const { userQuery, userProfile, storeContext } = payload;
@@ -37,9 +37,20 @@ export function runLocalRuleEngine(payload: AgentRequestPayload): AgentResponseP
 
   const recommendedIds = matchingProducts.map((p) => p.id);
 
-  let reply = `Encontrei ${matchingProducts.length} opções alinhadas ao seu perfil (${userProfile.name}, tamanho ${userProfile.sizes.clothing}).`;
+  // Apply default store coupon DECO10 (10% OFF)
+  const appliedCoupon = storeContext.config?.activeCoupons?.find(c => c.code === 'DECO10');
+  
+  // Calculate estimated cashback (5%)
+  const topPrice = matchingProducts[0]?.price || 300;
+  const cashbackPercent = storeContext.config?.cashbackPercentage || 5;
+  const estimatedCashback = Math.round((topPrice * (cashbackPercent / 100)) * 100) / 100;
+
+  let reply = `Encontrei ${matchingProducts.length} produtos perfeitos para o seu perfil no canal da loja!`;
   if (userProfile.maxBudget) {
     reply += ` Apliquei o filtro de orçamento de até R$ ${userProfile.maxBudget}.`;
+  }
+  if (appliedCoupon) {
+    reply += ` 🎁 O cupom ${appliedCoupon.code} (${appliedCoupon.discountValue}% OFF) e R$ ${estimatedCashback} em Cashback foram calculados para você!`;
   }
 
   return {
@@ -49,7 +60,9 @@ export function runLocalRuleEngine(payload: AgentRequestPayload): AgentResponseP
       size: userProfile.sizes.clothing,
       maxPrice: userProfile.maxBudget,
     },
-    reasoningSummary: `Filtro local aplicado: Tamanho ${userProfile.sizes.clothing}, estilo [${userProfile.stylePreferences.join(', ')}].`,
+    appliedCoupon,
+    estimatedCashback,
+    reasoningSummary: `Agente da Loja: Cupom DECO10 aplicado + ${cashbackPercent}% Cashback calculado no saldo da sua conta.`,
     providerUsed: 'custom',
   };
 }

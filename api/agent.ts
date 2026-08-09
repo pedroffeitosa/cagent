@@ -30,24 +30,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json(fallbackResult);
     }
 
-    // Call Google Gemini API
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || 'gemini-1.5-flash' });
 
     const prompt = `
-Você é o $Agent, um assistente inteligente de e-commerce pessoal para a rede Deco.
-Sua missão é filtrar e ordenar produtos para o consumidor com base no seu contexto e intenção de busca.
+Você é o $Agent, o assistente e canal oficial de e-commerce da loja "${payload.storeContext.storeName}".
+Sua missão é filtrar produtos para o cliente, oferecendo os cupons ativos da loja e calculando o cashback da loja.
+
+INFORMAÇÕES DA LOJA (WHITE-LABEL CANAL):
+- Loja: ${payload.storeContext.storeName}
+- Cashback da Loja: ${payload.storeContext.config?.cashbackPercentage || 5}%
+- Cupons da Loja: ${JSON.stringify(payload.storeContext.config?.activeCoupons || [])}
 
 DADOS DO CLIENTE:
 - Nome: ${payload.userProfile.name}
 - Tamanho Roupas: ${payload.userProfile.sizes.clothing}
 - Tamanho Sapatos: ${payload.userProfile.sizes.shoes}
-- Estilos Favoritos: ${payload.userProfile.stylePreferences.join(', ')}
-- Cores Preferidas: ${payload.userProfile.favoriteColors.join(', ')}
 - Orçamento Máximo: R$ ${payload.userProfile.maxBudget || 'Sem limite'}
-- Restrições: ${payload.userProfile.restrictions?.join(', ') || 'Nenhuma'}
 
-INTENÇÃO / BUSCA DO CLIENTE: "${payload.userQuery || 'Recomende os melhores produtos para meu perfil'}"
+INTENÇÃO / BUSCA DO CLIENTE: "${payload.userQuery || 'Recomende produtos perfeitos para meu perfil'}"
 
 CATÁLOGO DA LOJA:
 ${JSON.stringify(payload.storeContext.catalog.map(p => ({
@@ -55,34 +56,37 @@ ${JSON.stringify(payload.storeContext.catalog.map(p => ({
   name: p.name,
   price: p.price,
   sizes: p.availableSizes,
-  colors: p.colors,
-  tags: p.tags,
-  description: p.description
+  tags: p.tags
 })), null, 2)}
 
 RESPONDA EXATAMENTE NO FORMATO JSON ABAIXO:
 {
-  "naturalLanguageReply": "Explicacao amigavel e direta recomendando os produtos certos para o cliente em portugues",
+  "naturalLanguageReply": "Explicacao amigavel recomendando produtos e mencionando o desconto do cupom da loja e cashback em portugues",
   "recommendedProductIds": ["prod-001", "prod-002"],
   "activeFilters": {
     "size": "${payload.userProfile.sizes.clothing}",
     "maxPrice": ${payload.userProfile.maxBudget || 'null'}
   },
-  "reasoningSummary": "Breve justificativa do agente em 1 frase"
+  "reasoningSummary": "Agente da Loja: Cupom DECO10 ativado e cashback calculado"
 }
 `;
 
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
 
-    // Clean JSON response codeblock if needed
     const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
     const parsed = JSON.parse(cleanJson);
 
+    const defaultCoupon = payload.storeContext.config?.activeCoupons?.[0];
+    const topPrice = payload.storeContext.catalog[0]?.price || 300;
+    const estCashback = Math.round((topPrice * ((payload.storeContext.config?.cashbackPercentage || 5) / 100)) * 100) / 100;
+
     const responsePayload: AgentResponsePayload = {
-      naturalLanguageReply: parsed.naturalLanguageReply || 'Aqui estão as melhores recomendações para você!',
+      naturalLanguageReply: parsed.naturalLanguageReply || 'Aqui estão as melhores recomendações com descontos e cashback da loja!',
       recommendedProductIds: parsed.recommendedProductIds || payload.storeContext.catalog.map(p => p.id),
       activeFilters: parsed.activeFilters || {},
+      appliedCoupon: defaultCoupon,
+      estimatedCashback: estCashback,
       reasoningSummary: parsed.reasoningSummary || 'Processado via Gemini AI',
       providerUsed: payload.provider || 'gemini',
     };
@@ -90,9 +94,7 @@ RESPONDA EXATAMENTE NO FORMATO JSON ABAIXO:
     return res.status(200).json(responsePayload);
   } catch (error: any) {
     console.error('Agent Execution Error:', error);
-    // Fallback to local rule engine if API fails or quota exceeded
     const fallback = runLocalRuleEngine(req.body);
-    fallback.reasoningSummary += ' (Fallback ativado devido a instabilidade na API)';
     return res.status(200).json(fallback);
   }
 }

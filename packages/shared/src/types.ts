@@ -14,6 +14,7 @@ export interface UserProfile {
   maxBudget?: number;
   restrictions?: string[];
   gender?: 'Feminino' | 'Masculino' | 'Unissex';
+  walletBalance?: number;
 }
 
 export interface Product {
@@ -29,6 +30,25 @@ export interface Product {
   tags: string[];
   inStock: boolean;
   storeName: string;
+  cashbackReward?: number;
+}
+
+export interface Coupon {
+  code: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  description: string;
+}
+
+export interface StoreConfig {
+  storeId: string;
+  storeName: string;
+  tagline: string;
+  currency: string;
+  cashbackPercentage: number;
+  activeCoupons: Coupon[];
+  databaseDriver: 'postgres' | 'supabase' | 'deco-mesh' | 'mock';
+  serverEndpoint: string;
 }
 
 export interface StoreContext {
@@ -36,6 +56,7 @@ export interface StoreContext {
   storeName: string;
   currency: string;
   catalog: Product[];
+  config: StoreConfig;
 }
 
 export interface AgentRequestPayload {
@@ -55,6 +76,8 @@ export interface AgentResponsePayload {
     color?: string;
     style?: string;
   };
+  appliedCoupon?: Coupon;
+  estimatedCashback?: number;
   reasoningSummary: string;
   providerUsed: AIProviderType;
 }
