@@ -1,7 +1,6 @@
 import React from 'react';
 import { Product, UserProfile } from '@cagent/shared';
 import { 
-  Sparkles, 
   Flame, 
   Target, 
   Compass, 
@@ -30,32 +29,14 @@ export function HomeStorefrontView({
   return (
     <div className="flex-1 flex flex-col p-8 max-w-6xl mx-auto w-full gap-8 overflow-y-auto custom-scrollbar animate-in fade-in duration-200">
       
-      {/* Subtle Header Greeting Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="font-heading font-extrabold text-2xl text-white tracking-tight">
-              Vitrine $Agent
-            </h2>
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono-tech font-bold text-[10px] border border-emerald-500/30 flex items-center gap-1">
-              <Sparkles className="w-3 h-3" />
-              Seleção Personalizada
-            </span>
-          </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Artigos esportivos recomendados para o seu tamanho {userProfile.sizes.clothing} e calçado {userProfile.sizes.shoes}
-          </p>
-        </div>
-
-        <Button 
-          onClick={() => onOpenChat()} 
-          size="sm" 
-          className="gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/10 shrink-0"
-        >
-          <Bot className="w-4 h-4" />
-          <span>Conversar com $Agent IA</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </Button>
+      {/* Ultra Clean Header Bar */}
+      <div className="pb-4 border-b border-slate-800/80">
+        <h2 className="font-heading font-extrabold text-2xl text-white tracking-tight">
+          Vitrine $Agent
+        </h2>
+        <p className="text-xs text-slate-400 mt-1">
+          Artigos esportivos recomendados para o seu tamanho {userProfile.sizes.clothing} e calçado {userProfile.sizes.shoes}
+        </p>
       </div>
 
       {/* ------------------------------------------------------------- */}
