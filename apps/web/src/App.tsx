@@ -18,6 +18,7 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
+import { UserProfilePopover } from './components/UserProfilePopover';
 
 interface ChatSession {
   id: string;
@@ -31,6 +32,7 @@ export default function App() {
   // Account / Personal Context Profile
   const [userProfile, setUserProfile] = useState<UserProfile>(MOCK_USER_PROFILES[0]);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
 
   // Chat History & Active Chat Session
@@ -231,10 +233,10 @@ export default function App() {
           })}
         </div>
 
-        {/* Bottom User Account Shortcut */}
-        <div className="p-3 border-t border-slate-800/80">
+        {/* Bottom User Account Popover Trigger */}
+        <div className="p-3 border-t border-slate-800/80 relative">
           <button
-            onClick={() => setIsProfileModalOpen(true)}
+            onClick={() => setIsProfilePopoverOpen(!isProfilePopoverOpen)}
             title={`Meu Perfil: ${userProfile.name}`}
             className={`w-full rounded-2xl bg-slate-950/80 border border-slate-800/80 hover:border-emerald-500/40 text-left flex items-center transition group ${
               isSidebarCollapsed ? 'justify-center p-2.5' : 'p-3 justify-between gap-3'
@@ -259,6 +261,15 @@ export default function App() {
               <SlidersHorizontal className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition shrink-0" />
             )}
           </button>
+
+          {/* Linear-Style User Popover */}
+          <UserProfilePopover
+            isOpen={isProfilePopoverOpen}
+            onClose={() => setIsProfilePopoverOpen(false)}
+            userProfile={userProfile}
+            onOpenPreferences={() => setIsProfileModalOpen(true)}
+            onOpenThemeModal={() => setIsThemeModalOpen(true)}
+          />
         </div>
       </aside>
 
