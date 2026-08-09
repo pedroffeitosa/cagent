@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+yarn-error.log
+npm-debug.log
+
+# Build & Output directories
+dist/
+build/
+.next/
+.expo/
+web-build/
+*.tsbuildinfo
+
+# Environment variables & secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# Local private docs (also covered in .git/info/exclude)
+docs/
