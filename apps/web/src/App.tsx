@@ -3,6 +3,7 @@ import {
   MOCK_USER_PROFILES, 
   MOCK_STORE_CONTEXT, 
   UserProfile, 
+  Product,
   AgentResponsePayload,
   runLocalRuleEngine
 } from '@cagent/shared';
@@ -24,6 +25,7 @@ import {
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
 import { UserProfilePopover } from './components/UserProfilePopover';
 import { PreferencesModal } from './components/PreferencesModal';
+import { ProductCheckoutModal } from './components/ProductCheckoutModal';
 
 interface ChatMessage {
   id: string;
@@ -46,6 +48,7 @@ export default function App() {
   const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isPreferencesModalOpen, setIsPreferencesModalOpen] = useState(false);
+  const [selectedCheckoutProduct, setSelectedCheckoutProduct] = useState<Product | null>(null);
 
   // Chat History & Active Chat Sessions
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([
@@ -124,7 +127,6 @@ export default function App() {
 
     let targetSessionId = activeChatId;
 
-    // If no active session, create a new session
     if (!targetSessionId) {
       const newSessionId = `chat-${Date.now()}`;
       const newSession: ChatSession = {
@@ -519,7 +521,10 @@ export default function App() {
                           R$ {product.price}
                         </span>
 
-                        <button className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:bg-emerald-500 hover:border-emerald-500 hover:text-slate-950 font-bold text-[10px] transition">
+                        <button 
+                          onClick={() => setSelectedCheckoutProduct(product)}
+                          className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:bg-emerald-500 hover:border-emerald-500 hover:text-slate-950 font-bold text-[10px] transition"
+                        >
                           Comprar
                         </button>
                       </div>
@@ -533,6 +538,14 @@ export default function App() {
         </div>
 
       </div>
+
+      {/* Product Checkout Modal */}
+      <ProductCheckoutModal
+        isOpen={!!selectedCheckoutProduct}
+        onClose={() => setSelectedCheckoutProduct(null)}
+        product={selectedCheckoutProduct}
+        userProfile={userProfile}
+      />
 
       {/* Full Linear-Style Preferences Modal */}
       <PreferencesModal
