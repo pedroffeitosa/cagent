@@ -9,10 +9,10 @@ interface StoreBootstrapViewProps {
 export function StoreBootstrapView({ onBackToChat }: StoreBootstrapViewProps) {
   const connectedStores = [
     {
-      name: 'Deco Storefront (Loja Oficial)',
-      tagline: 'Sua loja principal de moda & estilo de vida',
+      name: 'Deco Sports & Performance',
+      tagline: 'Sua loja principal de artigos esportivos, futebol & corrida',
       cashback: '5% de Cashback',
-      coupons: ['DECO10', 'AGENT50'],
+      coupons: ['DECO10', 'AGENT50', 'VIPFLUMESH'],
       status: 'Loja Atual',
       isCurrent: true,
     },
@@ -25,8 +25,8 @@ export function StoreBootstrapView({ onBackToChat }: StoreBootstrapViewProps) {
       isCurrent: false,
     },
     {
-      name: 'Deco Tech & Lifestyle',
-      tagline: 'Eletrônicos & Wearables Inteligentes',
+      name: 'Deco Tech & Wearables',
+      tagline: 'Eletrônicos, Smartwatches & Tech de Corrida',
       cashback: '5% de Cashback',
       coupons: ['TECH20'],
       status: 'Loja Parceira',
@@ -105,7 +105,7 @@ export function StoreBootstrapView({ onBackToChat }: StoreBootstrapViewProps) {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="font-heading font-bold text-base text-white">{s.name}</h4>
+                    <h4 className="font-heading font-bold text-base text-white truncate max-w-[280px]" title={s.name}>{s.name}</h4>
                     {s.isCurrent && (
                       <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono-tech">
                         Loja Atual

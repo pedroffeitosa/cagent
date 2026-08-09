@@ -10,6 +10,8 @@ interface CompareProductsViewProps {
   onSelectProductToBuy: (product: Product) => void;
 }
 
+const DEFAULT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1517649763962-0c623266010b?w=600&auto=format&fit=crop&q=80';
+
 export function CompareProductsView({
   products,
   userProfile,
@@ -61,9 +63,9 @@ export function CompareProductsView({
           <Sparkles className="w-5 h-5 text-emerald-400" />
         </div>
         <div className="text-xs">
-          <span className="font-bold text-emerald-300 text-sm">Veredito do $Agent para Pedro França</span>
+          <span className="font-bold text-emerald-300 text-sm">Veredito do $Agent para {userProfile.name}</span>
           <p className="text-slate-200 mt-1 leading-relaxed">
-            Ambos os produtos estão dentro do seu orçamento máximo (teto R$ {userProfile.maxBudget || '450'}) e atendem ao seu tamanho M. Para eventos diurnos ou clima quente, o <strong>{products[0].name}</strong> oferece tecido natural respirável de linho com melhor ventilação.
+            Ambos os produtos estão dentro do seu orçamento máximo (teto R$ {userProfile.maxBudget || '450'}) e atendem ao seu tamanho {userProfile.sizes.clothing}. Para melhor performance esportiva, o <strong>{products[0].name}</strong> oferece excelente absorção de suor e conforto térmico.
           </p>
         </div>
       </div>
@@ -76,7 +78,14 @@ export function CompareProductsView({
             {/* Header & Product Image */}
             <div className="flex flex-col gap-4">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-900 relative border border-slate-800">
-                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                <img 
+                  src={product.imageUrl} 
+                  alt={product.name} 
+                  className="w-full h-full object-cover" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = DEFAULT_FALLBACK_IMAGE;
+                  }}
+                />
                 <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur text-slate-300 text-[10px] font-medium border border-slate-800">
                   {product.storeName}
                 </span>
@@ -84,7 +93,9 @@ export function CompareProductsView({
 
               <div>
                 <span className="text-[10px] text-slate-400 font-mono-tech uppercase">{product.category}</span>
-                <h4 className="font-heading font-bold text-base text-white mt-0.5">{product.name}</h4>
+                <h4 className="font-heading font-bold text-base text-white mt-0.5 line-clamp-2" title={product.name}>
+                  {product.name}
+                </h4>
               </div>
             </div>
 

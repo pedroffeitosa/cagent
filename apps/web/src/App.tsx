@@ -717,6 +717,9 @@ export default function App() {
                             src={product.imageUrl}
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517649763962-0c623266010b?w=600&auto=format&fit=crop&q=80';
+                            }}
                           />
                           {isMatch && (
                             <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 font-bold text-[8px]">
@@ -726,13 +729,13 @@ export default function App() {
                         </div>
 
                         {/* Product Details */}
-                        <div className="flex-1 flex flex-col justify-between text-xs">
+                        <div className="flex-1 flex flex-col justify-between text-xs min-w-0">
                           <div>
-                            <div className="flex items-center justify-between text-[10px] text-slate-400">
-                              <span>{product.category}</span>
-                              <span className="text-emerald-400 font-medium">{product.storeName}</span>
+                            <div className="flex items-center justify-between text-[10px] text-slate-400 gap-1">
+                              <span className="truncate">{product.category}</span>
+                              <span className="text-emerald-400 font-medium shrink-0">{product.storeName}</span>
                             </div>
-                            <h5 className="font-heading font-bold text-xs text-white truncate mt-0.5 group-hover:text-emerald-400 transition">
+                            <h5 className="font-heading font-bold text-xs text-white truncate mt-0.5 group-hover:text-emerald-400 transition" title={product.name}>
                               {product.name}
                             </h5>
                           </div>

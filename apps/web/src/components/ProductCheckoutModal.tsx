@@ -81,6 +81,9 @@ export function ProductCheckoutModal({
                   src={product.imageUrl}
                   alt={product.name}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517649763962-0c623266010b?w=600&auto=format&fit=crop&q=80';
+                  }}
                 />
                 <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-emerald-500 text-slate-950 font-bold text-[10px] tracking-wide uppercase">
                   ✨ Match 100% $Agent
@@ -89,7 +92,7 @@ export function ProductCheckoutModal({
 
               <div>
                 <span className="text-[10px] text-slate-400 uppercase font-mono-tech">{product.category} • {product.storeName}</span>
-                <h4 className="font-heading font-bold text-lg text-white mt-0.5">{product.name}</h4>
+                <h4 className="font-heading font-bold text-lg text-white mt-0.5 truncate" title={product.name}>{product.name}</h4>
                 <p className="text-slate-400 mt-1 text-xs leading-relaxed">{product.description}</p>
               </div>
 

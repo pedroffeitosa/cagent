@@ -103,10 +103,15 @@ export function CartDrawerModal({
                   src={item.product.imageUrl}
                   alt={item.product.name}
                   className="w-14 h-14 rounded-xl object-cover border border-slate-800 shrink-0"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517649763962-0c623266010b?w=600&auto=format&fit=crop&q=80';
+                  }}
                 />
 
                 <div className="flex-1 truncate">
-                  <span className="font-bold text-white text-xs block truncate">{item.product.name}</span>
+                  <span className="font-bold text-white text-xs block truncate" title={item.product.name}>
+                    {item.product.name}
+                  </span>
                   <span className="text-[10px] text-slate-400 font-mono-tech block mt-0.5">
                     R$ {item.product.price} cada
                   </span>
