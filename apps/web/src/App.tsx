@@ -30,7 +30,8 @@ import {
   Share2,
   History,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Home
 } from 'lucide-react';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
 import { UserProfilePopover } from './components/UserProfilePopover';
@@ -42,6 +43,7 @@ import { StoreMeshModal } from './components/StoreMeshModal';
 import { CustomFiltersModal } from './components/CustomFiltersModal';
 import { CartDrawerModal } from './components/CartDrawerModal';
 import { ShareContextModal } from './components/ShareContextModal';
+import { HomeStorefrontView } from './components/views/HomeStorefrontView';
 import { WalletView } from './components/views/WalletView';
 import { CouponsView } from './components/views/CouponsView';
 import { StoreBootstrapView } from './components/views/StoreBootstrapView';
@@ -64,11 +66,11 @@ interface ChatSession {
   messages: ChatMessage[];
 }
 
-type MainViewType = 'chat' | 'wallet' | 'coupons' | 'store' | 'filters' | 'compare';
+type MainViewType = 'home' | 'chat' | 'wallet' | 'coupons' | 'store' | 'filters' | 'compare';
 
 export default function App() {
-  // Active View Mode (Chat vs Wallet Page vs Coupons Page vs Store Bootstrap Page vs Filters Page vs Compare Page)
-  const [activeMainView, setActiveMainView] = useState<MainViewType>('chat');
+  // Active View Mode (Home vs Chat vs Wallet Page vs Coupons Page vs Store Bootstrap Page vs Filters Page vs Compare Page)
+  const [activeMainView, setActiveMainView] = useState<MainViewType>('home');
 
   // Account / Personal Context Profile
   const [userProfile, setUserProfile] = useState<UserProfile>(MOCK_USER_PROFILES[0]);
@@ -296,15 +298,12 @@ export default function App() {
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        {/* Top Logo Section (Clicking $Agent or $A returns to home/chat) */}
+        {/* Top Logo Section (Clicking $Agent or $A returns to Home) */}
         <div className={`h-16 border-b border-slate-800/80 flex items-center shrink-0 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
           <div 
             className="flex items-center gap-2 cursor-pointer group" 
-            onClick={() => {
-              handleNewChat();
-              setActiveMainView('chat');
-            }}
-            title="Voltar para Início ($Agent)"
+            onClick={() => setActiveMainView('home')}
+            title="Voltar para Início (Loja $Agent)"
           >
             <span className="logo-agent-financial text-2xl tracking-tighter transition-all group-hover:opacity-90">
               {isSidebarCollapsed ? '$A' : '$Agent'}
@@ -333,15 +332,29 @@ export default function App() {
           </button>
         </div>
 
-        {/* Bottom-Aligned Controls (Nova conversa + Chat Atual + Chats Anteriores) */}
+        {/* Bottom-Aligned Controls (Página Inicial + Nova conversa + Chat Atual + Chats Anteriores) */}
         <div className="flex-1 flex flex-col justify-end p-3 gap-2 overflow-y-auto custom-scrollbar">
           
+          {/* Home Button */}
+          <button
+            onClick={() => setActiveMainView('home')}
+            title="Página Inicial da Loja"
+            className={`w-full py-2.5 rounded-2xl border transition shadow-sm font-semibold text-xs tracking-wide flex items-center gap-2 ${
+              activeMainView === 'home'
+                ? 'bg-slate-800 border-emerald-500/40 text-emerald-400'
+                : 'bg-slate-950/40 border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800/50'
+            } ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4'}`}
+          >
+            <Home className="w-4 h-4 text-emerald-400 shrink-0" />
+            {!isSidebarCollapsed && <span>Página Inicial</span>}
+          </button>
+
           {/* New Chat Button (Gemini Style Subtle) */}
           <button
             onClick={handleNewChat}
-            title="Nova conversa"
-            className={`w-full py-2.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-emerald-500/40 text-slate-300 hover:text-white font-semibold text-xs tracking-wide flex items-center justify-center gap-2 hover:bg-slate-800/50 transition shadow-sm ${
-              isSidebarCollapsed ? 'px-0' : 'px-4'
+            title="Conversar com $Agent IA"
+            className={`w-full py-2.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-emerald-500/40 text-slate-300 hover:text-white font-semibold text-xs tracking-wide flex items-center gap-2 hover:bg-slate-800/50 transition shadow-sm ${
+              isSidebarCollapsed ? 'justify-center px-0' : 'px-4'
             }`}
           >
             <Plus className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -351,7 +364,7 @@ export default function App() {
           {/* Active Current Chat */}
           {!isSidebarCollapsed && (
             <div className="px-3 pt-2 text-[11px] font-mono-tech text-slate-500 uppercase tracking-wider">
-              Chat Atual
+              Chat com IA
             </div>
           )}
 
@@ -362,9 +375,11 @@ export default function App() {
                 setActiveChatId(activeSession.id);
                 setActiveMainView('chat');
               }}
-              className={`w-full text-left rounded-xl text-xs flex items-center transition group bg-slate-800 text-emerald-400 font-medium border border-emerald-500/30 ${
-                isSidebarCollapsed ? 'justify-center p-3' : 'p-3 gap-3'
-              }`}
+              className={`w-full text-left rounded-xl text-xs flex items-center transition group ${
+                activeMainView === 'chat'
+                  ? 'bg-slate-800 text-emerald-400 font-medium border border-emerald-500/30'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              } ${isSidebarCollapsed ? 'justify-center p-3' : 'p-3 gap-3'}`}
             >
               <MessageSquare className="w-4 h-4 shrink-0 text-emerald-400" />
               {!isSidebarCollapsed && (
@@ -431,9 +446,7 @@ export default function App() {
                 src={userProfile.avatarUrl}
                 alt={userProfile.name}
                 className="w-9 h-9 rounded-xl object-cover border border-emerald-500/40 shrink-0"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517649763962-0c623266010b?w=600&auto=format&fit=crop&q=80';
-                }}
+                onError={handleImageError}
               />
               {!isSidebarCollapsed && (
                 <div className="truncate">
@@ -461,30 +474,30 @@ export default function App() {
       </aside>
 
       {/* ------------------------------------------------------------- */}
-      {/* MAIN WORKSPACE: Header + View Switcher (Chat/Wallet/Coupons)  */}
+      {/* MAIN WORKSPACE: Header + View Switcher                       */}
       {/* ------------------------------------------------------------- */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden bg-slate-950">
         
         {/* Top Navbar Header with Breadcrumbs + Search Input + Actions */}
         <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 h-16 px-6 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-4 flex-1 max-w-xl">
+            
             {/* Dynamic Breadcrumb Header */}
             <div className="flex items-center gap-2 font-heading font-semibold text-sm text-slate-200 tracking-tight shrink-0">
               <button
-                onClick={() => {
-                  handleNewChat();
-                  setActiveMainView('chat');
-                }}
-                className="hover:text-emerald-400 transition"
-                title="Voltar ao início ($Agent)"
+                onClick={() => setActiveMainView('home')}
+                className="hover:text-emerald-400 transition flex items-center gap-1.5"
+                title="Voltar para Página Inicial (Loja $Agent)"
               >
-                Loja $Agent
+                <Home className="w-4 h-4 text-emerald-400" />
+                <span>Loja $Agent</span>
               </button>
 
-              {activeMainView !== 'chat' && (
+              {activeMainView !== 'home' && (
                 <>
                   <span className="text-slate-600 font-mono-tech text-xs">/</span>
                   <span className="text-emerald-400 text-xs font-medium">
+                    {activeMainView === 'chat' && 'Conversa Agêntica com IA'}
                     {activeMainView === 'wallet' && 'Minha Carteira & Cashback'}
                     {activeMainView === 'coupons' && 'Meus Cupons Exclusivos'}
                     {activeMainView === 'store' && 'Rede de Lojas Deco'}
@@ -589,25 +602,39 @@ export default function App() {
         </header>
 
         {/* View Content Renderer */}
+        {activeMainView === 'home' && (
+          <HomeStorefrontView
+            userProfile={userProfile}
+            products={MOCK_STORE_CONTEXT.catalog}
+            onOpenChat={(initialQuery) => {
+              if (initialQuery) {
+                handleRunAgent(initialQuery);
+              } else {
+                setActiveMainView('chat');
+              }
+            }}
+            onSelectProductToBuy={(product) => setSelectedCheckoutProduct(product)}
+          />
+        )}
+
         {activeMainView === 'wallet' && (
-          <WalletView userProfile={userProfile} onBackToChat={() => setActiveMainView('chat')} />
+          <WalletView userProfile={userProfile} onBackToChat={() => setActiveMainView('home')} />
         )}
 
         {activeMainView === 'coupons' && (
-          <CouponsView onBackToChat={() => setActiveMainView('chat')} />
+          <CouponsView onBackToChat={() => setActiveMainView('home')} />
         )}
 
         {activeMainView === 'store' && (
-          <StoreBootstrapView onBackToChat={() => setActiveMainView('chat')} />
+          <StoreBootstrapView onBackToChat={() => setActiveMainView('home')} />
         )}
 
         {activeMainView === 'filters' && (
           <CustomFiltersView
             userProfile={userProfile}
-            onBackToChat={() => setActiveMainView('chat')}
+            onBackToChat={() => setActiveMainView('home')}
             onApplyPresetFilter={(name, colors) => {
               handleRunAgent(`Filtrar por ${name} nas cores ${colors.join(', ')}`);
-              setActiveMainView('chat');
             }}
           />
         )}
@@ -622,7 +649,7 @@ export default function App() {
             }}
             onSelectProductToBuy={(product) => {
               setSelectedCheckoutProduct(product);
-              setActiveMainView('chat');
+              setActiveMainView('home');
             }}
           />
         )}
@@ -875,7 +902,6 @@ export default function App() {
         userProfile={userProfile}
         onApplyPresetFilter={(name, colors) => {
           handleRunAgent(`Filtrar por ${name} nas cores ${colors.join(', ')}`);
-          setActiveMainView('chat');
         }}
       />
 
