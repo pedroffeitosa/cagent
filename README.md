@@ -79,10 +79,11 @@ O repositório foi desenvolvido como uma **solução open-source templatizada** 
 
 * **Web Storefront:** React (TypeScript) + **Vite** + **TailwindCSS**
 * **Mobile App:** React Native com **Expo**
-* **Shared Core:** Tipos compartilhados, Schemas de `UserProfile` e Orquestrador do Agente
-* **Agente / Back-end:** Node.js (TypeScript) + **Google Gemini API / Vertex AI** via Vercel Serverless Functions (`/api`)
+* **Shared Core:** Tipos compartilhados, Schemas de `UserProfile` e Orquestrador do Agente (BYOK Adapter Strategy)
+* **Agente / Back-end:** Node.js (TypeScript) + **BYOK Architecture** (Google Gemini API como padrão do MVP + suporte a OpenAI / Anthropic) via Vercel Serverless Functions (`/api`)
 * **Hosting & Deploy:** **Vercel** (Web + APIs Serverless) + **Expo Application Services / GCP**
 * **Integração:** Mesh de lojas, conectores de banco de dados modulares e APIs Deco Storefront
+
 
 ---
 
