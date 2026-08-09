@@ -47,6 +47,7 @@ import { CouponsView } from './components/views/CouponsView';
 import { StoreBootstrapView } from './components/views/StoreBootstrapView';
 import { CustomFiltersView } from './components/views/CustomFiltersView';
 import { CompareProductsView } from './components/views/CompareProductsView';
+import { handleImageError } from './utils/imageFallback';
 
 interface ChatMessage {
   id: string;
@@ -760,9 +761,7 @@ export default function App() {
                             src={product.imageUrl}
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517649763962-0c623266010b?w=600&auto=format&fit=crop&q=80';
-                            }}
+                            onError={handleImageError}
                           />
                           {isMatch && (
                             <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 font-bold text-[8px]">

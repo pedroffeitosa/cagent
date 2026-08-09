@@ -2,6 +2,7 @@ import React from 'react';
 import { Product, UserProfile } from '@cagent/shared';
 import { Swords, ArrowLeft, Sparkles, Check, X, ShieldCheck, Coins, ShoppingBag } from 'lucide-react';
 import { Button } from '../ui/button';
+import { handleImageError } from '../../utils/imageFallback';
 
 interface CompareProductsViewProps {
   products: Product[];
@@ -82,9 +83,7 @@ export function CompareProductsView({
                   src={product.imageUrl} 
                   alt={product.name} 
                   className="w-full h-full object-cover" 
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = DEFAULT_FALLBACK_IMAGE;
-                  }}
+                  onError={handleImageError}
                 />
                 <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur text-slate-300 text-[10px] font-medium border border-slate-800">
                   {product.storeName}

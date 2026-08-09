@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Product, UserProfile } from '@cagent/shared';
 import { ShoppingCart, X, Plus, Minus, Trash2, ArrowRight, Gift, Coins, CheckCircle2, Swords } from 'lucide-react';
 import { Button } from './ui/button';
+import { handleImageError } from '../utils/imageFallback';
 
 interface CartItem {
   product: Product;
@@ -103,9 +104,7 @@ export function CartDrawerModal({
                   src={item.product.imageUrl}
                   alt={item.product.name}
                   className="w-14 h-14 rounded-xl object-cover border border-slate-800 shrink-0"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517649763962-0c623266010b?w=600&auto=format&fit=crop&q=80';
-                  }}
+                  onError={handleImageError}
                 />
 
                 <div className="flex-1 truncate">
