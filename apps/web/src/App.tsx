@@ -8,14 +8,8 @@ import {
 } from '@cagent/shared';
 import { 
   Sparkles, 
-  Search, 
   ShoppingBag, 
   Bot, 
-  Tag, 
-  Zap, 
-  ShieldCheck, 
-  RotateCcw,
-  Key,
   ChevronRight,
   MessageSquare,
   Plus,
@@ -23,11 +17,8 @@ import {
   Sliders,
   X,
   Send,
-  CheckCircle2,
-  Lock,
-  ArrowUpRight,
   SlidersHorizontal,
-  Wallet
+  Key
 } from 'lucide-react';
 
 interface ChatSession {
@@ -71,7 +62,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [agentResponse, setAgentResponse] = useState<AgentResponsePayload | null>(null);
 
-  // BYOK Modal State
+  // BYOK Key State (for settings later)
   const [apiKey, setApiKey] = useState('');
   const [isByokOpen, setIsByokOpen] = useState(false);
 
@@ -113,7 +104,6 @@ export default function App() {
 
       setAgentResponse(data);
 
-      // Add to session list
       const newSession: ChatSession = {
         id: `chat-${Date.now()}`,
         title: queryText.length > 25 ? `${queryText.substring(0, 25)}...` : queryText,
@@ -223,9 +213,8 @@ export default function App() {
           })}
         </div>
 
-        {/* Bottom User Account / Context Shortcuts */}
-        <div className="p-4 border-t border-slate-800/80 flex flex-col gap-2">
-          {/* User Account Button */}
+        {/* Bottom User Account / Context Shortcut */}
+        <div className="p-4 border-t border-slate-800/80">
           <button
             onClick={() => setIsProfileModalOpen(true)}
             className="w-full p-3 rounded-2xl bg-slate-950/80 border border-slate-800/80 hover:border-emerald-500/40 text-left flex items-center justify-between gap-3 transition group"
@@ -245,63 +234,26 @@ export default function App() {
             </div>
             <SlidersHorizontal className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition shrink-0" />
           </button>
-
-          {/* BYOK Status Footer */}
-          <button
-            onClick={() => setIsByokOpen(true)}
-            className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800/60 text-[11px] text-slate-400 hover:text-white flex items-center justify-between transition"
-          >
-            <div className="flex items-center gap-2">
-              <Key className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Chave de IA (BYOK)</span>
-            </div>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${apiKey ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-400'}`}>
-              {apiKey ? 'Custom Key' : 'Default'}
-            </span>
-          </button>
         </div>
       </aside>
 
       {/* ------------------------------------------------------------- */}
-      {/* MAIN WORKSPACE: Header + Chat Display + Dynamic Storefront    */}
+      {/* MAIN WORKSPACE: Clean Header + Agent Workspace + Storefront   */}
       {/* ------------------------------------------------------------- */}
       <div className="flex-1 flex flex-col h-screen overflow-y-auto custom-scrollbar bg-slate-950">
         
-        {/* Top Navbar */}
+        {/* Clean Top Navbar */}
         <header className="sticky top-0 z-30 glass-panel border-b border-slate-800/80 px-6 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="lg:hidden p-2 rounded-xl bg-slate-900 text-slate-300 hover:text-white"
             >
               <Sliders className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-slate-400">Loja Integrada:</span>
-              <span className="font-semibold text-white px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 flex items-center gap-1.5">
-                <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
-                {MOCK_STORE_CONTEXT.storeName}
-              </span>
-            </div>
-          </div>
-
-          {/* Active Context Pills Quick Bar */}
-          <div className="hidden md:flex items-center gap-2 text-xs">
-            <span className="text-slate-500 text-[11px]">Filtros do Meu Perfil:</span>
-            <span className="px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 font-medium">
-              Tamanho: {userProfile.sizes.clothing}
+            <span className="font-heading font-semibold text-sm text-slate-200 tracking-tight">
+              Vitrine Contextual & Agente de Busca
             </span>
-            {userProfile.maxBudget && (
-              <span className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-medium">
-                Até R$ {userProfile.maxBudget}
-              </span>
-            )}
-            <button
-              onClick={() => setIsProfileModalOpen(true)}
-              className="text-xs text-emerald-400 hover:underline pl-2 font-medium"
-            >
-              Editar Meus Filtros
-            </button>
           </div>
         </header>
 
@@ -559,46 +511,6 @@ export default function App() {
             >
               Salvar Alterações do Meu Perfil
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* ------------------------------------------------------------- */}
-      {/* MODAL: BYOK API KEY SETTINGS                                  */}
-      {/* ------------------------------------------------------------- */}
-      {isByokOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="glass-panel w-full max-w-md rounded-3xl p-6 border border-slate-800 shadow-2xl flex flex-col gap-5 text-xs">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <Key className="w-5 h-5 text-emerald-400" />
-                <h3 className="font-heading font-bold text-base text-white">BYOK (Bring Your Own Key)</h3>
-              </div>
-              <button onClick={() => setIsByokOpen(false)} className="text-slate-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <p className="text-slate-300 leading-relaxed">
-              O $Agent é agnóstico de provedor. Você pode usar a nossa chave padrão do Gemini ou inserir sua chave própria:
-            </p>
-
-            <input
-              type="password"
-              placeholder="Cole sua GEMINI_API_KEY aqui..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono-tech"
-            />
-
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                onClick={() => setIsByokOpen(false)}
-                className="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold"
-              >
-                Salvar Chave
-              </button>
-            </div>
           </div>
         </div>
       )}
