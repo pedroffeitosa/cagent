@@ -26,20 +26,20 @@ export const MOCK_STORE_CONFIG: StoreConfig = {
 
 export const MOCK_USER_PROFILES: UserProfile[] = [
   {
-    id: 'user-ana',
-    name: 'Ana Silva',
-    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-    badge: 'Compradora VIP • Saldo Cashback Ativo',
+    id: 'user-pedro',
+    name: 'Pedro França',
+    avatarUrl: '/user-pedro.jpg',
+    badge: 'VIP • Saldo Cashback Ativo',
     sizes: {
       clothing: 'M',
-      shoes: '37',
+      shoes: '41',
     },
     stylePreferences: ['Minimalista', 'Elegante', 'Casual Chic'],
-    favoriteColors: ['Bege', 'Branco', 'Azul Marinho', 'Preto'],
+    favoriteColors: ['Verde', 'Vermelho', 'Branco', 'Azul Marinho', 'Preto'],
     maxBudget: 450,
-    restrictions: ['Algodão Orgânico', 'Sem Couro Animal'],
-    gender: 'Feminino',
     walletBalance: 42.50,
+    restrictions: ['Algodão Orgânico', 'Sem Couro Animal'],
+    gender: 'Masculino',
   },
   {
     id: 'user-carlos',

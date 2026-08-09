@@ -23,7 +23,10 @@ import {
   Coins,
   Wallet,
   Ticket,
-  Store
+  Store,
+  Search,
+  Filter,
+  ShoppingCart
 } from 'lucide-react';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
 import { UserProfilePopover } from './components/UserProfilePopover';
@@ -32,6 +35,12 @@ import { ProductCheckoutModal } from './components/ProductCheckoutModal';
 import { WalletModal } from './components/WalletModal';
 import { CouponsModal } from './components/CouponsModal';
 import { StoreMeshModal } from './components/StoreMeshModal';
+import { CustomFiltersModal } from './components/CustomFiltersModal';
+import { CartDrawerModal } from './components/CartDrawerModal';
+import { WalletView } from './components/views/WalletView';
+import { CouponsView } from './components/views/CouponsView';
+import { StoreBootstrapView } from './components/views/StoreBootstrapView';
+import { CustomFiltersView } from './components/views/CustomFiltersView';
 
 interface ChatMessage {
   id: string;
@@ -48,7 +57,12 @@ interface ChatSession {
   messages: ChatMessage[];
 }
 
+type MainViewType = 'chat' | 'wallet' | 'coupons' | 'store' | 'filters';
+
 export default function App() {
+  // Active View Mode (Chat vs Wallet Page vs Coupons Page vs Store Bootstrap Page vs Filters Page)
+  const [activeMainView, setActiveMainView] = useState<MainViewType>('chat');
+
   // Account / Personal Context Profile
   const [userProfile, setUserProfile] = useState<UserProfile>(MOCK_USER_PROFILES[0]);
   const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false);
@@ -56,10 +70,21 @@ export default function App() {
   const [isPreferencesModalOpen, setIsPreferencesModalOpen] = useState(false);
   const [selectedCheckoutProduct, setSelectedCheckoutProduct] = useState<Product | null>(null);
 
-  // Top Header Feature Modals
+  // Shopping Cart State
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
+  const [cartItems, setCartItems] = useState<{ product: Product; quantity: number }[]>([
+    { product: MOCK_STORE_CONTEXT.catalog[0], quantity: 1 },
+    { product: MOCK_STORE_CONTEXT.catalog[1], quantity: 1 },
+  ]);
+
+  // Right Vitrine Sidebar Visibility Toggle
+  const [isRightRailOpen, setIsRightRailOpen] = useState(true);
+
+  // Top Header Feature Modals (Optional quick popup triggers)
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isCouponsModalOpen, setIsCouponsModalOpen] = useState(false);
   const [isStoreMeshModalOpen, setIsStoreMeshModalOpen] = useState(false);
+  const [isCustomFiltersModalOpen, setIsCustomFiltersModalOpen] = useState(false);
 
   // Chat History & Active Chat Sessions
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([
@@ -112,6 +137,32 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
+  // Cart Handlers
+  const handleAddToCart = (product: Product) => {
+    setCartItems(prev => {
+      const existing = prev.find(i => i.product.id === product.id);
+      if (existing) {
+        return prev.map(i => i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
+      }
+      return [...prev, { product, quantity: 1 }];
+    });
+    setIsCartDrawerOpen(true);
+  };
+
+  const handleUpdateCartQuantity = (productId: string, delta: number) => {
+    setCartItems(prev => prev.map(item => {
+      if (item.product.id === productId) {
+        const newQty = item.quantity + delta;
+        return newQty > 0 ? { ...item, quantity: newQty } : null;
+      }
+      return item;
+    }).filter(Boolean) as { product: Product; quantity: number }[]);
+  };
+
+  const handleRemoveCartItem = (productId: string) => {
+    setCartItems(prev => prev.filter(i => i.product.id !== productId));
+  };
+
   // Get active session
   const activeSession = chatSessions.find(s => s.id === activeChatId);
   const latestAgentResponse = activeSession?.messages
@@ -128,6 +179,7 @@ export default function App() {
   const handleRunAgent = async (queryText: string) => {
     if (!queryText.trim()) return;
     setLoading(true);
+    setActiveMainView('chat');
 
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}-user`,
@@ -214,6 +266,7 @@ export default function App() {
     };
     setChatSessions(prev => [newSession, ...prev]);
     setActiveChatId(newSessionId);
+    setActiveMainView('chat');
     setCurrentQuery('');
   };
 
@@ -230,10 +283,17 @@ export default function App() {
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        {/* Top Logo Section ($Agent when expanded vs $A when collapsed) */}
+        {/* Top Logo Section (Clicking $Agent or $A returns to home/chat) */}
         <div className={`h-16 border-b border-slate-800/80 flex items-center shrink-0 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
-          <div className="flex items-center gap-2">
-            <span className="logo-agent-financial text-2xl tracking-tighter transition-all">
+          <div 
+            className="flex items-center gap-2 cursor-pointer group" 
+            onClick={() => {
+              handleNewChat();
+              setActiveMainView('chat');
+            }}
+            title="Voltar para Início ($Agent)"
+          >
+            <span className="logo-agent-financial text-2xl tracking-tighter transition-all group-hover:opacity-90">
               {isSidebarCollapsed ? '$A' : '$Agent'}
             </span>
           </div>
@@ -278,17 +338,20 @@ export default function App() {
         <div className="flex-1 px-3 py-2 overflow-y-auto custom-scrollbar flex flex-col gap-1">
           {!isSidebarCollapsed && (
             <div className="px-3 py-1 text-[11px] font-mono-tech text-slate-500 uppercase tracking-wider">
-              Conversas & Buscas
+              Conversas &amp; Buscas
             </div>
           )}
 
           {chatSessions.map((session) => {
-            const isActive = session.id === activeChatId;
+            const isActive = session.id === activeChatId && activeMainView === 'chat';
             return (
               <button
                 key={session.id}
                 title={session.title}
-                onClick={() => setActiveChatId(session.id)}
+                onClick={() => {
+                  setActiveChatId(session.id);
+                  setActiveMainView('chat');
+                }}
                 className={`w-full text-left rounded-xl text-xs flex items-center transition group ${
                   isSidebarCollapsed ? 'justify-center p-3' : 'p-3 gap-3'
                 } ${
@@ -328,7 +391,7 @@ export default function App() {
                 <div className="truncate">
                   <span className="text-xs font-bold text-white block truncate">{userProfile.name}</span>
                   <span className="text-[10px] text-emerald-400 font-medium block">
-                    Tam: {userProfile.sizes.clothing} | R$ {userProfile.maxBudget || '∞'}
+                    VIP • Saldo: R$ {(userProfile.walletBalance || 42.50).toFixed(2).replace('.', ',')}
                   </span>
                 </div>
               )}
@@ -350,238 +413,336 @@ export default function App() {
       </aside>
 
       {/* ------------------------------------------------------------- */}
-      {/* MAIN WORKSPACE: Gemini Chat Interface + Right Product Rail    */}
+      {/* MAIN WORKSPACE: Header + View Switcher (Chat/Wallet/Coupons)  */}
       {/* ------------------------------------------------------------- */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden bg-slate-950">
         
-        {/* Top Navbar Header with Wallet, Coupons, and Store Mesh Chips */}
-        <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 h-16 px-6 flex items-center justify-between shrink-0">
-          <span className="font-heading font-semibold text-sm text-slate-200 tracking-tight">
-            Vitrine Contextual & Agente de Busca
-          </span>
+        {/* Top Navbar Header with Breadcrumbs + Search Input + Actions */}
+        <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 h-16 px-6 flex items-center justify-between gap-4 shrink-0">
+          <div className="flex items-center gap-4 flex-1 max-w-xl">
+            <button 
+              onClick={() => {
+                handleNewChat();
+                setActiveMainView('chat');
+              }}
+              className="font-heading font-semibold text-sm text-slate-200 tracking-tight shrink-0 hover:text-white transition text-left"
+            >
+              Vitrine Contextual &amp; Agente de Busca
+            </button>
 
-          {/* Right Top Header Feature Chips (Wallet, Coupons, Store Mesh) */}
+            {/* Header Search Input Bar (Linear / Raycast Style) */}
+            <div className="relative flex-1 max-w-xs hidden sm:block">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Pesquisar com $Agent..."
+                value={currentQuery}
+                onChange={(e) => setCurrentQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleRunAgent(currentQuery)}
+                className="w-full pl-8 pr-10 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800 text-slate-100 placeholder:text-slate-500 text-xs focus:outline-none focus:border-emerald-500/50 transition shadow-inner"
+              />
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono-tech text-slate-500 px-1 rounded bg-slate-900 border border-slate-800/80 pointer-events-none">
+                ⌘K
+              </span>
+            </div>
+          </div>
+
+          {/* Right Top Header Feature Actions (Filters, Store, Ticket, ShoppingCart, Wallet) */}
           <div className="flex items-center gap-2">
             
-            {/* Wallet Chip */}
+            {/* Custom Filters Button */}
             <button
-              onClick={() => setIsWalletModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/40 text-slate-200 text-xs transition group"
-              title="Minha Carteira & Cashback"
+              onClick={() => setActiveMainView('filters')}
+              className={`p-2 rounded-xl bg-slate-950/80 border transition ${
+                activeMainView === 'filters' ? 'border-emerald-500 text-emerald-400' : 'border-slate-800 text-slate-300 hover:text-white'
+              }`}
+              title="Filtros Personalizados & Temáticos"
             >
-              <Wallet className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="font-mono-tech font-bold text-emerald-400">
-                R$ {(userProfile.walletBalance || 42.50).toFixed(2)}
-              </span>
+              <Filter className="w-4 h-4" />
             </button>
 
-            {/* Coupons Chip */}
+            {/* Store Mesh Button */}
             <button
-              onClick={() => setIsCouponsModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-400/40 text-slate-200 text-xs transition"
-              title="Meus Cupons Exclusivos"
-            >
-              <Ticket className="w-3.5 h-3.5 text-amber-400" />
-              <span className="font-mono-tech font-semibold text-amber-400">DECO10</span>
-            </button>
-
-            {/* Store Mesh Chip */}
-            <button
-              onClick={() => setIsStoreMeshModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-cyan-400/40 text-slate-200 text-xs transition"
+              onClick={() => setActiveMainView('store')}
+              className={`p-2 rounded-xl bg-slate-950/80 border transition ${
+                activeMainView === 'store' ? 'border-cyan-400 text-cyan-400' : 'border-slate-800 text-slate-300 hover:text-white'
+              }`}
               title="Rede de Lojas Deco Mesh"
             >
-              <Store className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="font-medium hidden sm:inline text-slate-300">Deco Mesh</span>
+              <Store className="w-4 h-4" />
+            </button>
+
+            {/* Coupons Button */}
+            <button
+              onClick={() => setActiveMainView('coupons')}
+              className={`p-2 rounded-xl bg-slate-950/80 border transition ${
+                activeMainView === 'coupons' ? 'border-amber-400 text-amber-400' : 'border-slate-800 text-slate-300 hover:text-white'
+              }`}
+              title="Meus Cupons Exclusivos"
+            >
+              <Ticket className="w-4 h-4" />
+            </button>
+
+            {/* Shopping Cart Button (Left of Wallet Saldo) */}
+            <button
+              onClick={() => setIsCartDrawerOpen(true)}
+              className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition relative"
+              title="Meu Carrinho de Compras"
+            >
+              <ShoppingCart className="w-4 h-4 text-slate-300" />
+              {cartItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-slate-950 font-extrabold text-[9px] flex items-center justify-center font-mono-tech">
+                  {cartItems.reduce((acc, i) => acc + i.quantity, 0)}
+                </span>
+              )}
+            </button>
+
+            {/* Wallet & Saldo Chip (Far Right) */}
+            <button
+              onClick={() => setActiveMainView('wallet')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950/80 border transition ${
+                activeMainView === 'wallet' ? 'border-emerald-500 text-emerald-400' : 'border-slate-800 hover:border-emerald-500/40 text-slate-200'
+              }`}
+              title="Minha Carteira & Cashback"
+            >
+              <Wallet className="w-4 h-4 text-slate-300" />
+              <span className="font-mono-tech font-bold text-emerald-400 tracking-tight text-xs">
+                R${(userProfile.walletBalance || 42.50).toFixed(2).replace('.', ',')}
+              </span>
             </button>
 
           </div>
         </header>
 
-        {/* Workspace Body: Split View (Gemini Chat Left vs Product Rail Right) */}
-        <div className="flex-1 flex overflow-hidden">
-          
-          {/* Left Column: Gemini Style Chat Experience */}
-          <div className="flex-1 flex flex-col justify-between p-6 overflow-y-auto custom-scrollbar border-r border-slate-800/80 relative">
+        {/* View Content Renderer */}
+        {activeMainView === 'wallet' && (
+          <WalletView userProfile={userProfile} onBackToChat={() => setActiveMainView('chat')} />
+        )}
+
+        {activeMainView === 'coupons' && (
+          <CouponsView onBackToChat={() => setActiveMainView('chat')} />
+        )}
+
+        {activeMainView === 'store' && (
+          <StoreBootstrapView onBackToChat={() => setActiveMainView('chat')} />
+        )}
+
+        {activeMainView === 'filters' && (
+          <CustomFiltersView
+            userProfile={userProfile}
+            onBackToChat={() => setActiveMainView('chat')}
+            onApplyPresetFilter={(name, colors) => {
+              handleRunAgent(`Filtrar por ${name} nas cores ${colors.join(', ')}`);
+              setActiveMainView('chat');
+            }}
+          />
+        )}
+
+        {/* MAIN VIEW: Gemini Chat Workspace + Optional Right Product Rail */}
+        {activeMainView === 'chat' && (
+          <div className="flex-1 flex overflow-hidden">
             
-            {/* Chat Stream Messages */}
-            <div className="flex-1 flex flex-col gap-6 max-w-3xl w-full mx-auto pb-4">
+            {/* Left Column: Gemini Style Chat Experience */}
+            <div className="flex-1 flex flex-col justify-between p-6 overflow-y-auto custom-scrollbar border-r border-slate-800/80 relative">
               
-              {/* Empty Chat Greeting (Gemini Style) */}
-              {(!activeSession || activeSession.messages.length === 0) && (
-                <div className="my-auto flex flex-col items-center justify-center text-center gap-4 py-12 animate-in fade-in zoom-in-95">
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-                    <Sparkles className="w-7 h-7 text-emerald-400" />
-                  </div>
-                  <div>
-                    <h2 className="font-heading font-bold text-2xl text-white">
-                      Olá, {userProfile.name.split(' ')[0]}! O que você quer pesquisar e comprar hoje?
-                    </h2>
-                    <p className="text-xs text-slate-400 mt-2 max-w-md">
-                      O $Agent cruza seu perfil contextual (tamanho {userProfile.sizes.clothing}, teto R$ {userProfile.maxBudget || '450'}) com o catálogo da loja.
-                    </p>
-                  </div>
-
-                  {/* Quick Suggestion Pills */}
-                  <div className="flex flex-wrap items-center justify-center gap-2 mt-4 max-w-lg">
-                    {[
-                      'Vestido leve de linho',
-                      'Blazer oversized para trabalho',
-                      'Camiseta tech anti-suor',
-                      'Jaqueta puffer streetwear'
-                    ].map((sug) => (
-                      <button
-                        key={sug}
-                        onClick={() => {
-                          setCurrentQuery(sug);
-                          handleRunAgent(sug);
-                        }}
-                        className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 hover:text-emerald-300 transition text-xs"
-                      >
-                        💡 {sug}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Chat Message History */}
-              {activeSession && activeSession.messages.map((msg) => (
-                <div key={msg.id} className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  {msg.sender === 'agent' && (
-                    <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 mt-1">
-                      <Bot className="w-4 h-4 text-emerald-400" />
+              {/* Chat Stream Messages */}
+              <div className="flex-1 flex flex-col gap-6 max-w-3xl w-full mx-auto pb-4">
+                
+                {/* Empty Chat Greeting (Gemini Style) */}
+                {(!activeSession || activeSession.messages.length === 0) && (
+                  <div className="my-auto flex flex-col items-center justify-center text-center gap-4 py-12 animate-in fade-in zoom-in-95">
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+                      <Sparkles className="w-7 h-7 text-emerald-400" />
                     </div>
-                  )}
+                    <div>
+                      <h2 className="font-heading font-bold text-2xl text-white">
+                        Olá, {userProfile.name.split(' ')[0]}! O que você quer pesquisar e comprar hoje?
+                      </h2>
+                      <p className="text-xs text-slate-400 mt-2 max-w-md">
+                        O $Agent cruza seu perfil contextual (teto R$ {userProfile.maxBudget || '450'}) com o catálogo da loja.
+                      </p>
+                    </div>
 
-                  <div className={`max-w-xl text-xs rounded-2xl p-4 leading-relaxed ${
-                    msg.sender === 'user'
-                      ? 'bg-emerald-600 text-slate-950 font-medium rounded-tr-none'
-                      : 'glass-panel border border-slate-800 text-slate-100 rounded-tl-none'
-                  }`}>
-                    <p className="text-sm">{msg.text}</p>
+                    {/* Quick Suggestion Pills */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 mt-4 max-w-lg">
+                      {[
+                        'Vestido leve de linho',
+                        'Blazer oversized para trabalho',
+                        'Camiseta tech anti-suor',
+                        'Jaqueta puffer streetwear'
+                      ].map((sug) => (
+                        <button
+                          key={sug}
+                          onClick={() => {
+                            setCurrentQuery(sug);
+                            handleRunAgent(sug);
+                          }}
+                          className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 hover:text-emerald-300 transition text-xs"
+                        >
+                          💡 {sug}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-                    {/* Agent Response Meta & Coupon Calculation */}
-                    {msg.responsePayload && (
-                      <div className="mt-3 pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex flex-col gap-2">
-                        <span className="font-mono-tech">{msg.responsePayload.reasoningSummary}</span>
-                        {msg.responsePayload.appliedCoupon && (
-                          <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-950/80 border border-emerald-500/20">
-                            <span className="text-amber-400 font-bold flex items-center gap-1">
-                              <Gift className="w-3 h-3" />
-                              Cupom {msg.responsePayload.appliedCoupon.code}
-                            </span>
-                            <span className="text-emerald-400 font-bold flex items-center gap-1">
-                              <Coins className="w-3 h-3" />
-                              + R$ {msg.responsePayload.estimatedCashback} Cashback
-                            </span>
-                          </div>
-                        )}
+                {/* Chat Message History */}
+                {activeSession && activeSession.messages.map((msg) => (
+                  <div key={msg.id} className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    {msg.sender === 'agent' && (
+                      <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 mt-1">
+                        <Bot className="w-4 h-4 text-emerald-400" />
                       </div>
                     )}
-                  </div>
-                </div>
-              ))}
-            </div>
 
-            {/* Bottom Gemini Input Form */}
-            <div className="max-w-3xl w-full mx-auto relative pt-2">
-              <input
-                type="text"
-                placeholder="O que você deseja pesquisar e comprar hoje?..."
-                value={currentQuery}
-                onChange={(e) => setCurrentQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleRunAgent(currentQuery)}
-                className="w-full pl-5 pr-14 py-4 rounded-2xl bg-slate-900 border border-slate-800 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-500 transition shadow-inner"
-              />
-              <button
-                onClick={() => handleRunAgent(currentQuery)}
-                disabled={loading}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition disabled:opacity-50"
-                title="Enviar mensagem"
-              >
-                {loading ? (
-                  <span className="w-4 h-4 rounded-full border-2 border-slate-950 border-t-transparent animate-spin block" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </button>
-            </div>
+                    <div className={`max-w-xl text-xs rounded-2xl p-4 leading-relaxed ${
+                      msg.sender === 'user'
+                        ? 'bg-emerald-600 text-slate-950 font-medium rounded-tr-none'
+                        : 'glass-panel border border-slate-800 text-slate-100 rounded-tl-none'
+                    }`}>
+                      <p className="text-sm">{msg.text}</p>
 
-          </div>
-
-          {/* Right Column: Compact Product Rail ("Passeio na Loja") */}
-          <div className="w-80 lg:w-96 bg-slate-900/40 p-5 overflow-y-auto custom-scrollbar flex flex-col gap-4 shrink-0">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="w-4 h-4 text-emerald-400" />
-                <h4 className="font-heading font-bold text-sm text-white">Vitrine da Loja</h4>
-              </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
-                {displayedProducts.length} itens
-              </span>
-            </div>
-
-            {/* Vertical Stack of Products */}
-            <div className="flex flex-col gap-3">
-              {displayedProducts.map((product) => {
-                const isMatch = activeProductIds?.includes(product.id);
-
-                return (
-                  <div
-                    key={product.id}
-                    className={`glass-card rounded-2xl p-3 flex gap-3 group transition-all duration-300 hover:border-slate-700 ${
-                      isMatch ? 'ring-1 ring-emerald-500/60 shadow-lg shadow-emerald-500/5' : ''
-                    }`}
-                  >
-                    {/* Compact Image */}
-                    <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-900 shrink-0">
-                      <img
-                        src={product.imageUrl}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      {isMatch && (
-                        <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 font-bold text-[8px]">
-                          Match
-                        </span>
+                      {/* Agent Response Meta & Coupon Calculation */}
+                      {msg.responsePayload && (
+                        <div className="mt-3 pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex flex-col gap-2">
+                          <span className="font-mono-tech">{msg.responsePayload.reasoningSummary}</span>
+                          {msg.responsePayload.appliedCoupon && (
+                            <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-950/80 border border-emerald-500/20">
+                              <span className="text-amber-400 font-bold flex items-center gap-1">
+                                <Gift className="w-3 h-3" />
+                                Cupom {msg.responsePayload.appliedCoupon.code}
+                              </span>
+                              <span className="text-emerald-400 font-bold flex items-center gap-1">
+                                <Coins className="w-3 h-3" />
+                                + R$ {msg.responsePayload.estimatedCashback} Cashback
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
-
-                    {/* Product Details */}
-                    <div className="flex-1 flex flex-col justify-between text-xs">
-                      <div>
-                        <div className="flex items-center justify-between text-[10px] text-slate-400">
-                          <span>{product.category}</span>
-                          <span className="text-emerald-400 font-medium">Tam: {product.availableSizes[0]}</span>
-                        </div>
-                        <h5 className="font-heading font-bold text-xs text-white truncate mt-0.5 group-hover:text-emerald-400 transition">
-                          {product.name}
-                        </h5>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-800/60">
-                        <span className="font-heading font-extrabold text-sm text-white">
-                          R$ {product.price}
-                        </span>
-
-                        <button 
-                          onClick={() => setSelectedCheckoutProduct(product)}
-                          className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:bg-emerald-500 hover:border-emerald-500 hover:text-slate-950 font-bold text-[10px] transition"
-                        >
-                          Comprar
-                        </button>
-                      </div>
-                    </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                ))}
+              </div>
 
-        </div>
+              {/* Bottom Gemini Input Form */}
+              <div className="max-w-3xl w-full mx-auto relative pt-2">
+                <input
+                  type="text"
+                  placeholder="O que você deseja pesquisar e comprar hoje?..."
+                  value={currentQuery}
+                  onChange={(e) => setCurrentQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleRunAgent(currentQuery)}
+                  className="w-full pl-5 pr-14 py-4 rounded-2xl bg-slate-900 border border-slate-800 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-500 transition shadow-inner"
+                />
+                <button
+                  onClick={() => handleRunAgent(currentQuery)}
+                  disabled={loading}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition disabled:opacity-50"
+                  title="Enviar mensagem"
+                >
+                  {loading ? (
+                    <span className="w-4 h-4 rounded-full border-2 border-slate-950 border-t-transparent animate-spin block" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+
+            </div>
+
+            {/* Right Column: Optional Compact Product Rail ("Vitrine da Loja") */}
+            {isRightRailOpen && (
+              <div className="w-80 lg:w-96 bg-slate-900/40 p-5 overflow-y-auto custom-scrollbar flex flex-col gap-4 shrink-0 animate-in slide-in-from-right duration-200">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
+                  <h4 className="font-heading font-bold text-sm text-white">Vitrine $Agent Loja</h4>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                      {displayedProducts.length} itens
+                    </span>
+                    <button
+                      onClick={() => setIsRightRailOpen(false)}
+                      className="p-1 text-slate-500 hover:text-slate-300 transition"
+                      title="Ocultar Vitrine Lateral"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Vertical Stack of Products */}
+                <div className="flex flex-col gap-3">
+                  {displayedProducts.map((product) => {
+                    const isMatch = activeProductIds?.includes(product.id);
+
+                    return (
+                      <div
+                        key={product.id}
+                        className={`glass-card rounded-2xl p-3 flex gap-3 group transition-all duration-300 hover:border-slate-700 ${
+                          isMatch ? 'ring-1 ring-emerald-500/60 shadow-lg shadow-emerald-500/5' : ''
+                        }`}
+                      >
+                        {/* Compact Image */}
+                        <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-900 shrink-0">
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                          {isMatch && (
+                            <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 font-bold text-[8px]">
+                              Match
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Product Details */}
+                        <div className="flex-1 flex flex-col justify-between text-xs">
+                          <div>
+                            <div className="flex items-center justify-between text-[10px] text-slate-400">
+                              <span>{product.category}</span>
+                              <span className="text-emerald-400 font-medium">{product.storeName}</span>
+                            </div>
+                            <h5 className="font-heading font-bold text-xs text-white truncate mt-0.5 group-hover:text-emerald-400 transition">
+                              {product.name}
+                            </h5>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-slate-800/60">
+                            <span className="font-heading font-extrabold text-sm text-white">
+                              R$ {product.price}
+                            </span>
+
+                            <button 
+                              onClick={() => handleAddToCart(product)}
+                              className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:bg-emerald-500 hover:border-emerald-500 hover:text-slate-950 font-bold text-[10px] transition"
+                            >
+                              Comprar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
 
       </div>
+
+      {/* Cart Drawer Modal */}
+      <CartDrawerModal
+        isOpen={isCartDrawerOpen}
+        onClose={() => setIsCartDrawerOpen(false)}
+        cartItems={cartItems}
+        onUpdateQuantity={handleUpdateCartQuantity}
+        onRemoveItem={handleRemoveCartItem}
+        userProfile={userProfile}
+      />
 
       {/* Product Checkout Modal */}
       <ProductCheckoutModal
@@ -591,7 +752,7 @@ export default function App() {
         userProfile={userProfile}
       />
 
-      {/* Top Header Feature Modals */}
+      {/* Top Header Feature Modals (Quick Popup triggers) */}
       <WalletModal
         isOpen={isWalletModalOpen}
         onClose={() => setIsWalletModalOpen(false)}
@@ -606,6 +767,16 @@ export default function App() {
       <StoreMeshModal
         isOpen={isStoreMeshModalOpen}
         onClose={() => setIsStoreMeshModalOpen(false)}
+      />
+
+      <CustomFiltersModal
+        isOpen={isCustomFiltersModalOpen}
+        onClose={() => setIsCustomFiltersModalOpen(false)}
+        userProfile={userProfile}
+        onApplyPresetFilter={(name, colors) => {
+          handleRunAgent(`Filtrar por ${name} nas cores ${colors.join(', ')}`);
+          setActiveMainView('chat');
+        }}
       />
 
       {/* Full Linear-Style Preferences Modal */}
