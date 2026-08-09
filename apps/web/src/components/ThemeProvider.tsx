@@ -1,43 +1,28 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type ThemeMode = 'dark' | 'light' | 'system';
-export type AccentColor = 'emerald' | 'gold' | 'cyan' | 'purple';
+export type ThemePreset = 'default' | 'light' | 'midnight' | 'royal';
 
 interface ThemeContextType {
-  themeMode: ThemeMode;
-  setThemeMode: (mode: ThemeMode) => void;
-  accentColor: AccentColor;
-  setAccentColor: (color: AccentColor) => void;
+  themePreset: ThemePreset;
+  setThemePreset: (preset: ThemePreset) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
-  const [accentColor, setAccentColor] = useState<AccentColor>('emerald');
+  const [themePreset, setThemePreset] = useState<ThemePreset>('default');
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('light', 'dark');
+    root.classList.remove('theme-light', 'theme-midnight', 'theme-royal');
 
-    if (themeMode === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      root.classList.add(systemTheme);
-    } else {
-      root.classList.add(themeMode);
+    if (themePreset !== 'default') {
+      root.classList.add(`theme-${themePreset}`);
     }
-  }, [themeMode]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.remove('theme-gold', 'theme-cyan', 'theme-purple');
-    if (accentColor !== 'emerald') {
-      root.classList.add(`theme-${accentColor}`);
-    }
-  }, [accentColor]);
+  }, [themePreset]);
 
   return (
-    <ThemeContext.Provider value={{ themeMode, setThemeMode, accentColor, setAccentColor }}>
+    <ThemeContext.Provider value={{ themePreset, setThemePreset }}>
       {children}
     </ThemeContext.Provider>
   );

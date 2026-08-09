@@ -1,6 +1,6 @@
 import React from 'react';
-import { useTheme, ThemeMode, AccentColor } from './ThemeProvider';
-import { Sun, Moon, Laptop, Palette, X, Check } from 'lucide-react';
+import { useTheme, ThemePreset } from './ThemeProvider';
+import { Palette, X, Check, ShieldCheck, Sun, Moon, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface ThemeCustomizerModalProps {
@@ -9,90 +9,100 @@ interface ThemeCustomizerModalProps {
 }
 
 export function ThemeCustomizerModal({ isOpen, onClose }: ThemeCustomizerModalProps) {
-  const { themeMode, setThemeMode, accentColor, setAccentColor } = useTheme();
+  const { themePreset, setThemePreset } = useTheme();
 
   if (!isOpen) return null;
 
-  const modeOptions: { mode: ThemeMode; label: string; icon: React.ReactNode }[] = [
-    { mode: 'light', label: 'Claro', icon: <Sun className="w-4 h-4" /> },
-    { mode: 'dark', label: 'Escuro', icon: <Moon className="w-4 h-4" /> },
-    { mode: 'system', label: 'Automático', icon: <Laptop className="w-4 h-4" /> },
-  ];
-
-  const colorOptions: { color: AccentColor; label: string; bgClass: string }[] = [
-    { color: 'emerald', label: 'Esmeralda', bgClass: 'bg-emerald-500' },
-    { color: 'gold', label: 'Ouro Fintech', bgClass: 'bg-amber-400' },
-    { color: 'cyan', label: 'Ciano Tech', bgClass: 'bg-cyan-400' },
-    { color: 'purple', label: 'Roxo Royal', bgClass: 'bg-purple-500' },
+  const presets: { id: ThemePreset; name: string; description: string; icon: React.ReactNode; isDefault?: boolean }[] = [
+    {
+      id: 'default',
+      name: 'Deco Banking Dark (Padrão)',
+      description: 'Estética clássica de fintech com fundo escuro profundo e acentos esmeralda.',
+      icon: <ShieldCheck className="w-5 h-5 text-emerald-400" />,
+      isDefault: true,
+    },
+    {
+      id: 'light',
+      name: 'Deco Light Minimalist',
+      description: 'Interface clara, limpa e minimalista de alta visibilidade.',
+      icon: <Sun className="w-5 h-5 text-amber-500" />,
+    },
+    {
+      id: 'midnight',
+      name: 'Midnight Cyber',
+      description: 'Fundo azul noturno profundo com destaques em ciano tech.',
+      icon: <Moon className="w-5 h-5 text-cyan-400" />,
+    },
+    {
+      id: 'royal',
+      name: 'Royal Luxury',
+      description: 'Fundo roxo nobre com destaques dourados para ocasiões premium.',
+      icon: <Sparkles className="w-5 h-5 text-amber-400" />,
+    },
   ];
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="glass-panel w-full max-w-md rounded-3xl p-6 border border-slate-800 shadow-2xl flex flex-col gap-6 text-xs animate-in fade-in zoom-in-95 duration-200">
+      <div className="glass-panel w-full max-w-lg rounded-3xl p-6 border border-slate-800 shadow-2xl flex flex-col gap-6 text-xs animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-2">
             <Palette className="w-5 h-5 text-primary" />
-            <h3 className="font-heading font-bold text-base text-foreground">Aparência & Tema (shadcn)</h3>
+            <h3 className="font-heading font-bold text-base text-foreground">Selecionar Tema do $Agent</h3>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Mode Selector (Light / Dark / System) */}
-        <div>
-          <label className="text-foreground font-semibold block mb-2">Modo Visual</label>
-          <div className="grid grid-cols-3 gap-2">
-            {modeOptions.map(({ mode, label, icon }) => {
-              const isActive = themeMode === mode;
-              return (
-                <button
-                  key={mode}
-                  onClick={() => setThemeMode(mode)}
-                  className={`p-3 rounded-2xl flex flex-col items-center gap-2 border transition ${
-                    isActive
-                      ? 'border-primary bg-primary/10 text-primary font-bold shadow-md'
-                      : 'border-border bg-card text-muted-foreground hover:text-foreground hover:border-slate-700'
-                  }`}
-                >
-                  {icon}
-                  <span>{label}</span>
-                </button>
-              );
-            })}
-          </div>
+        {/* Theme Presets List */}
+        <div className="flex flex-col gap-3">
+          {presets.map((preset) => {
+            const isActive = themePreset === preset.id;
+            return (
+              <button
+                key={preset.id}
+                onClick={() => setThemePreset(preset.id)}
+                className={`p-4 rounded-2xl border flex items-start justify-between gap-4 text-left transition ${
+                  isActive
+                    ? 'border-primary bg-primary/10 text-foreground font-medium shadow-md'
+                    : 'border-border bg-card text-muted-foreground hover:text-foreground hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-xl bg-background border border-border shrink-0 mt-0.5">
+                    {preset.icon}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-heading font-bold text-sm text-foreground">{preset.name}</span>
+                      {preset.isDefault && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono-tech">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{preset.description}</p>
+                  </div>
+                </div>
+
+                <div className="shrink-0 mt-1">
+                  {isActive ? (
+                    <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                      <Check className="w-4 h-4 stroke-[3]" />
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full border border-border" />
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Accent Color Picker */}
-        <div>
-          <label className="text-foreground font-semibold block mb-2">Cor de Destaque Preferida</label>
-          <div className="grid grid-cols-2 gap-2">
-            {colorOptions.map(({ color, label, bgClass }) => {
-              const isActive = accentColor === color;
-              return (
-                <button
-                  key={color}
-                  onClick={() => setAccentColor(color)}
-                  className={`p-3 rounded-2xl flex items-center gap-3 border transition text-left ${
-                    isActive
-                      ? 'border-primary bg-primary/10 font-bold text-foreground'
-                      : 'border-border bg-card text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <span className={`w-4 h-4 rounded-full ${bgClass} shrink-0 flex items-center justify-center`}>
-                    {isActive && <Check className="w-3 h-3 text-slate-950 stroke-[3]" />}
-                  </span>
-                  <span>{label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <Button onClick={onClose} className="w-full mt-2">
-          Salvar Preferências
+        <Button onClick={onClose} className="w-full py-3">
+          Aplicar Tema Escolhido
         </Button>
       </div>
     </div>

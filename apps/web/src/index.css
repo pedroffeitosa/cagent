@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  /* Default Dark Mode Theme */
+  /* Default Theme: Deco Banking Dark (Padrão) */
   :root {
     --background: 222 47% 4%;
     --foreground: 210 40% 98%;
@@ -36,9 +36,9 @@
     --radius: 0.75rem;
   }
 
-  /* Light Mode Theme */
-  .light {
-    --background: 0 0% 98%;
+  /* Light Theme */
+  .theme-light {
+    --background: 210 40% 98%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -59,31 +59,47 @@
     --accent: 160 84% 39%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 160 84% 39%;
   }
 
-  /* Accent Color Themes */
-  .theme-gold {
-    --primary: 43 96% 56%;
-    --accent: 43 96% 56%;
-    --ring: 43 96% 56%;
-  }
+  /* Midnight Cyber Theme */
+  .theme-midnight {
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
 
-  .theme-cyan {
+    --card: 224 71% 7%;
+    --card-foreground: 210 40% 98%;
+
     --primary: 189 94% 43%;
+    --primary-foreground: 224 71% 4%;
+
+    --secondary: 224 50% 12%;
+    --secondary-foreground: 210 40% 98%;
+
     --accent: 189 94% 43%;
+    --border: 224 50% 15%;
     --ring: 189 94% 43%;
   }
 
-  .theme-purple {
-    --primary: 262 83% 58%;
-    --accent: 262 83% 58%;
-    --ring: 262 83% 58%;
+  /* Royal Luxury Theme */
+  .theme-royal {
+    --background: 268 70% 5%;
+    --foreground: 210 40% 98%;
+
+    --card: 268 70% 9%;
+    --card-foreground: 210 40% 98%;
+
+    --primary: 43 96% 56%;
+    --primary-foreground: 268 70% 5%;
+
+    --secondary: 268 40% 15%;
+    --secondary-foreground: 210 40% 98%;
+
+    --accent: 43 96% 56%;
+    --border: 268 40% 18%;
+    --ring: 43 96% 56%;
   }
 }
 
@@ -109,11 +125,11 @@ h1, h2, h3, h4, .font-heading {
 
 /* Glassmorphism */
 .glass-panel {
-  background: rgba(13, 19, 33, 0.75);
+  background: rgba(13, 19, 33, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
-.light .glass-panel {
+.theme-light .glass-panel {
   background: rgba(255, 255, 255, 0.85);
 }
 
@@ -121,8 +137,8 @@ h1, h2, h3, h4, .font-heading {
   background: rgba(26, 36, 56, 0.65);
   backdrop-filter: blur(14px);
 }
-.light .glass-card {
-  background: rgba(248, 250, 252, 0.9);
+.theme-light .glass-card {
+  background: rgba(255, 255, 255, 0.95);
 }
 
 /* Banking/Fintech Metallic Emerald Gradient Logo */
