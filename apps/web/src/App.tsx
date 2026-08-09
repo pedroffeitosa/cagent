@@ -468,15 +468,32 @@ export default function App() {
         {/* Top Navbar Header with Breadcrumbs + Search Input + Actions */}
         <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 h-16 px-6 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-4 flex-1 max-w-xl">
-            <button 
-              onClick={() => {
-                handleNewChat();
-                setActiveMainView('chat');
-              }}
-              className="font-heading font-semibold text-sm text-slate-200 tracking-tight shrink-0 hover:text-white transition text-left"
-            >
-              Vitrine Contextual &amp; Agente de Busca
-            </button>
+            {/* Dynamic Breadcrumb Header */}
+            <div className="flex items-center gap-2 font-heading font-semibold text-sm text-slate-200 tracking-tight shrink-0">
+              <button
+                onClick={() => {
+                  handleNewChat();
+                  setActiveMainView('chat');
+                }}
+                className="hover:text-emerald-400 transition"
+                title="Voltar ao início ($Agent)"
+              >
+                Loja $Agent
+              </button>
+
+              {activeMainView !== 'chat' && (
+                <>
+                  <span className="text-slate-600 font-mono-tech text-xs">/</span>
+                  <span className="text-emerald-400 text-xs font-medium">
+                    {activeMainView === 'wallet' && 'Minha Carteira & Cashback'}
+                    {activeMainView === 'coupons' && 'Meus Cupons Exclusivos'}
+                    {activeMainView === 'store' && 'Rede de Lojas Deco'}
+                    {activeMainView === 'filters' && 'Filtros Personalizados'}
+                    {activeMainView === 'compare' && 'Comparador de Atributos'}
+                  </span>
+                </>
+              )}
+            </div>
 
             {/* Header Search Input Bar (Linear / Raycast Style) */}
             <div className="relative flex-1 max-w-xs hidden sm:block">
