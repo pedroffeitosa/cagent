@@ -11,14 +11,14 @@ import {
   ShoppingBag, 
   Bot, 
   ChevronRight,
+  ChevronLeft,
   MessageSquare,
   Plus,
   User,
   Sliders,
   X,
   Send,
-  SlidersHorizontal,
-  Key
+  SlidersHorizontal
 } from 'lucide-react';
 
 interface ChatSession {
@@ -62,12 +62,12 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [agentResponse, setAgentResponse] = useState<AgentResponsePayload | null>(null);
 
-  // BYOK Key State (for settings later)
+  // BYOK Key State
   const [apiKey, setApiKey] = useState('');
-  const [isByokOpen, setIsByokOpen] = useState(false);
 
-  // Responsive Sidebar Toggle
+  // Sidebar States (Mobile visibility + Desktop Collapsed)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Filter products based on agent recommended IDs
   const activeProductIds = agentResponse?.recommendedProductIds;
@@ -137,28 +137,37 @@ export default function App() {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex overflow-hidden font-sans">
       
       {/* ------------------------------------------------------------- */}
-      {/* LEFT SIDEBAR: Logo $Agent + Histórico de Chats + Perfil       */}
+      {/* LEFT SIDEBAR: Collapsible ($Agent -> $A) + Chat History       */}
       {/* ------------------------------------------------------------- */}
       <aside 
-        className={`w-72 bg-slate-900/90 border-r border-slate-800/80 flex flex-col justify-between transition-all duration-300 z-40 relative ${
+        className={`bg-slate-900 border-r border-slate-800/80 flex flex-col justify-between transition-all duration-300 z-20 relative ${
+          isSidebarCollapsed ? 'w-20' : 'w-72'
+        } ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        {/* Top Logo Section */}
-        <div className="p-5 border-b border-slate-800/80 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 p-[2px] shadow-lg shadow-emerald-500/20">
-              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                <span className="font-financial font-extrabold text-xl text-emerald-400">$</span>
-              </div>
-            </div>
-            <div>
-              {/* Financial Banking Logo Style */}
-              <span className="logo-agent-financial text-2xl tracking-tighter">$Agent</span>
-              <span className="block text-[10px] text-slate-400 font-mono-tech tracking-wider uppercase">Context Commerce</span>
-            </div>
+        {/* Top Logo Section ($Agent when expanded vs $A when collapsed) */}
+        <div className={`h-16 border-b border-slate-800/80 flex items-center shrink-0 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
+          <div className="flex items-center gap-2">
+            <span className="logo-agent-financial text-2xl tracking-tighter transition-all">
+              {isSidebarCollapsed ? '$A' : '$Agent'}
+            </span>
           </div>
 
+          {/* Desktop Collapse / Expand Toggle Button (< or >) */}
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition"
+            title={isSidebarCollapsed ? 'Expandir Sidebar' : 'Recolher Sidebar'}
+          >
+            {isSidebarCollapsed ? (
+              <ChevronRight className="w-4 h-4 text-emerald-400" />
+            ) : (
+              <ChevronLeft className="w-4 h-4 text-slate-400" />
+            )}
+          </button>
+
+          {/* Mobile Close Button */}
           <button
             onClick={() => setIsSidebarOpen(false)}
             className="lg:hidden text-slate-400 hover:text-white p-1"
@@ -168,27 +177,33 @@ export default function App() {
         </div>
 
         {/* New Chat Button */}
-        <div className="p-4">
+        <div className="p-3">
           <button
             onClick={handleNewChat}
-            className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-bold text-xs tracking-wide flex items-center justify-center gap-2 hover:opacity-95 transition shadow-lg shadow-emerald-500/15"
+            title="Novo Chat & Contexto"
+            className={`w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-bold text-xs tracking-wide flex items-center justify-center gap-2 hover:opacity-95 transition shadow-lg shadow-emerald-500/15 ${
+              isSidebarCollapsed ? 'px-0' : 'px-4'
+            }`}
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Novo Chat & Contexto</span>
+            <Plus className="w-4 h-4 stroke-[3] shrink-0" />
+            {!isSidebarCollapsed && <span>Novo Chat & Contexto</span>}
           </button>
         </div>
 
         {/* Chat History List */}
         <div className="flex-1 px-3 py-2 overflow-y-auto custom-scrollbar flex flex-col gap-1">
-          <div className="px-3 py-1 text-[11px] font-mono-tech text-slate-500 uppercase tracking-wider">
-            Conversas & Buscas
-          </div>
+          {!isSidebarCollapsed && (
+            <div className="px-3 py-1 text-[11px] font-mono-tech text-slate-500 uppercase tracking-wider">
+              Conversas & Buscas
+            </div>
+          )}
 
           {chatSessions.map((session) => {
             const isActive = session.id === activeChatId;
             return (
               <button
                 key={session.id}
+                title={session.title}
                 onClick={() => {
                   setActiveChatId(session.id);
                   if (session.response) {
@@ -197,42 +212,53 @@ export default function App() {
                     handleRunAgent(session.query);
                   }
                 }}
-                className={`w-full text-left p-3 rounded-xl text-xs flex items-center gap-3 transition group ${
+                className={`w-full text-left rounded-xl text-xs flex items-center transition group ${
+                  isSidebarCollapsed ? 'justify-center p-3' : 'p-3 gap-3'
+                } ${
                   isActive
                     ? 'bg-slate-800 text-emerald-400 font-medium border border-emerald-500/30'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                 }`}
               >
                 <MessageSquare className={`w-4 h-4 shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
-                <div className="truncate flex-1">
-                  <span className="truncate block font-medium text-slate-200">{session.title}</span>
-                  <span className="text-[10px] text-slate-500 block mt-0.5">{session.timestamp}</span>
-                </div>
+                {!isSidebarCollapsed && (
+                  <div className="truncate flex-1">
+                    <span className="truncate block font-medium text-slate-200">{session.title}</span>
+                    <span className="text-[10px] text-slate-500 block mt-0.5">{session.timestamp}</span>
+                  </div>
+                )}
               </button>
             );
           })}
         </div>
 
         {/* Bottom User Account / Context Shortcut */}
-        <div className="p-4 border-t border-slate-800/80">
+        <div className="p-3 border-t border-slate-800/80">
           <button
             onClick={() => setIsProfileModalOpen(true)}
-            className="w-full p-3 rounded-2xl bg-slate-950/80 border border-slate-800/80 hover:border-emerald-500/40 text-left flex items-center justify-between gap-3 transition group"
+            title={`Meu Perfil: ${userProfile.name}`}
+            className={`w-full rounded-2xl bg-slate-950/80 border border-slate-800/80 hover:border-emerald-500/40 text-left flex items-center transition group ${
+              isSidebarCollapsed ? 'justify-center p-2.5' : 'p-3 justify-between gap-3'
+            }`}
           >
             <div className="flex items-center gap-3">
               <img
                 src={userProfile.avatarUrl}
                 alt={userProfile.name}
-                className="w-9 h-9 rounded-xl object-cover border border-emerald-500/40"
+                className="w-9 h-9 rounded-xl object-cover border border-emerald-500/40 shrink-0"
               />
-              <div className="truncate">
-                <span className="text-xs font-bold text-white block truncate">{userProfile.name}</span>
-                <span className="text-[10px] text-emerald-400 font-medium block">
-                  Tam: {userProfile.sizes.clothing} | R$ {userProfile.maxBudget || '∞'}
-                </span>
-              </div>
+              {!isSidebarCollapsed && (
+                <div className="truncate">
+                  <span className="text-xs font-bold text-white block truncate">{userProfile.name}</span>
+                  <span className="text-[10px] text-emerald-400 font-medium block">
+                    Tam: {userProfile.sizes.clothing} | R$ {userProfile.maxBudget || '∞'}
+                  </span>
+                </div>
+              )}
             </div>
-            <SlidersHorizontal className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition shrink-0" />
+            {!isSidebarCollapsed && (
+              <SlidersHorizontal className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition shrink-0" />
+            )}
           </button>
         </div>
       </aside>
@@ -243,13 +269,20 @@ export default function App() {
       <div className="flex-1 flex flex-col h-screen overflow-y-auto custom-scrollbar bg-slate-950">
         
         {/* Clean Top Navbar */}
-        <header className="sticky top-0 z-30 glass-panel border-b border-slate-800/80 px-6 py-3.5 flex items-center justify-between">
+        <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 h-16 px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden p-2 rounded-xl bg-slate-900 text-slate-300 hover:text-white"
+              onClick={() => {
+                if (window.innerWidth < 1024) {
+                  setIsSidebarOpen(!isSidebarOpen);
+                } else {
+                  setIsSidebarCollapsed(!isSidebarCollapsed);
+                }
+              }}
+              className="p-2 rounded-xl bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 transition"
+              title="Alternar Sidebar"
             >
-              <Sliders className="w-5 h-5" />
+              <Sliders className="w-4 h-4" />
             </button>
             <span className="font-heading font-semibold text-sm text-slate-200 tracking-tight">
               Vitrine Contextual & Agente de Busca
