@@ -1,0 +1,20 @@
+{
+  "name": "cagent-root",
+  "private": true,
+  "version": "1.0.0",
+  "description": "$Agent (cagent) — Contextual & Personal Commerce Agent Monorepo",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "api"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev:mobile": "npm run start --workspace=apps/mobile",
+    "build:web": "npm run build --workspace=apps/web",
+    "build:shared": "npm run build --workspace=packages/shared"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
