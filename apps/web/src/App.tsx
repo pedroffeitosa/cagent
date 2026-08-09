@@ -20,12 +20,18 @@ import {
   Send,
   ShoppingBag,
   Gift,
-  Coins
+  Coins,
+  Wallet,
+  Ticket,
+  Store
 } from 'lucide-react';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
 import { UserProfilePopover } from './components/UserProfilePopover';
 import { PreferencesModal } from './components/PreferencesModal';
 import { ProductCheckoutModal } from './components/ProductCheckoutModal';
+import { WalletModal } from './components/WalletModal';
+import { CouponsModal } from './components/CouponsModal';
+import { StoreMeshModal } from './components/StoreMeshModal';
 
 interface ChatMessage {
   id: string;
@@ -49,6 +55,11 @@ export default function App() {
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isPreferencesModalOpen, setIsPreferencesModalOpen] = useState(false);
   const [selectedCheckoutProduct, setSelectedCheckoutProduct] = useState<Product | null>(null);
+
+  // Top Header Feature Modals
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [isCouponsModalOpen, setIsCouponsModalOpen] = useState(false);
+  const [isStoreMeshModalOpen, setIsStoreMeshModalOpen] = useState(false);
 
   // Chat History & Active Chat Sessions
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([
@@ -343,15 +354,48 @@ export default function App() {
       {/* ------------------------------------------------------------- */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden bg-slate-950">
         
-        {/* Clean Top Navbar */}
+        {/* Top Navbar Header with Wallet, Coupons, and Store Mesh Chips */}
         <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 h-16 px-6 flex items-center justify-between shrink-0">
           <span className="font-heading font-semibold text-sm text-slate-200 tracking-tight">
             Vitrine Contextual & Agente de Busca
           </span>
 
-          <span className="text-xs text-slate-400 font-mono-tech">
-            {activeSession ? activeSession.title : 'Nova conversa'}
-          </span>
+          {/* Right Top Header Feature Chips (Wallet, Coupons, Store Mesh) */}
+          <div className="flex items-center gap-2">
+            
+            {/* Wallet Chip */}
+            <button
+              onClick={() => setIsWalletModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/40 text-slate-200 text-xs transition group"
+              title="Minha Carteira & Cashback"
+            >
+              <Wallet className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="font-mono-tech font-bold text-emerald-400">
+                R$ {(userProfile.walletBalance || 42.50).toFixed(2)}
+              </span>
+            </button>
+
+            {/* Coupons Chip */}
+            <button
+              onClick={() => setIsCouponsModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-400/40 text-slate-200 text-xs transition"
+              title="Meus Cupons Exclusivos"
+            >
+              <Ticket className="w-3.5 h-3.5 text-amber-400" />
+              <span className="font-mono-tech font-semibold text-amber-400">DECO10</span>
+            </button>
+
+            {/* Store Mesh Chip */}
+            <button
+              onClick={() => setIsStoreMeshModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-cyan-400/40 text-slate-200 text-xs transition"
+              title="Rede de Lojas Deco Mesh"
+            >
+              <Store className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="font-medium hidden sm:inline text-slate-300">Deco Mesh</span>
+            </button>
+
+          </div>
         </header>
 
         {/* Workspace Body: Split View (Gemini Chat Left vs Product Rail Right) */}
@@ -545,6 +589,23 @@ export default function App() {
         onClose={() => setSelectedCheckoutProduct(null)}
         product={selectedCheckoutProduct}
         userProfile={userProfile}
+      />
+
+      {/* Top Header Feature Modals */}
+      <WalletModal
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+        userProfile={userProfile}
+      />
+
+      <CouponsModal
+        isOpen={isCouponsModalOpen}
+        onClose={() => setIsCouponsModalOpen(false)}
+      />
+
+      <StoreMeshModal
+        isOpen={isStoreMeshModalOpen}
+        onClose={() => setIsStoreMeshModalOpen(false)}
       />
 
       {/* Full Linear-Style Preferences Modal */}
