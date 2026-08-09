@@ -25,7 +25,7 @@ export function WalletView({ userProfile, onBackToChat }: WalletViewProps) {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h2 className="font-heading font-bold text-2xl text-white">Minha Carteira & Cashback</h2>
+            <h2 className="font-heading font-bold text-2xl text-white">Minha Carteira &amp; Cashback</h2>
             <p className="text-xs text-slate-400 mt-0.5">Gerencie seu saldo e bônus de cashback entre a loja e o app mobile</p>
           </div>
         </div>
@@ -71,7 +71,7 @@ export function WalletView({ userProfile, onBackToChat }: WalletViewProps) {
 
           <div>
             <span className="font-heading font-extrabold text-3xl text-amber-400">
-              R$ 26,50
+              R$ 49,90
             </span>
             <span className="text-xs text-slate-400 block mt-2">
               Gerado em 3 compras via canal $Agent
@@ -100,7 +100,7 @@ export function WalletView({ userProfile, onBackToChat }: WalletViewProps) {
           </div>
 
           <div className="text-[11px] text-cyan-400 font-mono-tech font-bold">
-            Válido no Web Storefront & App Mobile Expo
+            Válido no Web Storefront &amp; App Mobile Expo
           </div>
         </div>
 
@@ -117,9 +117,9 @@ export function WalletView({ userProfile, onBackToChat }: WalletViewProps) {
 
         <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800/80 text-xs">
           {[
-            { id: 'tx-1', title: 'Cashback $Agent — Vestido Leve de Linho', date: 'Hoje, 14:21', type: 'Cashback', amount: '+ R$ 16,00', status: 'Confirmado' },
-            { id: 'tx-2', title: 'Cashback $Agent — Camiseta Tech Anti-Suor', date: 'Ontem, 18:40', type: 'Cashback', amount: '+ R$ 10,50', status: 'Confirmado' },
-            { id: 'tx-3', title: 'Recarga em Conta via Pix', date: '05 de Ago', type: 'Recarga', amount: '+ R$ 16,00', status: 'Concluído' },
+            { id: 'tx-1', title: 'Cashback $Agent — Camisa Oficial Fluminense FC Tricolor', date: 'Hoje, 14:21', type: 'Cashback', amount: '+ R$ 17,45', status: 'Confirmado' },
+            { id: 'tx-2', title: 'Cashback $Agent — Tênis de Corrida Nike Air Zoom Pegasus Pro', date: 'Ontem, 18:40', type: 'Cashback', amount: '+ R$ 22,45', status: 'Confirmado' },
+            { id: 'tx-3', title: 'Bônus de Boas-Vindas $Agent Sports', date: '05 de Ago', type: 'Bônus', amount: '+ R$ 10,00', status: 'Concluído' },
           ].map((tx) => (
             <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-slate-900/40 transition">
               <div className="flex items-center gap-4">

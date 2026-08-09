@@ -27,7 +27,10 @@ import {
   Search,
   Filter,
   ShoppingCart,
-  Share2
+  Share2,
+  History,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
 import { UserProfilePopover } from './components/UserProfilePopover';
@@ -73,6 +76,9 @@ export default function App() {
   const [isPreferencesModalOpen, setIsPreferencesModalOpen] = useState(false);
   const [selectedCheckoutProduct, setSelectedCheckoutProduct] = useState<Product | null>(null);
 
+  // Collapsible Past Chats Toggle
+  const [showPastChats, setShowPastChats] = useState(false);
+
   // Shopping Cart State
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const [cartItems, setCartItems] = useState<{ product: Product; quantity: number }[]>([
@@ -94,21 +100,21 @@ export default function App() {
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([
     {
       id: 'chat-1',
-      title: 'Look para Casamento Diurno',
+      title: 'Busca Esportiva & Fluminense',
       timestamp: 'Hoje, 14:20',
       messages: [
         {
           id: 'msg-1',
           sender: 'user',
-          text: 'Procuro um vestido leve de linho ou seda para casamento diurno até R$ 450',
+          text: 'Procuro uma camisa oficial do Fluminense Tricolor e chuteira no tamanho 41',
           timestamp: '14:20',
         },
         {
           id: 'msg-2',
           sender: 'agent',
-          text: 'Encontrei as melhores opções no seu tamanho M e dentro do seu orçamento!',
+          text: 'Encontrei a Camisa Oficial Tricolor 2026 e a Chuteira Tiempo Legend no seu tamanho!',
           responsePayload: runLocalRuleEngine({
-            userQuery: 'Procuro um vestido leve de linho ou seda para casamento diurno até R$ 450',
+            userQuery: 'Procuro uma camisa oficial do Fluminense Tricolor e chuteira no tamanho 41',
             userProfile: MOCK_USER_PROFILES[0],
             storeContext: MOCK_STORE_CONTEXT,
           }),
@@ -118,13 +124,13 @@ export default function App() {
     },
     {
       id: 'chat-2',
-      title: 'Blazer para Reunião de Trabalho',
+      title: 'Tênis de Corrida Maratona',
       timestamp: 'Ontem',
       messages: [
         {
           id: 'msg-3',
           sender: 'user',
-          text: 'Blazer oversized em alfaiataria elegante no meu tamanho M',
+          text: 'Tênis Nike Pegasus no meu tamanho 41 com bom amortecimento',
           timestamp: 'Ontem',
         }
       ]
@@ -167,8 +173,10 @@ export default function App() {
     setCartItems(prev => prev.filter(i => i.product.id !== productId));
   };
 
-  // Get active session
-  const activeSession = chatSessions.find(s => s.id === activeChatId);
+  // Get active session and past sessions
+  const activeSession = chatSessions.find(s => s.id === activeChatId) || chatSessions[0];
+  const pastSessions = chatSessions.filter(s => s.id !== activeSession?.id);
+
   const latestAgentResponse = activeSession?.messages
     .slice()
     .reverse()
@@ -278,7 +286,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex overflow-hidden font-sans">
       
       {/* ------------------------------------------------------------- */}
-      {/* LEFT SIDEBAR: Collapsible ($Agent -> $A) + Chat History       */}
+      {/* LEFT SIDEBAR: Collapsible ($Agent -> $A) + Simplified Chat    */}
       {/* ------------------------------------------------------------- */}
       <aside 
         className={`bg-slate-900 border-r border-slate-800/80 flex flex-col justify-between transition-all duration-300 z-20 relative ${
@@ -338,42 +346,76 @@ export default function App() {
           </button>
         </div>
 
-        {/* Chat History List */}
-        <div className="flex-1 px-3 py-2 overflow-y-auto custom-scrollbar flex flex-col gap-1">
+        {/* Simplified Left Sidebar: Current Chat + Collapsible Past Chats */}
+        <div className="flex-1 px-3 py-2 overflow-y-auto custom-scrollbar flex flex-col gap-2">
+          
+          {/* Active Current Chat */}
           {!isSidebarCollapsed && (
             <div className="px-3 py-1 text-[11px] font-mono-tech text-slate-500 uppercase tracking-wider">
-              Conversas &amp; Buscas
+              Chat Atual
             </div>
           )}
 
-          {chatSessions.map((session) => {
-            const isActive = session.id === activeChatId && activeMainView === 'chat';
-            return (
+          {activeSession && (
+            <button
+              title={activeSession.title}
+              onClick={() => {
+                setActiveChatId(activeSession.id);
+                setActiveMainView('chat');
+              }}
+              className={`w-full text-left rounded-xl text-xs flex items-center transition group bg-slate-800 text-emerald-400 font-medium border border-emerald-500/30 ${
+                isSidebarCollapsed ? 'justify-center p-3' : 'p-3 gap-3'
+              }`}
+            >
+              <MessageSquare className="w-4 h-4 shrink-0 text-emerald-400" />
+              {!isSidebarCollapsed && (
+                <div className="truncate flex-1">
+                  <span className="truncate block font-medium text-slate-200">{activeSession.title}</span>
+                  <span className="text-[10px] text-slate-400 block mt-0.5">{activeSession.timestamp}</span>
+                </div>
+              )}
+            </button>
+          )}
+
+          {/* Past Chats Collapsible Section */}
+          {pastSessions.length > 0 && !isSidebarCollapsed && (
+            <div className="mt-4 pt-3 border-t border-slate-800/60 flex flex-col gap-1">
               <button
-                key={session.id}
-                title={session.title}
-                onClick={() => {
-                  setActiveChatId(session.id);
-                  setActiveMainView('chat');
-                }}
-                className={`w-full text-left rounded-xl text-xs flex items-center transition group ${
-                  isSidebarCollapsed ? 'justify-center p-3' : 'p-3 gap-3'
-                } ${
-                  isActive
-                    ? 'bg-slate-800 text-emerald-400 font-medium border border-emerald-500/30'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                }`}
+                onClick={() => setShowPastChats(!showPastChats)}
+                className="w-full px-3 py-2 rounded-xl text-left flex items-center justify-between text-xs text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition font-medium"
               >
-                <MessageSquare className={`w-4 h-4 shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
-                {!isSidebarCollapsed && (
-                  <div className="truncate flex-1">
-                    <span className="truncate block font-medium text-slate-200">{session.title}</span>
-                    <span className="text-[10px] text-slate-500 block mt-0.5">{session.timestamp}</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  <History className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Chats anteriores ({pastSessions.length})</span>
+                </div>
+                {showPastChats ? <ChevronUp className="w-3.5 h-3.5 text-slate-500" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-500" />}
               </button>
-            );
-          })}
+
+              {/* Past Chats Dropdown */}
+              {showPastChats && (
+                <div className="flex flex-col gap-1 pl-2 pt-1 animate-in fade-in duration-150">
+                  {pastSessions.map((session) => (
+                    <button
+                      key={session.id}
+                      title={session.title}
+                      onClick={() => {
+                        setActiveChatId(session.id);
+                        setActiveMainView('chat');
+                      }}
+                      className="w-full text-left rounded-xl p-2.5 text-xs flex items-center gap-2.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition group"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 shrink-0" />
+                      <div className="truncate flex-1">
+                        <span className="truncate block font-medium text-slate-300">{session.title}</span>
+                        <span className="text-[10px] text-slate-500 block">{session.timestamp}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
 
         {/* Bottom User Account Popover Trigger */}
@@ -390,6 +432,9 @@ export default function App() {
                 src={userProfile.avatarUrl}
                 alt={userProfile.name}
                 className="w-9 h-9 rounded-xl object-cover border border-emerald-500/40 shrink-0"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517649763962-0c623266010b?w=600&auto=format&fit=crop&q=80';
+                }}
               />
               {!isSidebarCollapsed && (
                 <div className="truncate">
