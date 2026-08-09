@@ -179,17 +179,17 @@ export default function App() {
           </button>
         </div>
 
-        {/* New Chat Button */}
+        {/* New Chat Button (Gemini Style Subtle) */}
         <div className="p-3">
           <button
             onClick={handleNewChat}
-            title="Novo Chat & Contexto"
-            className={`w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-bold text-xs tracking-wide flex items-center justify-center gap-2 hover:opacity-95 transition shadow-lg shadow-emerald-500/15 ${
+            title="Nova conversa"
+            className={`w-full py-2.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-emerald-500/40 text-slate-300 hover:text-white font-semibold text-xs tracking-wide flex items-center justify-center gap-2 hover:bg-slate-800/50 transition shadow-sm ${
               isSidebarCollapsed ? 'px-0' : 'px-4'
             }`}
           >
-            <Plus className="w-4 h-4 stroke-[3] shrink-0" />
-            {!isSidebarCollapsed && <span>Novo Chat & Contexto</span>}
+            <Plus className="w-4 h-4 text-emerald-400 shrink-0" />
+            {!isSidebarCollapsed && <span>Nova conversa</span>}
           </button>
         </div>
 
