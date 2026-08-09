@@ -14,11 +14,8 @@ import {
   MessageSquare,
   Plus,
   User,
-  Sliders,
   X,
-  Send,
-  SlidersHorizontal,
-  Palette
+  SlidersHorizontal
 } from 'lucide-react';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
 
@@ -271,35 +268,10 @@ export default function App() {
       <div className="flex-1 flex flex-col h-screen overflow-y-auto custom-scrollbar bg-slate-950">
         
         {/* Clean Top Navbar */}
-        <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 h-16 px-6 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                if (window.innerWidth < 1024) {
-                  setIsSidebarOpen(!isSidebarOpen);
-                } else {
-                  setIsSidebarCollapsed(!isSidebarCollapsed);
-                }
-              }}
-              className="p-2 rounded-xl bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 transition"
-              title="Alternar Sidebar"
-            >
-              <Sliders className="w-4 h-4" />
-            </button>
-            <span className="font-heading font-semibold text-sm text-slate-200 tracking-tight">
-              Vitrine Contextual & Agente de Busca
-            </span>
-          </div>
-
-          {/* Theme & Palette Customizer Button */}
-          <button
-            onClick={() => setIsThemeModalOpen(true)}
-            className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-emerald-500/40 transition flex items-center gap-2 text-xs font-medium"
-            title="Personalizar Tema do $Agent"
-          >
-            <Palette className="w-4 h-4 text-emerald-400" />
-            <span className="hidden sm:inline">Tema & Cores</span>
-          </button>
+        <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 h-16 px-6 flex items-center shrink-0">
+          <span className="font-heading font-semibold text-sm text-slate-200 tracking-tight">
+            Vitrine Contextual & Agente de Busca
+          </span>
         </header>
 
         {/* Main Content Area */}
