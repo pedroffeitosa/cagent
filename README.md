@@ -1,8 +1,18 @@
 # $Agent (`cagent`) — Contextual & Personal Commerce Agent
 
-> **Hackathon:** Agents for Commerce (Deco)  
+> **Hackathon:** Agents for Commerce (Deco 2026)  
 > **Trilha Principal:** Search & Discovery / SEO, GEO & Agentic Commerce  
 > **Objetivo:** Transformar a busca genérica em uma **personalização real baseada em contexto estendido do cliente e das lojas**, fazendo a loja **vender mais** e **rodar por menos**.
+
+---
+
+## ⚡ Estratégia do Hackathon: Turnkey Bootstrap & Navegação Mockada
+
+Para a apresentação do Hackathon e demonstração de pitch em tempo recorde, o projeto foi concebido como um **Boilerplate / Bootstrap de Plataforma Agêntica Turnkey**:
+
+* **Navegação Hiper-Realista Sem Backend Pesado:** A aplicação entrega uma experiência interativa completa (Web + App Mobile Expo) alimentada por motores de contexto e regras locais (`MOCK_STORE_CONTEXT`, `runLocalRuleEngine`), sem necessidade de provisionamento prévio de infraestrutura complexa.
+* **Demonstração Fim a Fim com Perfil Real:** A navegação é pré-povoada com o contexto real do usuário **Pedro França** (tamanho M, calçado 41, torcedor do Fluminense FC, praticante de futebol e corrida de rua).
+* **Pronto para Conectar (Fork & Connect Ready):** Qualquer e-commerce ou lojista da rede Deco pode forkar este repositório e conectar suas APIs reais de catálogo, inventário e banco de dados simplesmente substituindo os adaptadores em `packages/shared/src/mocks.ts` e `api/agent.ts`.
 
 ---
 
@@ -28,14 +38,14 @@ O **`$Agent`** atua como uma ponte de inteligência contextual entre o usuário 
 * **Ordenação de Vitrine (PLP):** Reordenação dinâmica de produtos conforme gostos, tamanho e orçamento.
 * **Recomendações Pessoais:** Sugestões hiper-personalizadas na primeira dobra da tela.
 
-### 2. 📦 Catalog & Content (Enriquecimento de Catálogo)
-* **Enriquecimento de Produtos:** Automação na adição de metadados, atributos e tags.
-* **Descrições & SEO:** Geração inteligente de descrições otimizadas para motores de busca e conversão.
+### 2. ⚔️ Batalha de Atributos & Comparador de Produtos
+* **Espadas Cruzadas (`Swords`):** Comparação lado a lado de produtos com análise de especificações, recomendação agêntica por IA e raio-X de compatibilidade.
 
-### 3. 🤖 SEO, GEO & Agentic Commerce (Comércio Agêntico)
-* **GEO (Generative Engine Optimization):** Preparado para ser achado e recomendado por assistentes e IAs generativas.
-* **Atendimento Conversacional:** Agente de linguagem natural que tira dúvidas sobre produtos em tempo real.
-* **Checkout Assistido:** Interação direta para acelerar a tomada de decisão e o fluxo de compra.
+### 3. 🛒 Carrinho & Checkout em 1-Clique com Cashback
+* **Fluxo de Conversão Acelerado:** Gestão de quantidades, cupom promocional ativo (`DECO10`), cálculo imediato de cashback e finalização instantânea.
+
+### 4. 🔗 Compartilhamento Agêntico via WhatsApp & QR Code
+* **Links Contextuais & QR Code Expo:** Compartilhamento de recomendações personalizadas com amigos via WhatsApp ou escaneamento direto para o aplicativo celular.
 
 ---
 
@@ -45,7 +55,7 @@ O repositório adota uma **arquitetura híbrida modular (Monorepo)** que compart
 
 ```
 cagent/
-├── apps/ (ou diretórios de aplicação)
+├── apps/
 │   ├── web/        # Storefront Web (React + Vite + TailwindCSS)
 │   └── mobile/     # App Mobile (React Native + Expo)
 ├── api/            # Serverless Functions (Vercel + Google Gemini API)
@@ -82,8 +92,6 @@ O repositório foi desenvolvido como uma **solução open-source templatizada** 
 * **Shared Core:** Tipos compartilhados, Schemas de `UserProfile` e Orquestrador do Agente (BYOK Adapter Strategy)
 * **Agente / Back-end:** Node.js (TypeScript) + **BYOK Architecture** (Google Gemini API como padrão do MVP + suporte a OpenAI / Anthropic) via Vercel Serverless Functions (`/api`)
 * **Hosting & Deploy:** **Vercel** (Web + APIs Serverless) + **Expo Application Services / GCP**
-* **Integração:** Mesh de lojas, conectores de banco de dados modulares e APIs Deco Storefront
-
 
 ---
 
@@ -98,7 +106,7 @@ O repositório foi desenvolvido como uma **solução open-source templatizada** 
 
 1. **Clonar o Repositório:**
    ```bash
-   git clone https://github.com/SEU_USUARIO/cagent.git
+   git clone https://github.com/pedroffeitosa/cagent.git
    cd cagent
    ```
 
@@ -117,27 +125,9 @@ O repositório foi desenvolvido como uma **solução open-source templatizada** 
    GEMINI_API_KEY=seu_api_key_aqui
    ```
 
-   > ⚠️ **Nota de Segurança:** O arquivo `.env` está no `.gitignore`. Nunca suba suas chaves de API para o GitHub público.
-
 4. **Executar as Aplicações:**
    - **Web (Vite):** `npm run dev:web`
    - **Mobile (Expo):** `npm run dev:mobile`
-
----
-
-## 🌐 Deploy na Vercel
-
-O projeto está otimizado para deploy instantâneo da Web e APIs na **Vercel**:
-1. Conecte o repositório no dashboard da Vercel.
-2. Adicione a variável `GEMINI_API_KEY` nas configurações de **Environment Variables**.
-3. O deploy do frontend Web (Vite) e das Serverless Functions (`/api`) será feito automaticamente a cada `git push`.
-
----
-
-## 🛡️ Segurança & Boas Práticas (Public Repository Notice)
-
-* Nenhuma chave privada ou credencial de produção da GCP / Gemini / Anthropic / OpenAI está exposta no código-fonte.
-* Autenticação e requisições sensíveis são tratadas via variáveis protegidas em ambiente de execução Serverless.
 
 ---
 
@@ -147,10 +137,4 @@ Este projeto é disponibilizado sob a licença **MIT** — permitindo livre uso,
 
 ---
 
-## 🎥 Vídeo de Demonstração
-
-* [Link para o Vídeo de 3 minutos em Ação] *(Vou adicionar no fim do projeto)*
-
----
-
-*Desenvolvido durante o Hackathon Agents for Commerce — Deco (2026).*
+*Desenvolvido para o Hackathon Agents for Commerce — Deco (2026).*

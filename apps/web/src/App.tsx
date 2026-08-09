@@ -594,10 +594,10 @@ export default function App() {
                     {/* Quick Suggestion Pills */}
                     <div className="flex flex-wrap items-center justify-center gap-2 mt-4 max-w-lg">
                       {[
-                        'Vestido leve de linho',
-                        'Blazer oversized para trabalho',
-                        'Camiseta tech anti-suor',
-                        'Jaqueta puffer streetwear'
+                        'Camisa Oficial Fluminense Tricolor',
+                        'Camisa Seleção Brasileira Amarela',
+                        'Tênis de Corrida Nike Air Zoom',
+                        'Chuteira Society Tiempo Legend Pro'
                       ].map((sug) => (
                         <button
                           key={sug}

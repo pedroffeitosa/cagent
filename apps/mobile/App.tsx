@@ -123,10 +123,10 @@ export default function App() {
         {/* Quick Suggestion Pills */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.suggestionsContainer}>
           {[
-            'Vestido leve de linho',
-            'Blazer oversized para trabalho',
-            'Camiseta tech anti-suor',
-            'Jaqueta puffer streetwear'
+            'Camisa Oficial Fluminense Tricolor',
+            'Camisa Seleção Brasileira Amarela',
+            'Tênis de Corrida Nike Air Zoom',
+            'Chuteira Society Tiempo Legend Pro'
           ].map((sug) => (
             <TouchableOpacity 
               key={sug} 
