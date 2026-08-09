@@ -22,7 +22,6 @@ import {
   Palette
 } from 'lucide-react';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
-import { Button } from './components/ui/button';
 
 interface ChatSession {
   id: string;
@@ -138,20 +137,20 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex overflow-hidden font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex overflow-hidden font-sans">
       
       {/* ------------------------------------------------------------- */}
       {/* LEFT SIDEBAR: Collapsible ($Agent -> $A) + Chat History       */}
       {/* ------------------------------------------------------------- */}
       <aside 
-        className={`bg-card border-r border-border flex flex-col justify-between transition-all duration-300 z-20 relative ${
+        className={`bg-slate-900 border-r border-slate-800/80 flex flex-col justify-between transition-all duration-300 z-20 relative ${
           isSidebarCollapsed ? 'w-20' : 'w-72'
         } ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Top Logo Section ($Agent when expanded vs $A when collapsed) */}
-        <div className={`h-16 border-b border-border flex items-center shrink-0 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
+        <div className={`h-16 border-b border-slate-800/80 flex items-center shrink-0 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
           <div className="flex items-center gap-2">
             <span className="logo-agent-financial text-2xl tracking-tighter transition-all">
               {isSidebarCollapsed ? '$A' : '$Agent'}
@@ -161,20 +160,20 @@ export default function App() {
           {/* Desktop Collapse / Expand Toggle Button (< or >) */}
           <button
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="hidden lg:flex p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition"
+            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition"
             title={isSidebarCollapsed ? 'Expandir Sidebar' : 'Recolher Sidebar'}
           >
             {isSidebarCollapsed ? (
-              <ChevronRight className="w-4 h-4 text-primary" />
+              <ChevronRight className="w-4 h-4 text-emerald-400" />
             ) : (
-              <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+              <ChevronLeft className="w-4 h-4 text-slate-400" />
             )}
           </button>
 
           {/* Mobile Close Button */}
           <button
             onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden text-muted-foreground hover:text-foreground p-1"
+            className="lg:hidden text-slate-400 hover:text-white p-1"
           >
             <X className="w-5 h-5" />
           </button>
@@ -185,7 +184,7 @@ export default function App() {
           <button
             onClick={handleNewChat}
             title="Novo Chat & Contexto"
-            className={`w-full py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-xs tracking-wide flex items-center justify-center gap-2 hover:opacity-90 transition shadow-lg shadow-primary/15 ${
+            className={`w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-bold text-xs tracking-wide flex items-center justify-center gap-2 hover:opacity-95 transition shadow-lg shadow-emerald-500/15 ${
               isSidebarCollapsed ? 'px-0' : 'px-4'
             }`}
           >
@@ -197,7 +196,7 @@ export default function App() {
         {/* Chat History List */}
         <div className="flex-1 px-3 py-2 overflow-y-auto custom-scrollbar flex flex-col gap-1">
           {!isSidebarCollapsed && (
-            <div className="px-3 py-1 text-[11px] font-mono-tech text-muted-foreground uppercase tracking-wider">
+            <div className="px-3 py-1 text-[11px] font-mono-tech text-slate-500 uppercase tracking-wider">
               Conversas & Buscas
             </div>
           )}
@@ -220,15 +219,15 @@ export default function App() {
                   isSidebarCollapsed ? 'justify-center p-3' : 'p-3 gap-3'
                 } ${
                   isActive
-                    ? 'bg-secondary text-primary font-medium border border-primary/30'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                    ? 'bg-slate-800 text-emerald-400 font-medium border border-emerald-500/30'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                 }`}
               >
-                <MessageSquare className={`w-4 h-4 shrink-0 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                <MessageSquare className={`w-4 h-4 shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
                 {!isSidebarCollapsed && (
                   <div className="truncate flex-1">
-                    <span className="truncate block font-medium text-foreground">{session.title}</span>
-                    <span className="text-[10px] text-muted-foreground block mt-0.5">{session.timestamp}</span>
+                    <span className="truncate block font-medium text-slate-200">{session.title}</span>
+                    <span className="text-[10px] text-slate-500 block mt-0.5">{session.timestamp}</span>
                   </div>
                 )}
               </button>
@@ -237,11 +236,11 @@ export default function App() {
         </div>
 
         {/* Bottom User Account / Context Shortcut */}
-        <div className="p-3 border-t border-border">
+        <div className="p-3 border-t border-slate-800/80">
           <button
             onClick={() => setIsProfileModalOpen(true)}
             title={`Meu Perfil: ${userProfile.name}`}
-            className={`w-full rounded-2xl bg-background border border-border hover:border-primary/40 text-left flex items-center transition group ${
+            className={`w-full rounded-2xl bg-slate-950/80 border border-slate-800/80 hover:border-emerald-500/40 text-left flex items-center transition group ${
               isSidebarCollapsed ? 'justify-center p-2.5' : 'p-3 justify-between gap-3'
             }`}
           >
@@ -249,19 +248,19 @@ export default function App() {
               <img
                 src={userProfile.avatarUrl}
                 alt={userProfile.name}
-                className="w-9 h-9 rounded-xl object-cover border border-primary/40 shrink-0"
+                className="w-9 h-9 rounded-xl object-cover border border-emerald-500/40 shrink-0"
               />
               {!isSidebarCollapsed && (
                 <div className="truncate">
-                  <span className="text-xs font-bold text-foreground block truncate">{userProfile.name}</span>
-                  <span className="text-[10px] text-primary font-medium block">
+                  <span className="text-xs font-bold text-white block truncate">{userProfile.name}</span>
+                  <span className="text-[10px] text-emerald-400 font-medium block">
                     Tam: {userProfile.sizes.clothing} | R$ {userProfile.maxBudget || '∞'}
                   </span>
                 </div>
               )}
             </div>
             {!isSidebarCollapsed && (
-              <SlidersHorizontal className="w-4 h-4 text-muted-foreground group-hover:text-primary transition shrink-0" />
+              <SlidersHorizontal className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition shrink-0" />
             )}
           </button>
         </div>
@@ -270,10 +269,10 @@ export default function App() {
       {/* ------------------------------------------------------------- */}
       {/* MAIN WORKSPACE: Clean Header + Agent Workspace + Storefront   */}
       {/* ------------------------------------------------------------- */}
-      <div className="flex-1 flex flex-col h-screen overflow-y-auto custom-scrollbar bg-background">
+      <div className="flex-1 flex flex-col h-screen overflow-y-auto custom-scrollbar bg-slate-950">
         
         {/* Clean Top Navbar with Theme Customizer Toggle */}
-        <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-md border-b border-border h-16 px-6 flex items-center justify-between shrink-0">
+        <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 h-16 px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
@@ -283,12 +282,12 @@ export default function App() {
                   setIsSidebarCollapsed(!isSidebarCollapsed);
                 }
               }}
-              className="p-2 rounded-xl bg-background text-muted-foreground hover:text-foreground hover:bg-secondary transition"
+              className="p-2 rounded-xl bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 transition"
               title="Alternar Sidebar"
             >
               <Sliders className="w-4 h-4" />
             </button>
-            <span className="font-heading font-semibold text-sm text-foreground tracking-tight">
+            <span className="font-heading font-semibold text-sm text-slate-200 tracking-tight">
               Vitrine Contextual & Agente de Busca
             </span>
           </div>
@@ -296,10 +295,10 @@ export default function App() {
           {/* Theme & Palette Customizer Button */}
           <button
             onClick={() => setIsThemeModalOpen(true)}
-            className="p-2 rounded-xl bg-background border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition flex items-center gap-2 text-xs font-medium"
-            title="Personalizar Aparência & Tema (shadcn)"
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-emerald-500/40 transition flex items-center gap-2 text-xs font-medium"
+            title="Personalizar Tema do $Agent"
           >
-            <Palette className="w-4 h-4 text-primary" />
+            <Palette className="w-4 h-4 text-emerald-400" />
             <span className="hidden sm:inline">Tema & Cores</span>
           </button>
         </header>
@@ -308,16 +307,16 @@ export default function App() {
         <div className="flex-1 max-w-6xl w-full mx-auto px-6 py-6 flex flex-col gap-8">
           
           {/* Conversational Prompt & Chat Hero Box */}
-          <section className="glass-panel rounded-3xl p-6 border border-border relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+          <section className="glass-panel rounded-3xl p-6 border border-slate-800/80 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
             
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-                <Bot className="w-4 h-4 text-primary" />
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <Bot className="w-4 h-4 text-emerald-400" />
               </div>
               <div>
-                <h2 className="font-heading font-bold text-lg text-foreground">Como o $Agent pode ajudar você hoje?</h2>
-                <p className="text-xs text-muted-foreground">Personalização em tempo real cruzando seu perfil com o catálogo da loja.</p>
+                <h2 className="font-heading font-bold text-lg text-white">Como o $Agent pode ajudar você hoje?</h2>
+                <p className="text-xs text-slate-400">Personalização em tempo real cruzando seu perfil com o catálogo da loja.</p>
               </div>
             </div>
 
@@ -329,16 +328,16 @@ export default function App() {
                 value={currentQuery}
                 onChange={(e) => setCurrentQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleRunAgent(currentQuery)}
-                className="w-full pl-5 pr-36 py-4 rounded-2xl bg-background border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition shadow-inner"
+                className="w-full pl-5 pr-36 py-4 rounded-2xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-500 transition shadow-inner"
               />
               <button
                 onClick={() => handleRunAgent(currentQuery)}
                 disabled={loading}
-                className="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs tracking-wide flex items-center gap-2 hover:opacity-90 transition shadow-lg shadow-primary/20 disabled:opacity-50"
+                className="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-bold text-xs tracking-wide flex items-center gap-2 hover:opacity-95 transition shadow-lg shadow-emerald-500/20 disabled:opacity-50"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full border-2 border-primary-foreground border-t-transparent animate-spin" />
+                    <span className="w-3 h-3 rounded-full border-2 border-slate-950 border-t-transparent animate-spin" />
                     Analisando...
                   </span>
                 ) : (
@@ -351,8 +350,8 @@ export default function App() {
             </div>
 
             {/* Quick Prompt Suggestions */}
-            <div className="flex flex-wrap items-center gap-2 mt-4 text-xs text-muted-foreground">
-              <span className="text-[11px] font-mono-tech">Sugestões rápidas:</span>
+            <div className="flex flex-wrap items-center gap-2 mt-4 text-xs text-slate-400">
+              <span className="text-[11px] font-mono-tech text-slate-500">Sugestões rápidas:</span>
               {[
                 'Vestido leve de linho',
                 'Blazer oversized para trabalho',
@@ -365,7 +364,7 @@ export default function App() {
                     setCurrentQuery(sug);
                     handleRunAgent(sug);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-card border border-border hover:border-primary/50 hover:text-primary transition text-[11px]"
+                  className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 hover:text-emerald-300 transition text-[11px]"
                 >
                   💡 {sug}
                 </button>
@@ -375,21 +374,21 @@ export default function App() {
 
           {/* Active Agent Feedback Banner */}
           {agentResponse && (
-            <div className="glass-panel p-5 rounded-2xl border border-primary/30 flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/40 flex items-center justify-center shrink-0">
-                <Sparkles className="w-5 h-5 text-primary" />
+            <div className="glass-panel p-5 rounded-2xl border border-emerald-500/30 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-emerald-400" />
               </div>
               <div className="flex-1 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-primary text-sm">$Agent Context Response</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary font-mono-tech">
+                  <span className="font-bold text-emerald-300 text-sm">$Agent Context Response</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono-tech">
                     {agentResponse.providerUsed.toUpperCase()}
                   </span>
                 </div>
-                <p className="text-foreground mt-2 text-sm leading-relaxed">{agentResponse.naturalLanguageReply}</p>
-                <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
+                <p className="text-slate-200 mt-2 text-sm leading-relaxed">{agentResponse.naturalLanguageReply}</p>
+                <div className="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
                   <span className="font-mono-tech">{agentResponse.reasoningSummary}</span>
-                  <button onClick={() => setAgentResponse(null)} className="text-muted-foreground hover:text-foreground underline">
+                  <button onClick={() => setAgentResponse(null)} className="text-slate-400 hover:text-white underline">
                     Limpar Filtros
                   </button>
                 </div>
@@ -401,9 +400,9 @@ export default function App() {
           <section className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <ShoppingBag className="w-5 h-5 text-primary" />
-                <h3 className="font-heading font-bold text-xl text-foreground">Vitrine Adaptada ao Seu Perfil</h3>
-                <span className="text-xs px-2.5 py-1 rounded-full bg-card text-muted-foreground border border-border">
+                <ShoppingBag className="w-5 h-5 text-emerald-400" />
+                <h3 className="font-heading font-bold text-xl text-white">Vitrine Adaptada ao Seu Perfil</h3>
+                <span className="text-xs px-2.5 py-1 rounded-full bg-slate-900 text-slate-400 border border-slate-800">
                   {displayedProducts.length} itens encontrados
                 </span>
               </div>
@@ -417,22 +416,22 @@ export default function App() {
                   <div
                     key={product.id}
                     className={`glass-card rounded-3xl overflow-hidden flex flex-col group transition-all duration-300 hover:-translate-y-1 hover:border-slate-700 ${
-                      isMatch ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : ''
+                      isMatch ? 'ring-2 ring-emerald-500 shadow-xl shadow-emerald-500/10' : ''
                     }`}
                   >
                     {/* Product Image */}
-                    <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-slate-900">
                       <img
                         src={product.imageUrl}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                       {isMatch && (
-                        <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-primary text-primary-foreground font-bold text-[10px] tracking-wide uppercase shadow-lg">
+                        <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-emerald-500 text-slate-950 font-bold text-[10px] tracking-wide uppercase shadow-lg">
                           ✨ Match $Agent
                         </span>
                       )}
-                      <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded-xl bg-background/90 backdrop-blur text-foreground text-[11px] font-medium border border-border">
+                      <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded-xl bg-slate-950/80 backdrop-blur text-slate-300 text-[11px] font-medium border border-slate-800">
                         {product.storeName}
                       </span>
                     </div>
@@ -440,32 +439,32 @@ export default function App() {
                     {/* Product Specs */}
                     <div className="p-5 flex-1 flex flex-col justify-between gap-4">
                       <div>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                        <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
                           <span>{product.category}</span>
-                          <span className="text-primary font-medium">Tam: {product.availableSizes.join(', ')}</span>
+                          <span className="text-emerald-400 font-medium">Tam: {product.availableSizes.join(', ')}</span>
                         </div>
-                        <h4 className="font-heading font-bold text-lg text-foreground group-hover:text-primary transition">
+                        <h4 className="font-heading font-bold text-lg text-white group-hover:text-emerald-400 transition">
                           {product.name}
                         </h4>
-                        <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{product.description}</p>
+                        <p className="text-xs text-slate-400 mt-2 line-clamp-2">{product.description}</p>
                       </div>
 
                       {/* Price & Action */}
-                      <div className="flex items-center justify-between border-t border-border pt-4">
+                      <div className="flex items-center justify-between border-t border-slate-800/80 pt-4">
                         <div>
-                          <span className="text-[10px] text-muted-foreground block uppercase">Preço</span>
+                          <span className="text-[10px] text-slate-500 block uppercase">Preço</span>
                           <div className="flex items-baseline gap-2">
-                            <span className="font-heading font-extrabold text-xl text-foreground">R$ {product.price}</span>
+                            <span className="font-heading font-extrabold text-xl text-white">R$ {product.price}</span>
                             {product.originalPrice && (
-                              <span className="text-xs text-muted-foreground line-through">R$ {product.originalPrice}</span>
+                              <span className="text-xs text-slate-500 line-through">R$ {product.originalPrice}</span>
                             )}
                           </div>
                         </div>
 
-                        <Button size="sm">
+                        <button className="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 hover:bg-emerald-500 hover:border-emerald-500 hover:text-slate-950 font-bold text-xs transition flex items-center gap-1.5">
                           <span>Comprar</span>
-                          <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                        </Button>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -481,16 +480,16 @@ export default function App() {
       {/* ------------------------------------------------------------- */}
       {isProfileModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="glass-panel w-full max-w-lg rounded-3xl p-6 border border-border shadow-2xl flex flex-col gap-6">
-            <div className="flex items-center justify-between border-b border-border pb-4">
+          <div className="glass-panel w-full max-w-lg rounded-3xl p-6 border border-slate-800 shadow-2xl flex flex-col gap-6">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-3">
-                <User className="w-6 h-6 text-primary" />
+                <User className="w-6 h-6 text-emerald-400" />
                 <div>
-                  <h3 className="font-heading font-bold text-lg text-foreground">Meu Perfil Contextual</h3>
-                  <p className="text-xs text-muted-foreground">Edite suas preferências permanentes de compra</p>
+                  <h3 className="font-heading font-bold text-lg text-white">Meu Perfil Contextual</h3>
+                  <p className="text-xs text-slate-400">Edite suas preferências permanentes de compra</p>
                 </div>
               </div>
-              <button onClick={() => setIsProfileModalOpen(false)} className="text-muted-foreground hover:text-foreground">
+              <button onClick={() => setIsProfileModalOpen(false)} className="text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -498,25 +497,25 @@ export default function App() {
             {/* Profile Edit Form */}
             <div className="flex flex-col gap-4 text-xs">
               <div>
-                <label className="text-foreground font-semibold block mb-1">Meu Nome</label>
+                <label className="text-slate-300 font-semibold block mb-1">Meu Nome</label>
                 <input
                   type="text"
                   value={userProfile.name}
                   onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-background border border-border text-foreground"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-foreground font-semibold block mb-1">Tamanho Roupa</label>
+                  <label className="text-slate-300 font-semibold block mb-1">Tamanho Roupa</label>
                   <select
                     value={userProfile.sizes.clothing}
                     onChange={(e) => setUserProfile({
                       ...userProfile,
                       sizes: { ...userProfile.sizes, clothing: e.target.value as any }
                     })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-background border border-border text-foreground"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
                   >
                     {['PP', 'P', 'M', 'G', 'GG', '36', '38', '40', '42'].map(s => (
                       <option key={s} value={s}>{s}</option>
@@ -524,7 +523,7 @@ export default function App() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-foreground font-semibold block mb-1">Tamanho Sapato</label>
+                  <label className="text-slate-300 font-semibold block mb-1">Tamanho Sapato</label>
                   <input
                     type="text"
                     value={userProfile.sizes.shoes}
@@ -532,13 +531,13 @@ export default function App() {
                       ...userProfile,
                       sizes: { ...userProfile.sizes, shoes: e.target.value }
                     })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-background border border-border text-foreground"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-foreground font-semibold block mb-1">Teto de Orçamento Máximo (R$)</label>
+                <label className="text-slate-300 font-semibold block mb-1">Teto de Orçamento Máximo (R$)</label>
                 <input
                   type="number"
                   value={userProfile.maxBudget || ''}
@@ -547,14 +546,17 @@ export default function App() {
                     maxBudget: e.target.value ? Number(e.target.value) : undefined
                   })}
                   placeholder="Ex: 500"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-background border border-border text-foreground"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
                 />
               </div>
             </div>
 
-            <Button onClick={() => setIsProfileModalOpen(false)} className="w-full py-3">
+            <button
+              onClick={() => setIsProfileModalOpen(false)}
+              className="w-full py-3 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 transition"
+            >
               Salvar Alterações do Meu Perfil
-            </Button>
+            </button>
           </div>
         </div>
       )}

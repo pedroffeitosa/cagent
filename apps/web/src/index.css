@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 @layer base {
-  /* Default Theme: Deco Banking Dark (Padrão) */
+  /* Default Theme: Deco Banking Dark (Padrão Original) */
   :root {
     --background: 222 47% 4%;
     --foreground: 210 40% 98%;
 
-    --card: 222 47% 8%;
+    --card: 222 47% 7%;
     --card-foreground: 210 40% 98%;
 
     --popover: 222 47% 6%;
@@ -17,11 +17,11 @@
     --primary: 160 84% 39%;
     --primary-foreground: 222 47% 4%;
 
-    --secondary: 217 33% 15%;
+    --secondary: 217 33% 12%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217 33% 14%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 217 33% 12%;
+    --muted-foreground: 215 20% 65%;
 
     --accent: 160 84% 39%;
     --accent-foreground: 210 40% 98%;
@@ -29,8 +29,8 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217 33% 15%;
-    --input: 217 33% 15%;
+    --border: 217 33% 16%;
+    --input: 217 33% 16%;
     --ring: 160 84% 39%;
 
     --radius: 0.75rem;
@@ -123,22 +123,26 @@ h1, h2, h3, h4, .font-heading {
   font-family: 'Space Mono', monospace;
 }
 
-/* Glassmorphism */
+/* Glassmorphism with original subtle borders */
 .glass-panel {
   background: rgba(13, 19, 33, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 .theme-light .glass-panel {
   background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .glass-card {
-  background: rgba(26, 36, 56, 0.65);
+  background: rgba(30, 41, 59, 0.6);
   backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 .theme-light .glass-card {
   background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 /* Banking/Fintech Metallic Emerald Gradient Logo */
@@ -146,7 +150,7 @@ h1, h2, h3, h4, .font-heading {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 800;
   letter-spacing: -0.04em;
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, #10b981 35%, #06b6d4 70%, #fbbf24 100%);
+  background: linear-gradient(135deg, #34d399 0%, #10b981 35%, #06b6d4 70%, #fbbf24 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.25));
