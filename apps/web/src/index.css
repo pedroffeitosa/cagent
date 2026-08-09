@@ -2,8 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Default Dark Mode Theme */
+  :root {
+    --background: 222 47% 4%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 6%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 160 84% 39%;
+    --primary-foreground: 222 47% 4%;
+
+    --secondary: 217 33% 15%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 14%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 160 84% 39%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 15%;
+    --input: 217 33% 15%;
+    --ring: 160 84% 39%;
+
+    --radius: 0.75rem;
+  }
+
+  /* Light Mode Theme */
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 160 84% 39%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 160 84% 39%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 160 84% 39%;
+  }
+
+  /* Accent Color Themes */
+  .theme-gold {
+    --primary: 43 96% 56%;
+    --accent: 43 96% 56%;
+    --ring: 43 96% 56%;
+  }
+
+  .theme-cyan {
+    --primary: 189 94% 43%;
+    --accent: 189 94% 43%;
+    --ring: 189 94% 43%;
+  }
+
+  .theme-purple {
+    --primary: 262 83% 58%;
+    --accent: 262 83% 58%;
+    --ring: 262 83% 58%;
+  }
+}
+
 body {
   font-family: 'Inter', sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1, h2, h3, h4, .font-heading {
@@ -19,18 +107,22 @@ h1, h2, h3, h4, .font-heading {
   font-family: 'Space Mono', monospace;
 }
 
-/* Glassmorphism & Micro-animations */
+/* Glassmorphism */
 .glass-panel {
-  background: rgba(13, 19, 33, 0.85);
+  background: rgba(13, 19, 33, 0.75);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+.light .glass-panel {
+  background: rgba(255, 255, 255, 0.85);
 }
 
 .glass-card {
   background: rgba(26, 36, 56, 0.65);
   backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+.light .glass-card {
+  background: rgba(248, 250, 252, 0.9);
 }
 
 /* Banking/Fintech Metallic Emerald Gradient Logo */
@@ -38,7 +130,7 @@ h1, h2, h3, h4, .font-heading {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 800;
   letter-spacing: -0.04em;
-  background: linear-gradient(135deg, #34d399 0%, #10b981 35%, #06b6d4 70%, #fbbf24 100%);
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, #10b981 35%, #06b6d4 70%, #fbbf24 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.25));
@@ -53,7 +145,4 @@ h1, h2, h3, h4, .font-heading {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(51, 65, 85, 0.8);
   border-radius: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.6);
 }
