@@ -8,11 +8,7 @@ import {
   TrendingUp, 
   Bot, 
   ArrowRight, 
-  Check, 
-  ShoppingBag, 
-  Coins, 
-  ShieldCheck,
-  Zap
+  ShoppingBag
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { handleImageError } from '../../utils/imageFallback';
@@ -31,85 +27,42 @@ export function HomeStorefrontView({
   onSelectProductToBuy,
 }: HomeStorefrontViewProps) {
   
-  // Categorized products for collection cards
-  const newArrivals = products.slice(0, 3);
-  const matchForUser = products.filter(p => 
-    p.availableSizes.includes(userProfile.sizes.clothing) || 
-    p.availableSizes.includes(userProfile.sizes.shoes)
-  ).slice(0, 4);
-
   return (
-    <div className="flex-1 flex flex-col p-8 max-w-6xl mx-auto w-full gap-10 overflow-y-auto custom-scrollbar animate-in fade-in duration-200">
+    <div className="flex-1 flex flex-col p-8 max-w-6xl mx-auto w-full gap-8 overflow-y-auto custom-scrollbar animate-in fade-in duration-200">
       
-      {/* ------------------------------------------------------------- */}
-      {/* HERO BANNER: Personal Greeting & AI Agent Search Trigger       */}
-      {/* ------------------------------------------------------------- */}
-      <div className="relative rounded-3xl p-8 border border-emerald-500/30 overflow-hidden bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-        
-        {/* Glow Effects */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="flex flex-col gap-3 max-w-xl z-10">
+      {/* Subtle Header Greeting Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+        <div>
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-mono-tech font-bold text-xs border border-emerald-500/30 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" />
-              Canal Agêntico $Agent
-            </span>
-            <span className="text-xs text-slate-400 font-mono-tech">
-              Tamanho {userProfile.sizes.clothing} | Calçado {userProfile.sizes.shoes}
+            <h2 className="font-heading font-extrabold text-2xl text-white tracking-tight">
+              Vitrine $Agent
+            </h2>
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono-tech font-bold text-[10px] border border-emerald-500/30 flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              Seleção Personalizada
             </span>
           </div>
-
-          <h1 className="font-heading font-extrabold text-3xl md:text-4xl text-white tracking-tight leading-tight">
-            Olá, {userProfile.name.split(' ')[0]}! Sua vitrine hiper-personalizada.
-          </h1>
-
-          <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
-            Recomendações curadas em tempo real com base nas suas preferências esportivas, cores favoritas e orçamento máximo (teto R$ {userProfile.maxBudget || '450'}).
+          <p className="text-xs text-slate-400 mt-1">
+            Artigos esportivos recomendados para o seu tamanho {userProfile.sizes.clothing} e calçado {userProfile.sizes.shoes}
           </p>
-
-          <div className="flex items-center gap-3 pt-2">
-            <Button 
-              onClick={() => onOpenChat()} 
-              size="lg" 
-              className="py-3.5 px-6 gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20"
-            >
-              <Bot className="w-4 h-4" />
-              <span>Iniciar Busca Agêntica com IA</span>
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
         </div>
 
-        {/* Right Status Badge Box */}
-        <div className="glass-panel p-5 rounded-2xl border border-slate-800 flex flex-col gap-3 shrink-0 z-10 w-full md:w-64">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] text-slate-400 font-mono-tech uppercase">Status do Perfil</span>
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          </div>
-
-          <div>
-            <span className="font-heading font-bold text-base text-white block">
-              VIP • Saldo R$ {(userProfile.walletBalance || 42.50).toFixed(2).replace('.', ',')}
-            </span>
-            <span className="text-[11px] text-emerald-400 font-medium block mt-0.5">
-              5% Cashback ativo em todas as compras
-            </span>
-          </div>
-
-          <div className="pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between font-mono-tech">
-            <span>Cupom: DECO10</span>
-            <span className="text-amber-400 font-bold">10% OFF</span>
-          </div>
-        </div>
+        <Button 
+          onClick={() => onOpenChat()} 
+          size="sm" 
+          className="gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/10 shrink-0"
+        >
+          <Bot className="w-4 h-4" />
+          <span>Conversar com $Agent IA</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Button>
       </div>
 
       {/* ------------------------------------------------------------- */}
       {/* FEATURED EXPERIENCE CARDS: Novidades, Seu Estilo, Vibes, etc  */}
       {/* ------------------------------------------------------------- */}
       <div className="flex flex-col gap-4">
-        <h3 className="font-heading font-bold text-xl text-white">Experiências Contextuais</h3>
+        <h3 className="font-heading font-bold text-lg text-white">Coleções &amp; Ocasiões</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           
@@ -217,13 +170,13 @@ export function HomeStorefrontView({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* FEATURED PRODUCT CATALOG GRID                                */}
+      {/* FEATURED PRODUCT CATALOG GRID WITH DIVERSIFIED BADGES         */}
       {/* ------------------------------------------------------------- */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-heading font-bold text-xl text-white">Vitrine em Destaque</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Catálogo contextualizado com bônus de cashback e tamanhos disponíveis</p>
+            <h3 className="font-heading font-bold text-xl text-white">Vitrine Principal</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Catálogo diversificado com atributos e cashback em tempo real</p>
           </div>
           <Button onClick={() => onOpenChat()} variant="secondary" size="sm" className="gap-1.5 text-xs">
             <Bot className="w-3.5 h-3.5 text-emerald-400" />
@@ -232,61 +185,86 @@ export function HomeStorefrontView({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <div 
-              key={product.id}
-              className="glass-card rounded-3xl p-4 border border-slate-800 flex flex-col justify-between gap-4 group hover:border-slate-700 transition"
-            >
-              {/* Product Image Box */}
-              <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-900 relative border border-slate-800">
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  onError={handleImageError}
-                />
-                
-                <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur text-slate-300 text-[10px] font-medium border border-slate-800">
-                  {product.storeName}
-                </span>
+          {products.map((product) => {
+            // Diversified badge calculation
+            let badgeText = `Tam: ${product.availableSizes[0]}`;
+            let badgeStyle = 'bg-slate-950/80 border border-slate-800 text-slate-300';
 
-                <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-emerald-500 text-slate-950 font-bold text-[10px]">
-                  Match {userProfile.sizes.clothing}
-                </span>
-              </div>
+            if (product.availableSizes.includes(userProfile.sizes.clothing)) {
+              badgeText = `Match Tam. ${userProfile.sizes.clothing}`;
+              badgeStyle = 'bg-emerald-500 text-slate-950 font-bold';
+            } else if (product.availableSizes.includes(userProfile.sizes.shoes)) {
+              badgeText = `Match Calçado ${userProfile.sizes.shoes}`;
+              badgeStyle = 'bg-cyan-400 text-slate-950 font-bold';
+            } else if (product.originalPrice) {
+              badgeText = 'Oferta Especial';
+              badgeStyle = 'bg-purple-500 text-white font-bold';
+            } else if (product.category === 'Camisas de Time') {
+              badgeText = 'Edição Oficial';
+              badgeStyle = 'bg-amber-400 text-slate-950 font-bold';
+            }
 
-              {/* Info */}
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between text-[10px] text-slate-400">
-                  <span>{product.category}</span>
-                  <span className="text-emerald-400 font-medium">Tam: {product.availableSizes.join(', ')}</span>
-                </div>
-                <h4 className="font-heading font-bold text-sm text-white truncate" title={product.name}>
-                  {product.name}
-                </h4>
-              </div>
+            return (
+              <div 
+                key={product.id}
+                className="glass-card rounded-3xl p-4 border border-slate-800 flex flex-col justify-between gap-4 group hover:border-slate-700 transition"
+              >
+                {/* Product Image Box */}
+                <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-900 relative border border-slate-800">
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={handleImageError}
+                  />
+                  
+                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur text-slate-300 text-[10px] font-medium border border-slate-800">
+                    {product.storeName}
+                  </span>
 
-              {/* Price & Action */}
-              <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                <div>
-                  <span className="font-heading font-extrabold text-base text-white block">R$ {product.price}</span>
-                  <span className="text-[10px] text-emerald-400 font-mono-tech block">
-                    + R$ {product.cashbackReward || Math.round(product.price * 0.05)} Cashback
+                  <span className={`absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] ${badgeStyle}`}>
+                    {badgeText}
                   </span>
                 </div>
 
-                <Button 
-                  onClick={() => onSelectProductToBuy(product)}
-                  size="sm"
-                  className="gap-1.5 bg-slate-900 border border-slate-700 hover:bg-emerald-500 hover:border-emerald-500 hover:text-slate-950 font-bold text-xs"
-                >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>Comprar</span>
-                </Button>
-              </div>
+                {/* Info */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between text-[10px] text-slate-400">
+                    <span>{product.category}</span>
+                    <span className="text-emerald-400 font-medium">Tamanhos: {product.availableSizes.join(', ')}</span>
+                  </div>
+                  <h4 className="font-heading font-bold text-sm text-white truncate" title={product.name}>
+                    {product.name}
+                  </h4>
+                </div>
 
-            </div>
-          ))}
+                {/* Price & Action */}
+                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-heading font-extrabold text-base text-white">R$ {product.price}</span>
+                      {product.originalPrice && (
+                        <span className="text-xs text-slate-500 line-through">R$ {product.originalPrice}</span>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-emerald-400 font-mono-tech block mt-0.5">
+                      + R$ {product.cashbackReward || Math.round(product.price * 0.05)} Cashback
+                    </span>
+                  </div>
+
+                  <Button 
+                    onClick={() => onSelectProductToBuy(product)}
+                    size="sm"
+                    className="gap-1.5 bg-slate-900 border border-slate-700 hover:bg-emerald-500 hover:border-emerald-500 hover:text-slate-950 font-bold text-xs"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>Comprar</span>
+                  </Button>
+                </div>
+
+              </div>
+            );
+          })}
         </div>
       </div>
 
