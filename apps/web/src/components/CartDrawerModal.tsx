@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Product, UserProfile } from '@cagent/shared';
-import { ShoppingCart, X, Plus, Minus, Trash2, ArrowRight, Gift, Coins, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { ShoppingCart, X, Plus, Minus, Trash2, ArrowRight, Gift, Coins, CheckCircle2, Swords } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface CartItem {
@@ -15,6 +15,7 @@ interface CartDrawerModalProps {
   onUpdateQuantity: (productId: string, delta: number) => void;
   onRemoveItem: (productId: string) => void;
   userProfile: UserProfile;
+  onOpenComparePage: () => void;
 }
 
 export function CartDrawerModal({
@@ -24,6 +25,7 @@ export function CartDrawerModal({
   onUpdateQuantity,
   onRemoveItem,
   userProfile,
+  onOpenComparePage,
 }: CartDrawerModalProps) {
   const [isPurchased, setIsPurchased] = useState(false);
 
@@ -50,11 +52,28 @@ export function CartDrawerModal({
         <div className="flex items-center justify-between border-b border-slate-800 pb-4 shrink-0">
           <div className="flex items-center gap-2">
             <ShoppingCart className="w-5 h-5 text-emerald-400" />
-            <h3 className="font-heading font-bold text-base text-white">Meu Carrinho de Compras</h3>
+            <h3 className="font-heading font-bold text-base text-white">Meu Carrinho</h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white p-1">
-            <X className="w-5 h-5" />
-          </button>
+
+          <div className="flex items-center gap-2">
+            {cartItems.length > 0 && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenComparePage();
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/40 text-emerald-400 hover:text-emerald-300 text-xs transition font-semibold"
+                title="Comparar Atributos dos Itens (Espadas Cruzadas)"
+              >
+                <Swords className="w-4 h-4 text-emerald-400" />
+                <span className="hidden sm:inline">Comparar Atributos</span>
+              </button>
+            )}
+
+            <button onClick={onClose} className="text-slate-400 hover:text-white p-1">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Content Body */}

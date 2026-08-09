@@ -26,7 +26,8 @@ import {
   Store,
   Search,
   Filter,
-  ShoppingCart
+  ShoppingCart,
+  Share2
 } from 'lucide-react';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
 import { UserProfilePopover } from './components/UserProfilePopover';
@@ -37,10 +38,12 @@ import { CouponsModal } from './components/CouponsModal';
 import { StoreMeshModal } from './components/StoreMeshModal';
 import { CustomFiltersModal } from './components/CustomFiltersModal';
 import { CartDrawerModal } from './components/CartDrawerModal';
+import { ShareContextModal } from './components/ShareContextModal';
 import { WalletView } from './components/views/WalletView';
 import { CouponsView } from './components/views/CouponsView';
 import { StoreBootstrapView } from './components/views/StoreBootstrapView';
 import { CustomFiltersView } from './components/views/CustomFiltersView';
+import { CompareProductsView } from './components/views/CompareProductsView';
 
 interface ChatMessage {
   id: string;
@@ -57,10 +60,10 @@ interface ChatSession {
   messages: ChatMessage[];
 }
 
-type MainViewType = 'chat' | 'wallet' | 'coupons' | 'store' | 'filters';
+type MainViewType = 'chat' | 'wallet' | 'coupons' | 'store' | 'filters' | 'compare';
 
 export default function App() {
-  // Active View Mode (Chat vs Wallet Page vs Coupons Page vs Store Bootstrap Page vs Filters Page)
+  // Active View Mode (Chat vs Wallet Page vs Coupons Page vs Store Bootstrap Page vs Filters Page vs Compare Page)
   const [activeMainView, setActiveMainView] = useState<MainViewType>('chat');
 
   // Account / Personal Context Profile
@@ -80,11 +83,12 @@ export default function App() {
   // Right Vitrine Sidebar Visibility Toggle
   const [isRightRailOpen, setIsRightRailOpen] = useState(true);
 
-  // Top Header Feature Modals (Optional quick popup triggers)
+  // Top Header Feature Modals & Drawers
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isCouponsModalOpen, setIsCouponsModalOpen] = useState(false);
   const [isStoreMeshModalOpen, setIsStoreMeshModalOpen] = useState(false);
   const [isCustomFiltersModalOpen, setIsCustomFiltersModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // Chat History & Active Chat Sessions
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([
@@ -447,9 +451,18 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right Top Header Feature Actions (Filters, Store, Ticket, ShoppingCart, Wallet) */}
+          {/* Right Top Header Feature Actions (Share, Filters, Store, Ticket, ShoppingCart, Wallet) */}
           <div className="flex items-center gap-2">
             
+            {/* Share Context Button */}
+            <button
+              onClick={() => setIsShareModalOpen(true)}
+              className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition"
+              title="Compartilhar Busca Agêntica"
+            >
+              <Share2 className="w-4 h-4 text-slate-300" />
+            </button>
+
             {/* Custom Filters Button */}
             <button
               onClick={() => setActiveMainView('filters')}
@@ -533,6 +546,21 @@ export default function App() {
             onBackToChat={() => setActiveMainView('chat')}
             onApplyPresetFilter={(name, colors) => {
               handleRunAgent(`Filtrar por ${name} nas cores ${colors.join(', ')}`);
+              setActiveMainView('chat');
+            }}
+          />
+        )}
+
+        {activeMainView === 'compare' && (
+          <CompareProductsView
+            products={cartItems.map(i => i.product)}
+            userProfile={userProfile}
+            onBackToCart={() => {
+              setActiveMainView('chat');
+              setIsCartDrawerOpen(true);
+            }}
+            onSelectProductToBuy={(product) => {
+              setSelectedCheckoutProduct(product);
               setActiveMainView('chat');
             }}
           />
@@ -734,6 +762,15 @@ export default function App() {
 
       </div>
 
+      {/* Share Context Modal */}
+      <ShareContextModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        userProfile={userProfile}
+        queryTitle={activeSession?.title || 'Busca Contextual'}
+        recommendedProducts={displayedProducts}
+      />
+
       {/* Cart Drawer Modal */}
       <CartDrawerModal
         isOpen={isCartDrawerOpen}
@@ -742,6 +779,7 @@ export default function App() {
         onUpdateQuantity={handleUpdateCartQuantity}
         onRemoveItem={handleRemoveCartItem}
         userProfile={userProfile}
+        onOpenComparePage={() => setActiveMainView('compare')}
       />
 
       {/* Product Checkout Modal */}
