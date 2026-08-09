@@ -19,12 +19,7 @@ import {
   X,
   Send,
   SlidersHorizontal,
-  Palette,
-  Gift,
-  Coins,
-  Settings,
-  Database,
-  Tag
+  Palette
 } from 'lucide-react';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
 
@@ -41,7 +36,6 @@ export default function App() {
   const [userProfile, setUserProfile] = useState<UserProfile>(MOCK_USER_PROFILES[0]);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
-  const [isStoreConfigModalOpen, setIsStoreConfigModalOpen] = useState(false);
 
   // Chat History & Active Chat Session
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([
@@ -241,30 +235,8 @@ export default function App() {
           })}
         </div>
 
-        {/* Bottom User Account & Store Config Shortcuts */}
-        <div className="p-3 border-t border-slate-800/80 flex flex-col gap-2">
-          {/* Store Channel Config Button */}
-          <button
-            onClick={() => setIsStoreConfigModalOpen(true)}
-            title="Configurações do Canal da Loja (White-Label & DB)"
-            className={`w-full rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-emerald-500/40 text-left flex items-center transition ${
-              isSidebarCollapsed ? 'justify-center p-2.5' : 'p-2.5 px-3 justify-between gap-3'
-            }`}
-          >
-            <div className="flex items-center gap-2.5">
-              <Database className="w-4 h-4 text-emerald-400 shrink-0" />
-              {!isSidebarCollapsed && (
-                <span className="text-xs font-semibold text-slate-300 truncate">Canal White-Label</span>
-              )}
-            </div>
-            {!isSidebarCollapsed && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono-tech">
-                Fork & DB
-              </span>
-            )}
-          </button>
-
-          {/* User Account Card */}
+        {/* Bottom User Account Shortcut */}
+        <div className="p-3 border-t border-slate-800/80">
           <button
             onClick={() => setIsProfileModalOpen(true)}
             title={`Meu Perfil: ${userProfile.name}`}
@@ -295,11 +267,11 @@ export default function App() {
       </aside>
 
       {/* ------------------------------------------------------------- */}
-      {/* MAIN WORKSPACE: Store Channel Header + Agent Workspace        */}
+      {/* MAIN WORKSPACE: Clean Header + Agent Workspace + Storefront   */}
       {/* ------------------------------------------------------------- */}
       <div className="flex-1 flex flex-col h-screen overflow-y-auto custom-scrollbar bg-slate-950">
         
-        {/* Clean Top Navbar with Store Channel Identity */}
+        {/* Clean Top Navbar */}
         <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 h-16 px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <button
@@ -315,41 +287,20 @@ export default function App() {
             >
               <Sliders className="w-4 h-4" />
             </button>
-
-            {/* Store White-Label Branding Badge */}
-            <div className="flex items-center gap-2 text-xs">
-              <span className="font-heading font-bold text-sm text-white">
-                {MOCK_STORE_CONTEXT.storeName}
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono-tech hidden sm:inline">
-                Canal Agêntico Forkável
-              </span>
-            </div>
+            <span className="font-heading font-semibold text-sm text-slate-200 tracking-tight">
+              Vitrine Contextual & Agente de Busca
+            </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Store Marketing Perks (Cashback & Coupons) */}
-            <div className="hidden md:flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 font-semibold">
-                <Coins className="w-3.5 h-3.5 text-emerald-400" />
-                {MOCK_STORE_CONTEXT.config.cashbackPercentage}% Cashback
-              </span>
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-amber-400 font-semibold">
-                <Gift className="w-3.5 h-3.5 text-amber-400" />
-                Cupom DECO10 Ativo
-              </span>
-            </div>
-
-            {/* Theme & Palette Customizer Button */}
-            <button
-              onClick={() => setIsThemeModalOpen(true)}
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-emerald-500/40 transition flex items-center gap-2 text-xs font-medium"
-              title="Personalizar Tema do $Agent"
-            >
-              <Palette className="w-4 h-4 text-emerald-400" />
-              <span className="hidden sm:inline">Tema & Cores</span>
-            </button>
-          </div>
+          {/* Theme & Palette Customizer Button */}
+          <button
+            onClick={() => setIsThemeModalOpen(true)}
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-emerald-500/40 transition flex items-center gap-2 text-xs font-medium"
+            title="Personalizar Tema do $Agent"
+          >
+            <Palette className="w-4 h-4 text-emerald-400" />
+            <span className="hidden sm:inline">Tema & Cores</span>
+          </button>
         </header>
 
         {/* Main Content Area */}
@@ -364,8 +315,8 @@ export default function App() {
                 <Bot className="w-4 h-4 text-emerald-400" />
               </div>
               <div>
-                <h2 className="font-heading font-bold text-lg text-white">Como o $Agent da {MOCK_STORE_CONTEXT.config.storeName.split(' ')[0]} pode ajudar você?</h2>
-                <p className="text-xs text-slate-400">Atendimento contextual, busca inteligente e aplicação automática de cupons e cashback da loja.</p>
+                <h2 className="font-heading font-bold text-lg text-white">Como o $Agent pode ajudar você hoje?</h2>
+                <p className="text-xs text-slate-400">Personalização em tempo real cruzando seu perfil com o catálogo da loja.</p>
               </div>
             </div>
 
@@ -421,7 +372,7 @@ export default function App() {
             </div>
           </section>
 
-          {/* Active Agent Feedback Banner with Coupon & Cashback Details */}
+          {/* Active Agent Feedback Banner */}
           {agentResponse && (
             <div className="glass-panel p-5 rounded-2xl border border-emerald-500/30 flex items-start gap-4">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
@@ -435,21 +386,6 @@ export default function App() {
                   </span>
                 </div>
                 <p className="text-slate-200 mt-2 text-sm leading-relaxed">{agentResponse.naturalLanguageReply}</p>
-
-                {/* Applied Coupon & Cashback Rewards pill */}
-                {agentResponse.appliedCoupon && (
-                  <div className="flex flex-wrap items-center gap-3 mt-3 p-3 rounded-xl bg-slate-900/90 border border-emerald-500/20">
-                    <span className="flex items-center gap-1.5 text-amber-400 font-bold">
-                      <Gift className="w-3.5 h-3.5" />
-                      Cupom {agentResponse.appliedCoupon.code} ({agentResponse.appliedCoupon.discountValue}% OFF)
-                    </span>
-                    <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
-                      <Coins className="w-3.5 h-3.5" />
-                      + R$ {agentResponse.estimatedCashback} de Cashback de Volta
-                    </span>
-                  </div>
-                )}
-
                 <div className="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
                   <span className="font-mono-tech">{agentResponse.reasoningSummary}</span>
                   <button onClick={() => setAgentResponse(null)} className="text-slate-400 hover:text-white underline">
@@ -465,7 +401,7 @@ export default function App() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <ShoppingBag className="w-5 h-5 text-emerald-400" />
-                <h3 className="font-heading font-bold text-xl text-white">Vitrine Adaptada do Canal Oficial</h3>
+                <h3 className="font-heading font-bold text-xl text-white">Vitrine Adaptada ao Seu Perfil</h3>
                 <span className="text-xs px-2.5 py-1 rounded-full bg-slate-900 text-slate-400 border border-slate-800">
                   {displayedProducts.length} itens encontrados
                 </span>
@@ -495,12 +431,9 @@ export default function App() {
                           ✨ Match $Agent
                         </span>
                       )}
-                      {product.cashbackReward && (
-                        <span className="absolute bottom-3 left-3 px-2.5 py-1 rounded-xl bg-slate-950/80 backdrop-blur text-emerald-400 text-[10px] font-bold border border-emerald-500/30 flex items-center gap-1">
-                          <Coins className="w-3 h-3 text-emerald-400" />
-                          +R$ {product.cashbackReward} Cashback
-                        </span>
-                      )}
+                      <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded-xl bg-slate-950/80 backdrop-blur text-slate-300 text-[11px] font-medium border border-slate-800">
+                        {product.storeName}
+                      </span>
                     </div>
 
                     {/* Product Specs */}
@@ -519,12 +452,12 @@ export default function App() {
                       {/* Price & Action */}
                       <div className="flex items-center justify-between border-t border-slate-800/80 pt-4">
                         <div>
-                          <span className="text-[10px] text-slate-500 block uppercase">Preço com Cupom</span>
+                          <span className="text-[10px] text-slate-500 block uppercase">Preço</span>
                           <div className="flex items-baseline gap-2">
-                            <span className="font-heading font-extrabold text-xl text-white">
-                              R$ {Math.round(product.price * 0.9)}
-                            </span>
-                            <span className="text-xs text-slate-500 line-through">R$ {product.price}</span>
+                            <span className="font-heading font-extrabold text-xl text-white">R$ {product.price}</span>
+                            {product.originalPrice && (
+                              <span className="text-xs text-slate-500 line-through">R$ {product.originalPrice}</span>
+                            )}
                           </div>
                         </div>
 
@@ -623,56 +556,6 @@ export default function App() {
               className="w-full py-3 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 transition"
             >
               Salvar Alterações do Meu Perfil
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ------------------------------------------------------------- */}
-      {/* MODAL: CONFIGURAÇÃO DO CANAL WHITE-LABEL (LOJISTA & DB)        */}
-      {/* ------------------------------------------------------------- */}
-      {isStoreConfigModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="glass-panel w-full max-w-lg rounded-3xl p-6 border border-slate-800 shadow-2xl flex flex-col gap-6 text-xs">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div className="flex items-center gap-3">
-                <Database className="w-6 h-6 text-emerald-400" />
-                <div>
-                  <h3 className="font-heading font-bold text-lg text-white">Painel do Canal White-Label (Loja)</h3>
-                  <p className="text-xs text-slate-400">Estrutura forkável de vendas com servidor e marketing próprios</p>
-                </div>
-              </div>
-              <button onClick={() => setIsStoreConfigModalOpen(false)} className="text-slate-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col gap-2">
-                <span className="font-bold text-emerald-400 text-sm">🏬 Canal Oficial da Loja</span>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
-                  Qualquer lojista pode forkar este repositório, conectar sua API/Banco de Dados e publicar seu próprio aplicativo Web e Mobile Expo em minutos!
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col gap-2">
-                <span className="font-bold text-amber-400 text-sm">💰 Regras de Marketing da Loja</span>
-                <div className="flex items-center justify-between text-slate-300 pt-1">
-                  <span>Taxa de Cashback da Loja:</span>
-                  <strong className="text-emerald-400 font-mono-tech">{MOCK_STORE_CONTEXT.config.cashbackPercentage}%</strong>
-                </div>
-                <div className="flex items-center justify-between text-slate-300">
-                  <span>Cupons Ativos:</span>
-                  <strong className="text-amber-400 font-mono-tech">DECO10, AGENT50</strong>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setIsStoreConfigModalOpen(false)}
-              className="w-full py-3 rounded-xl bg-slate-800 text-slate-200 font-bold text-xs hover:bg-slate-700 transition"
-            >
-              Fechar Painel do Lojista
             </button>
           </div>
         </div>
