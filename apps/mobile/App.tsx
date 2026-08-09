@@ -8,12 +8,15 @@ import {
   TouchableOpacity, 
   TextInput, 
   SafeAreaView, 
-  StatusBar 
+  StatusBar,
+  Modal,
+  Alert
 } from 'react-native';
 import { 
   MOCK_USER_PROFILES, 
   MOCK_STORE_CONTEXT, 
   UserProfile, 
+  Product,
   AgentResponsePayload, 
   runLocalRuleEngine 
 } from '@cagent/shared';
@@ -22,6 +25,9 @@ export default function App() {
   const [userProfile] = useState<UserProfile>(MOCK_USER_PROFILES[0]);
   const [searchQuery, setSearchQuery] = useState('');
   const [agentResponse, setAgentResponse] = useState<AgentResponsePayload | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isPurchased, setIsPurchased] = useState(false);
+  const [cartCount, setCartCount] = useState(2);
 
   const activeProductIds = agentResponse?.recommendedProductIds;
   const displayedProducts = activeProductIds 
@@ -38,25 +44,56 @@ export default function App() {
     setAgentResponse(result);
   };
 
+  const handleCheckout = () => {
+    setIsPurchased(true);
+    setTimeout(() => {
+      setIsPurchased(false);
+      setSelectedProduct(null);
+      setCartCount(prev => prev + 1);
+    }, 2000);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#020617" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         
-        {/* Header with Financial Logo */}
+        {/* Top Navbar Header with $Agent Logo + Feature Chips */}
         <View style={styles.header}>
           <Text style={styles.logoText}>$Agent</Text>
+          
+          <View style={styles.headerChipsRow}>
+            {/* Coupon Chip */}
+            <View style={styles.couponChip}>
+              <Text style={styles.couponChipText}>🎟️ DECO10</Text>
+            </View>
+
+            {/* Cart Chip */}
+            <View style={styles.cartChip}>
+              <Text style={styles.cartChipText}>🛒 {cartCount}</Text>
+            </View>
+
+            {/* Wallet Saldo Chip */}
+            <View style={styles.walletChip}>
+              <Text style={styles.walletChipText}>
+                R$ {(userProfile.walletBalance || 42.50).toFixed(2).replace('.', ',')}
+              </Text>
+            </View>
+          </View>
         </View>
 
-        {/* Personal Context Profile Card */}
+        {/* Pedro França Personal Context Profile Card */}
         <View style={styles.profileCard}>
           <Text style={styles.profileCardHeader}>MEU PERFIL CONTEXTUAL</Text>
           <View style={styles.profileRow}>
-            <Image source={{ uri: userProfile.avatarUrl }} style={styles.avatar} />
+            <Image 
+              source={require('./assets/user-pedro.jpg')} 
+              style={styles.avatar} 
+            />
             <View style={styles.profileInfo}>
               <Text style={styles.userName}>{userProfile.name}</Text>
-              <Text style={styles.userSpecs}>
-                Tamanho: {userProfile.sizes.clothing} | Orçamento: R$ {userProfile.maxBudget || '∞'}
+              <Text style={styles.userBadge}>
+                VIP • Saldo: R$ {(userProfile.walletBalance || 42.50).toFixed(2).replace('.', ',')}
               </Text>
               <Text style={styles.userPreferences}>
                 Estilo: {userProfile.stylePreferences.join(', ')}
@@ -65,11 +102,11 @@ export default function App() {
           </View>
         </View>
 
-        {/* Agent Search Input Bar */}
+        {/* Agent Search Input Bar (Gemini Style) */}
         <View style={styles.searchSection}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Perguntar ao $Agent..."
+            placeholder="O que você quer pesquisar e comprar hoje?..."
             placeholderTextColor="#64748b"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -85,7 +122,12 @@ export default function App() {
 
         {/* Quick Suggestion Pills */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.suggestionsContainer}>
-          {['Vestido de linho', 'Blazer oversized', 'Camiseta tech', 'Jaqueta puffer'].map((sug) => (
+          {[
+            'Vestido leve de linho',
+            'Blazer oversized para trabalho',
+            'Camiseta tech anti-suor',
+            'Jaqueta puffer streetwear'
+          ].map((sug) => (
             <TouchableOpacity 
               key={sug} 
               style={styles.sugPill}
@@ -102,17 +144,18 @@ export default function App() {
         {/* Agent Feedback Banner */}
         {agentResponse && (
           <View style={styles.agentBanner}>
-            <Text style={styles.agentBannerTitle}>✨ $Agent Context Filter Ativo</Text>
+            <Text style={styles.agentBannerTitle}>✨ $Agent Context Response</Text>
             <Text style={styles.agentBannerText}>{agentResponse.naturalLanguageReply}</Text>
+            <Text style={styles.agentReasoning}>{agentResponse.reasoningSummary}</Text>
             <TouchableOpacity onPress={() => setAgentResponse(null)} style={styles.resetButton}>
-              <Text style={styles.resetButtonText}>Limpar Filtro</Text>
+              <Text style={styles.resetButtonText}>Limpar Filtros</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {/* Product Listing Grid */}
         <Text style={styles.sectionTitle}>
-          Vitrine Adaptada ({displayedProducts.length} itens)
+          Vitrine $Agent Loja ({displayedProducts.length} itens)
         </Text>
 
         {displayedProducts.map((product) => {
@@ -122,17 +165,68 @@ export default function App() {
               <Image source={{ uri: product.imageUrl }} style={styles.productImage} />
               <View style={styles.productDetails}>
                 <View style={styles.productHeaderRow}>
-                  <Text style={styles.productCategory}>{product.category}</Text>
-                  {isMatch && <Text style={styles.matchTag}>✨ Match $Agent</Text>}
+                  <Text style={styles.productCategory}>{product.category} • {product.storeName}</Text>
+                  {isMatch && <Text style={styles.matchTag}>✨ Match</Text>}
                 </View>
                 <Text style={styles.productName}>{product.name}</Text>
-                <Text style={styles.productSizes}>Tamanhos: {product.availableSizes.join(', ')}</Text>
-                <Text style={styles.productPrice}>R$ {product.price}</Text>
+                
+                <View style={styles.productPriceRow}>
+                  <Text style={styles.productPrice}>R$ {product.price}</Text>
+                  <TouchableOpacity 
+                    style={styles.buyButton}
+                    onPress={() => setSelectedProduct(product)}
+                  >
+                    <Text style={styles.buyButtonText}>Comprar</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           );
         })}
       </ScrollView>
+
+      {/* 1-Click Checkout Modal */}
+      {selectedProduct && (
+        <Modal transparent animationType="fade" visible={!!selectedProduct}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              {isPurchased ? (
+                <View style={styles.purchasedSuccessBox}>
+                  <Text style={styles.successTitle}>✅ Pedido Confirmado!</Text>
+                  <Text style={styles.successText}>
+                    Seu pedido de {selectedProduct.name} foi realizado com sucesso. 💰 Cashback creditado na sua carteira!
+                  </Text>
+                </View>
+              ) : (
+                <View>
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>Checkout Assistido $Agent</Text>
+                    <TouchableOpacity onPress={() => setSelectedProduct(null)}>
+                      <Text style={styles.closeModalText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={styles.modalProductName}>{selectedProduct.name}</Text>
+                  <Text style={styles.modalProductPrice}>R$ {selectedProduct.price}</Text>
+
+                  {/* Match Diagnostic Box */}
+                  <View style={styles.diagnosticBox}>
+                    <Text style={styles.diagnosticTitle}>🛡️ Raio-X de Match do Perfil</Text>
+                    <Text style={styles.diagnosticText}>• Tamanho M em estoque na loja</Text>
+                    <Text style={styles.diagnosticText}>• R$ {selectedProduct.price} dentro do teto R$ {userProfile.maxBudget || '450'}</Text>
+                    <Text style={styles.diagnosticText}>• Cupom DECO10 (-10% OFF) aplicado</Text>
+                  </View>
+
+                  <TouchableOpacity style={styles.confirmCheckoutButton} onPress={handleCheckout}>
+                    <Text style={styles.confirmCheckoutButtonText}>Finalizar Pedido em 1-Clique</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </View>
+        </Modal>
+      )}
+
     </SafeAreaView>
   );
 }
@@ -157,6 +251,50 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#34d399',
     letterSpacing: -1,
+  },
+  headerChipsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  couponChip: {
+    backgroundColor: '#0f172a',
+    borderColor: 'rgba(251, 191, 36, 0.3)',
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  couponChipText: {
+    color: '#fbbf24',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  cartChip: {
+    backgroundColor: '#0f172a',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  cartChipText: {
+    color: '#e2e8f0',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  walletChip: {
+    backgroundColor: '#0f172a',
+    borderColor: 'rgba(52, 211, 153, 0.4)',
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  walletChipText: {
+    color: '#34d399',
+    fontSize: 11,
+    fontWeight: '800',
   },
   profileCard: {
     backgroundColor: '#0f172a',
@@ -193,7 +331,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffff',
   },
-  userSpecs: {
+  userBadge: {
     fontSize: 11,
     color: '#34d399',
     marginTop: 2,
@@ -218,7 +356,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     color: '#ffffff',
-    fontSize: 13,
+    fontSize: 12,
   },
   searchButton: {
     backgroundColor: '#34d399',
@@ -266,6 +404,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#e2e8f0',
     lineHeight: 16,
+  },
+  agentReasoning: {
+    fontSize: 10,
+    color: '#94a3b8',
+    marginTop: 6,
   },
   resetButton: {
     marginTop: 8,
@@ -328,14 +471,114 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffff',
   },
-  productSizes: {
-    fontSize: 10,
-    color: '#34d399',
-    marginVertical: 2,
+  productPriceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 6,
   },
   productPrice: {
     fontSize: 15,
     fontWeight: '800',
     color: '#ffffff',
+  },
+  buyButton: {
+    backgroundColor: '#34d399',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  buyButtonText: {
+    color: '#020617',
+    fontWeight: '800',
+    fontSize: 11,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(2, 6, 23, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContainer: {
+    backgroundColor: '#0f172a',
+    borderRadius: 24,
+    padding: 20,
+    width: '100%',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  modalTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#ffffff',
+  },
+  closeModalText: {
+    color: '#94a3b8',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  modalProductName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  modalProductPrice: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#34d399',
+    marginTop: 4,
+  },
+  diagnosticBox: {
+    backgroundColor: '#020617',
+    padding: 12,
+    borderRadius: 14,
+    marginVertical: 14,
+    borderColor: 'rgba(52, 211, 153, 0.3)',
+    borderWidth: 1,
+  },
+  diagnosticTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#34d399',
+    marginBottom: 6,
+  },
+  diagnosticText: {
+    fontSize: 11,
+    color: '#cbd5e1',
+    marginVertical: 2,
+  },
+  confirmCheckoutButton: {
+    backgroundColor: '#34d399',
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  confirmCheckoutButtonText: {
+    color: '#020617',
+    fontWeight: '800',
+    fontSize: 13,
+  },
+  purchasedSuccessBox: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  successTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#34d399',
+    marginBottom: 8,
+  },
+  successText: {
+    fontSize: 12,
+    color: '#e2e8f0',
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });
