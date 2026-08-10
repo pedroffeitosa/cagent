@@ -21,16 +21,16 @@ export function CustomFiltersView({ userProfile, onBackToChat, onApplyPresetFilt
       badge: 'Exemplo do Usuário',
     },
     {
-      id: 'work-executive',
-      name: '💼 Executive Workwear',
-      description: 'Filtrar peças em alfaiataria elegante e tons sóbrios (Preto, Azul Marinho, Cinza).',
-      colors: ['Preto', 'Azul Marinho', 'Cinza'],
+      id: 'corredor-rua',
+      name: '🏃 Corredor de Rua',
+      description: 'Priorizar tênis de corrida, amortecimento e acessórios de performance para asfalto e maratona.',
+      colors: ['Preto', 'Azul Marinho', 'Amarelo'],
     },
     {
-      id: 'summer-resort',
-      name: '☀️ Summer Resort & Linho',
-      description: 'Priorizar vestidos leves, linho orgânico e tons claros (Bege, Branco).',
-      colors: ['Bege', 'Branco'],
+      id: 'academia-fit',
+      name: '🏋️ Academia & Fit',
+      description: 'Priorizar roupas de treino, streetwear esportivo e itens de recuperação para o dia a dia na academia.',
+      colors: ['Preto', 'Cinza', 'Verde'],
     },
   ];
 

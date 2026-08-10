@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@cagent/shared": "*",
-    "@google/generative-ai": "^0.21.0"
+    "@google/generative-ai": "^0.21.0",
+    "@anthropic-ai/sdk": "^0.32.1"
   }
 }

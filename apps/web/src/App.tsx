@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  MOCK_USER_PROFILES, 
-  MOCK_STORE_CONTEXT, 
-  UserProfile, 
+import {
+  MOCK_USER_PROFILES,
+  MOCK_STORE_CONTEXT,
+  UserProfile,
   Product,
   AgentResponsePayload,
+  AIProviderType,
   runLocalRuleEngine
 } from '@cagent/shared';
 import { 
@@ -49,7 +50,15 @@ import { CouponsView } from './components/views/CouponsView';
 import { StoreBootstrapView } from './components/views/StoreBootstrapView';
 import { CustomFiltersView } from './components/views/CustomFiltersView';
 import { CompareProductsView } from './components/views/CompareProductsView';
+import { LandingPage } from './components/views/LandingPage';
 import { handleImageError } from './utils/imageFallback';
+
+const PROVIDER_LABELS: Record<string, string> = {
+  gemini: 'Gemini',
+  openai: 'OpenAI',
+  anthropic: 'Claude',
+  custom: 'Regras Locais',
+};
 
 interface ChatMessage {
   id: string;
@@ -69,6 +78,9 @@ interface ChatSession {
 type MainViewType = 'home' | 'chat' | 'wallet' | 'coupons' | 'store' | 'filters' | 'compare';
 
 export default function App() {
+  // Landing Page Gate: shown before the client enters the storefront demo
+  const [hasEnteredApp, setHasEnteredApp] = useState(false);
+
   // Active View Mode (Home vs Chat vs Wallet Page vs Coupons Page vs Store Bootstrap Page vs Filters Page vs Compare Page)
   const [activeMainView, setActiveMainView] = useState<MainViewType>('home');
 
@@ -78,6 +90,10 @@ export default function App() {
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isPreferencesModalOpen, setIsPreferencesModalOpen] = useState(false);
   const [selectedCheckoutProduct, setSelectedCheckoutProduct] = useState<Product | null>(null);
+
+  // BYOK: Provedor de IA ativo (Fork & Connect ready para Gemini, OpenAI ou Anthropic)
+  const [aiProvider, setAiProvider] = useState<AIProviderType>('gemini');
+  const [customApiKey, setCustomApiKey] = useState('');
 
   // Collapsible Past Chats Toggle
   const [showPastChats, setShowPastChats] = useState(false);
@@ -221,13 +237,16 @@ export default function App() {
     }
 
     try {
-      const response = await fetch('/api/agent', {
+      const endpoint = aiProvider === 'anthropic' ? '/api/agent-claude' : '/api/agent';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userQuery: queryText,
           userProfile: userProfile,
           storeContext: MOCK_STORE_CONTEXT,
+          provider: aiProvider,
+          customApiKey: customApiKey || undefined,
         }),
       });
 
@@ -285,9 +304,13 @@ export default function App() {
     setCurrentQuery('');
   };
 
+  if (!hasEnteredApp) {
+    return <LandingPage onEnter={() => setHasEnteredApp(true)} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex overflow-hidden font-sans">
-      
+
       {/* ------------------------------------------------------------- */}
       {/* LEFT SIDEBAR: Collapsible ($Agent -> $A) + Simplified Chat    */}
       {/* ------------------------------------------------------------- */}
@@ -331,6 +354,17 @@ export default function App() {
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Back to Landing Page Link */}
+        {!isSidebarCollapsed && (
+          <button
+            onClick={() => setHasEnteredApp(false)}
+            title="Voltar para a página inicial do projeto"
+            className="mx-3 mt-3 text-left text-[10px] text-slate-500 hover:text-emerald-400 transition font-mono-tech shrink-0"
+          >
+            ← Sobre o $Agent
+          </button>
+        )}
 
         {/* Bottom-Aligned Controls (Página Inicial + Nova conversa + Chat Atual + Chats Anteriores) */}
         <div className="flex-1 flex flex-col justify-end p-3 gap-2 overflow-y-auto custom-scrollbar">
@@ -721,7 +755,12 @@ export default function App() {
                       {/* Agent Response Meta & Coupon Calculation */}
                       {msg.responsePayload && (
                         <div className="mt-3 pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex flex-col gap-2">
-                          <span className="font-mono-tech">{msg.responsePayload.reasoningSummary}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono-tech flex-1">{msg.responsePayload.reasoningSummary}</span>
+                            <span className="shrink-0 px-2 py-0.5 rounded-full bg-slate-950 border border-slate-800 text-slate-400 font-mono-tech text-[9px]">
+                              via {PROVIDER_LABELS[msg.responsePayload.providerUsed] || msg.responsePayload.providerUsed}
+                            </span>
+                          </div>
                           {msg.responsePayload.appliedCoupon && (
                             <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-950/80 border border-emerald-500/20">
                               <span className="text-amber-400 font-bold flex items-center gap-1">
@@ -911,6 +950,10 @@ export default function App() {
         onClose={() => setIsPreferencesModalOpen(false)}
         userProfile={userProfile}
         onSaveProfile={(updated) => setUserProfile(updated)}
+        aiProvider={aiProvider}
+        onProviderChange={setAiProvider}
+        customApiKey={customApiKey}
+        onApiKeyChange={setCustomApiKey}
       />
 
       {/* Theme Customizer Modal */}

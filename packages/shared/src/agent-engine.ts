@@ -1,6 +1,52 @@
 import { AgentRequestPayload, AgentResponsePayload } from './types';
 
 /**
+ * Provider-agnostic prompt builder shared by every LLM adapter (Gemini, Anthropic, OpenAI...).
+ * Keeping this in one place means a new adapter only has to worry about calling its model
+ * and parsing the response — the store/customer context injected into the prompt stays identical.
+ */
+export function buildAgentPrompt(payload: AgentRequestPayload): string {
+  return `
+Você é o $Agent, o assistente e canal oficial de e-commerce da loja "${payload.storeContext.storeName}".
+Sua missão é filtrar produtos para o cliente, oferecendo os cupons ativos da loja e calculando o cashback da loja.
+
+INFORMAÇÕES DA LOJA (WHITE-LABEL CANAL):
+- Loja: ${payload.storeContext.storeName}
+- Cashback da Loja: ${payload.storeContext.config?.cashbackPercentage || 5}%
+- Cupons da Loja: ${JSON.stringify(payload.storeContext.config?.activeCoupons || [])}
+
+DADOS DO CLIENTE:
+- Nome: ${payload.userProfile.name}
+- Tamanho Roupas: ${payload.userProfile.sizes.clothing}
+- Tamanho Sapatos: ${payload.userProfile.sizes.shoes}
+- Orçamento Máximo: R$ ${payload.userProfile.maxBudget || 'Sem limite'}
+- Estilos Preferidos: ${payload.userProfile.stylePreferences.join(', ') || 'Não informado'}
+
+INTENÇÃO / BUSCA DO CLIENTE: "${payload.userQuery || 'Recomende produtos perfeitos para meu perfil'}"
+
+CATÁLOGO DA LOJA:
+${JSON.stringify(payload.storeContext.catalog.map(p => ({
+  id: p.id,
+  name: p.name,
+  price: p.price,
+  sizes: p.availableSizes,
+  tags: p.tags
+})), null, 2)}
+
+RESPONDA APENAS COM JSON VÁLIDO, EXATAMENTE NO FORMATO ABAIXO, SEM TEXTO ADICIONAL:
+{
+  "naturalLanguageReply": "Explicacao amigavel recomendando produtos e mencionando o desconto do cupom da loja e cashback em portugues",
+  "recommendedProductIds": ["prod-001", "prod-002"],
+  "activeFilters": {
+    "size": "${payload.userProfile.sizes.clothing}",
+    "maxPrice": ${payload.userProfile.maxBudget || 'null'}
+  },
+  "reasoningSummary": "Agente da Loja: Cupom DECO10 ativado e cashback calculado"
+}
+`;
+}
+
+/**
  * Intelligent Rule-based Fallback & Local Filter Engine
  * Includes Store Marketing & Cashback calculation.
  */

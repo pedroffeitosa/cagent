@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserProfile } from '@cagent/shared';
+import { UserProfile, STYLE_TAXONOMY, AIProviderType } from '@cagent/shared';
 import { 
   User, 
   Sliders, 
@@ -20,6 +20,10 @@ interface PreferencesModalProps {
   onClose: () => void;
   userProfile: UserProfile;
   onSaveProfile: (profile: UserProfile) => void;
+  aiProvider: AIProviderType;
+  onProviderChange: (provider: AIProviderType) => void;
+  customApiKey: string;
+  onApiKeyChange: (key: string) => void;
 }
 
 type TabType = 'profile' | 'context' | 'byok' | 'appearance' | 'privacy';
@@ -29,11 +33,13 @@ export function PreferencesModal({
   onClose,
   userProfile,
   onSaveProfile,
+  aiProvider,
+  onProviderChange,
+  customApiKey,
+  onApiKeyChange,
 }: PreferencesModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [formData, setFormData] = useState<UserProfile>(userProfile);
-  const [customApiKey, setCustomApiKey] = useState('');
-  const [selectedProvider, setSelectedProvider] = useState<'gemini' | 'openai' | 'anthropic'>('gemini');
   const { themePreset, setThemePreset } = useTheme();
 
   if (!isOpen) return null;
@@ -201,7 +207,7 @@ export function PreferencesModal({
                 <div className="flex flex-col gap-2">
                   <label className="text-slate-300 font-semibold">Estilos Preferidos</label>
                   <div className="flex flex-wrap gap-2 pt-1">
-                    {['Minimalista', 'Elegante', 'Casual Chic', 'Streetwear', 'Esportivo', 'Alfaiataria'].map((pref) => {
+                    {STYLE_TAXONOMY.map((pref) => {
                       const isSelected = formData.stylePreferences.includes(pref);
                       return (
                         <button
@@ -245,16 +251,16 @@ export function PreferencesModal({
                   <label className="text-slate-300 font-semibold">Provedor de IA Selecionado</label>
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { id: 'gemini', label: 'Google Gemini', desc: 'Padrão MVP' },
-                      { id: 'openai', label: 'OpenAI GPT-4', desc: 'Custom Key' },
-                      { id: 'anthropic', label: 'Anthropic Claude', desc: 'Custom Key' },
+                      { id: 'gemini' as const, label: 'Google Gemini', desc: 'Padrão MVP' },
+                      { id: 'openai' as const, label: 'OpenAI GPT-4', desc: 'Custom Key' },
+                      { id: 'anthropic' as const, label: 'Anthropic Claude', desc: 'Custom Key' },
                     ].map((prov) => (
                       <button
                         key={prov.id}
                         type="button"
-                        onClick={() => setSelectedProvider(prov.id as any)}
+                        onClick={() => onProviderChange(prov.id)}
                         className={`p-3 rounded-xl border flex flex-col text-left transition ${
-                          selectedProvider === prov.id
+                          aiProvider === prov.id
                             ? 'border-emerald-500 bg-emerald-500/10 font-bold text-white'
                             : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-white'
                         }`}
@@ -271,7 +277,7 @@ export function PreferencesModal({
                   <input
                     type="password"
                     value={customApiKey}
-                    onChange={(e) => setCustomApiKey(e.target.value)}
+                    onChange={(e) => onApiKeyChange(e.target.value)}
                     placeholder="sk-..."
                     className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono-tech focus:outline-none focus:border-emerald-500"
                   />

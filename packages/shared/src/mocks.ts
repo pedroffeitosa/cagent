@@ -1,5 +1,16 @@
 import { UserProfile, Product, StoreContext, StoreConfig } from './types';
 
+// Taxonomia unificada de estilos: usada pelos perfis mockados e espelhada
+// nos toggles de preferências da UI, para que "match" de estilo seja real.
+export const STYLE_TAXONOMY = [
+  'Futebol & Fluminense FC',
+  'Corrida & Maratona',
+  'Futsal & Society',
+  'Academia & Fit',
+  'Streetwear Esportivo',
+  'Ciclismo Urbano',
+] as const;
+
 export const MOCK_STORE_CONFIG: StoreConfig = {
   storeId: 'deco-sports-store',
   storeName: 'Deco Sports & Performance (White-Label Store)',
@@ -24,7 +35,13 @@ export const MOCK_STORE_CONFIG: StoreConfig = {
       discountType: 'percentage',
       discountValue: 15,
       description: '15% OFF de bônus exclusivo para torcedor Tricolor',
-    }
+    },
+    {
+      code: 'CORRIDA20',
+      discountType: 'fixed',
+      discountValue: 20,
+      description: 'R$ 20 OFF em tênis de corrida e acessórios de performance',
+    },
   ],
   databaseDriver: 'mock',
   serverEndpoint: 'https://api.deco-sports.com.br',
@@ -46,6 +63,29 @@ export const MOCK_USER_PROFILES: UserProfile[] = [
     walletBalance: 42.50,
     restrictions: ['Tecido Respirável Dri-FIT', 'Calçado com Amortecimento Pro'],
     gender: 'Masculino',
+    purchaseHistory: [
+      {
+        id: 'order-pedro-1',
+        productName: 'Camisa Oficial Fluminense FC Tricolor 2026',
+        date: 'Hoje, 14:21',
+        amount: 349,
+        cashbackEarned: 17.45,
+      },
+      {
+        id: 'order-pedro-2',
+        productName: 'Tênis de Corrida Nike Air Zoom Pegasus Pro',
+        date: 'Ontem, 18:40',
+        amount: 449,
+        cashbackEarned: 22.45,
+      },
+      {
+        id: 'order-pedro-3',
+        productName: 'Bônus de Boas-Vindas $Agent Sports',
+        date: '05 de Ago',
+        amount: 0,
+        cashbackEarned: 10.00,
+      },
+    ],
   },
   {
     id: 'user-carlos',
@@ -56,12 +96,28 @@ export const MOCK_USER_PROFILES: UserProfile[] = [
       clothing: 'G',
       shoes: '42',
     },
-    stylePreferences: ['Streetwear', 'Esportivo', 'Moderno'],
-    favoriteColors: ['Preto', 'Cinza', 'Verde Militar'],
+    stylePreferences: ['Streetwear Esportivo', 'Academia & Fit', 'Ciclismo Urbano'],
+    favoriteColors: ['Preto', 'Cinza', 'Azul Marinho'],
     maxBudget: 600,
-    restrictions: ['Tecido Respirável'],
+    restrictions: ['Tecido Respirável Dri-FIT'],
     gender: 'Masculino',
     walletBalance: 15.00,
+    purchaseHistory: [
+      {
+        id: 'order-carlos-1',
+        productName: 'Jaqueta Térmica Pro Inverno Windbreaker',
+        date: '2 dias atrás',
+        amount: 289,
+        cashbackEarned: 14.45,
+      },
+      {
+        id: 'order-carlos-2',
+        productName: 'Relógio Inteligente Smartwatch Garmin Forerunner 55',
+        date: '1 semana atrás',
+        amount: 450,
+        cashbackEarned: 22.50,
+      },
+    ],
   }
 ];
 
@@ -75,11 +131,15 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     category: 'Camisas de Time',
     availableSizes: ['P', 'M', 'G'],
     colors: ['Verde', 'Vermelho', 'Branco'],
-    imageUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80',
-    tags: ['Fluminense FC', 'Futebol', 'Tricolor', 'Camisa de Time'],
+    imageUrl: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=600&auto=format&fit=crop&q=80',
+    tags: ['Futebol & Fluminense FC', 'Fluminense FC', 'Futebol', 'Tricolor', 'Camisa de Time'],
     inStock: true,
     storeName: 'Deco Sports',
     cashbackReward: 17.45,
+    technicalSpecs: {
+      material: 'Poliéster reciclado Dri-FIT com tecnologia de absorção de suor',
+      fit: 'Regular Fit atlético',
+    },
   },
   {
     id: 'prod-cbf-02',
@@ -90,11 +150,15 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     category: 'Camisas de Time',
     availableSizes: ['P', 'M', 'G', 'GG'],
     colors: ['Amarelo', 'Verde'],
-    imageUrl: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=600&auto=format&fit=crop&q=80',
-    tags: ['Seleção Brasileira', 'Futebol', 'Brasil', 'Camisa de Time'],
+    imageUrl: 'https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=600&auto=format&fit=crop&q=80',
+    tags: ['Futebol & Fluminense FC', 'Seleção Brasileira', 'Futebol', 'Brasil', 'Camisa de Time'],
     inStock: true,
     storeName: 'Deco Sports',
     cashbackReward: 18.95,
+    technicalSpecs: {
+      material: 'Dri-FIT ADV 100% poliéster reciclado, ultraleve',
+      fit: 'Slim Fit atlético',
+    },
   },
   {
     id: 'prod-run-03',
@@ -110,6 +174,11 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     inStock: true,
     storeName: 'Deco Sports',
     cashbackReward: 22.45,
+    technicalSpecs: {
+      material: 'Cabedal em mesh respirável com entressola Zoom Air',
+      fit: 'Indicado para pisada neutra a levemente pronada',
+      support: 'Amortecimento responsivo de alta performance',
+    },
   },
   {
     id: 'prod-soc-04',
@@ -120,10 +189,14 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     availableSizes: ['40', '41', '42'],
     colors: ['Branco', 'Verde', 'Preto'],
     imageUrl: 'https://images.unsplash.com/photo-1511556532299-8f662fc26c06?w=600&auto=format&fit=crop&q=80',
-    tags: ['Chuteira Society', 'Futebol', 'Controle'],
+    tags: ['Futsal & Society', 'Chuteira Society', 'Futebol', 'Controle'],
     inStock: true,
     storeName: 'Deco Sports',
     cashbackReward: 19.45,
+    technicalSpecs: {
+      material: 'Couro sintético premium K-Leather para toque macio',
+      cleatType: 'Trava multidirecional baixa (society / grama sintética)',
+    },
   },
   {
     id: 'prod-fld-05',
@@ -134,11 +207,15 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     category: 'Chuteiras',
     availableSizes: ['39', '40', '41'],
     colors: ['Vermelho', 'Preto', 'Branco'],
-    imageUrl: 'https://images.unsplash.com/photo-1579298245158-32e8e36bf32f?w=600&auto=format&fit=crop&q=80',
-    tags: ['Chuteira de Campo', 'Futebol', 'Precisão'],
+    imageUrl: 'https://images.unsplash.com/photo-1600679472829-3044539ce8ed?w=600&auto=format&fit=crop&q=80',
+    tags: ['Futebol & Fluminense FC', 'Chuteira de Campo', 'Futebol', 'Precisão'],
     inStock: true,
     storeName: 'Deco Sports',
     cashbackReward: 21.00,
+    technicalSpecs: {
+      material: 'Couro sintético texturizado Controlskin com zona de impacto em relevo',
+      cleatType: 'Trava firm ground (FG) para grama natural',
+    },
   },
   {
     id: 'prod-fut-06',
@@ -149,10 +226,14 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     availableSizes: ['40', '41', '42'],
     colors: ['Verde', 'Vermelho'],
     imageUrl: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=600&auto=format&fit=crop&q=80',
-    tags: ['Tênis de Futsal', 'Futsal', 'Quadra'],
+    tags: ['Futsal & Society', 'Tênis de Futsal', 'Futsal', 'Quadra'],
     inStock: true,
     storeName: 'Deco Sports',
     cashbackReward: 15.50,
+    technicalSpecs: {
+      material: 'Couro legítimo de alta resistência',
+      cleatType: 'Sola lisa emborrachada antiderrapante (não marca a quadra)',
+    },
   },
   {
     id: 'prod-watch-07',
@@ -164,10 +245,14 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     availableSizes: ['Tamanho Único'],
     colors: ['Preto'],
     imageUrl: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=600&auto=format&fit=crop&q=80',
-    tags: ['Smartwatch', 'Corrida & Maratona', 'Relógio Inteligente'],
+    tags: ['Corrida & Maratona', 'Academia & Fit', 'Smartwatch', 'Relógio Inteligente'],
     inStock: true,
     storeName: 'Deco Sports',
     cashbackReward: 22.50,
+    technicalSpecs: {
+      material: 'Bezel de policarbonato reforçado, resistente a impacto',
+      support: 'GPS integrado + monitor cardíaco de pulso em tempo real',
+    },
   },
   {
     id: 'prod-fit-08',
@@ -178,10 +263,14 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     availableSizes: ['G', 'GG'],
     colors: ['Preto', 'Azul Marinho'],
     imageUrl: 'https://images.unsplash.com/photo-1544441893-675973e31985?w=600&auto=format&fit=crop&q=80',
-    tags: ['Inverno', 'Corrida', 'Corta-vento'],
+    tags: ['Corrida & Maratona', 'Streetwear Esportivo', 'Inverno', 'Corta-vento'],
     inStock: true,
     storeName: 'Deco Sports',
     cashbackReward: 14.45,
+    technicalSpecs: {
+      material: 'Tecido corta-vento impermeável com forro térmico',
+      fit: 'Regular Fit com ajuste elástico no punho',
+    },
   },
   {
     id: 'prod-ball-09',
@@ -192,10 +281,14 @@ export const MOCK_STORE_PRODUCTS: Product[] = [
     availableSizes: ['Tamanho 5'],
     colors: ['Branco', 'Verde', 'Vermelho'],
     imageUrl: 'https://images.unsplash.com/photo-1614632537190-23e4146777db?w=600&auto=format&fit=crop&q=80',
-    tags: ['Bola de Futebol', 'Futebol', 'Libertadores'],
+    tags: ['Futebol & Fluminense FC', 'Bola de Futebol', 'Futebol', 'Libertadores'],
     inStock: true,
     storeName: 'Deco Sports',
     cashbackReward: 8.95,
+    technicalSpecs: {
+      material: 'Costura termosselada com câmara de butil',
+      support: 'Tecnologia de voo aerodinâmico estabilizado',
+    },
   }
 ];
 

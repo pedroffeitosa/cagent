@@ -1,5 +1,13 @@
 export type AIProviderType = 'gemini' | 'openai' | 'anthropic' | 'custom';
 
+export interface PurchaseHistoryEntry {
+  id: string;
+  productName: string;
+  date: string;
+  amount: number;
+  cashbackEarned: number;
+}
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -15,6 +23,14 @@ export interface UserProfile {
   restrictions?: string[];
   gender?: 'Feminino' | 'Masculino' | 'Unissex';
   walletBalance?: number;
+  purchaseHistory?: PurchaseHistoryEntry[];
+}
+
+export interface ProductTechnicalSpecs {
+  material?: string;
+  fit?: string;
+  cleatType?: string;
+  support?: string;
 }
 
 export interface Product {
@@ -31,6 +47,7 @@ export interface Product {
   inStock: boolean;
   storeName: string;
   cashbackReward?: number;
+  technicalSpecs?: ProductTechnicalSpecs;
 }
 
 export interface Coupon {

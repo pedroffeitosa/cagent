@@ -122,6 +122,34 @@ export function CompareProductsView({
                   Match 100%
                 </span>
               </div>
+
+              {product.technicalSpecs?.material && (
+                <div className="flex justify-between items-start gap-3">
+                  <span className="text-slate-400 shrink-0">Material:</span>
+                  <span className="text-slate-200 text-right">{product.technicalSpecs.material}</span>
+                </div>
+              )}
+
+              {product.technicalSpecs?.fit && (
+                <div className="flex justify-between items-start gap-3">
+                  <span className="text-slate-400 shrink-0">Ajuste / Pisada:</span>
+                  <span className="text-slate-200 text-right">{product.technicalSpecs.fit}</span>
+                </div>
+              )}
+
+              {product.technicalSpecs?.cleatType && (
+                <div className="flex justify-between items-start gap-3">
+                  <span className="text-slate-400 shrink-0">Trava:</span>
+                  <span className="text-slate-200 text-right">{product.technicalSpecs.cleatType}</span>
+                </div>
+              )}
+
+              {product.technicalSpecs?.support && (
+                <div className="flex justify-between items-start gap-3">
+                  <span className="text-slate-400 shrink-0">Suporte:</span>
+                  <span className="text-slate-200 text-right">{product.technicalSpecs.support}</span>
+                </div>
+              )}
             </div>
 
             {/* Action */}

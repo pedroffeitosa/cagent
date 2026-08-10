@@ -1,41 +1,32 @@
 import React, { useState } from 'react';
 import { Ticket, Gift, Check, ArrowLeft, Sparkles, Copy } from 'lucide-react';
+import { MOCK_STORE_CONFIG } from '@cagent/shared';
 import { Button } from '../ui/button';
 
 interface CouponsViewProps {
   onBackToChat: () => void;
 }
 
+// Metadados de exibição por código — os dados de desconto vêm sempre do mock (fonte única).
+const COUPON_META: Record<string, { badge: string; isApplied: boolean; category: string }> = {
+  DECO10: { badge: 'Ativo Automaticamente', isApplied: true, category: 'Geral' },
+  AGENT50: { badge: 'Primeira Compra', isApplied: false, category: 'Boas-vindas' },
+  VIPFLUMESH: { badge: 'Exclusivo VIP', isApplied: false, category: 'Temático' },
+  CORRIDA20: { badge: 'Performance', isApplied: false, category: 'Corrida & Maratona' },
+};
+
 export function CouponsView({ onBackToChat }: CouponsViewProps) {
   const [couponCode, setCouponCode] = useState('');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-  const coupons = [
-    {
-      code: 'DECO10',
-      discount: '10% OFF',
-      description: 'Desconto exclusivo no canal agêntico $Agent aplicado automaticamente no checkout.',
-      badge: 'Ativo Automaticamente',
-      isApplied: true,
-      category: 'Geral',
-    },
-    {
-      code: 'AGENT50',
-      discount: 'R$ 50,00 OFF',
-      description: 'Bônus especial de boas-vindas no primeiro pedido utilizando o assistente $Agent.',
-      badge: 'Primeira Compra',
-      isApplied: false,
-      category: 'Boas-vindas',
-    },
-    {
-      code: 'VIPFLUMESH',
-      discount: '15% OFF + Double Cashback',
-      description: 'Cupom temático exclusivo para compras recomendadas de seleções temáticas.',
-      badge: 'Exclusivo VIP',
-      isApplied: false,
-      category: 'Temático',
-    },
-  ];
+  const coupons = MOCK_STORE_CONFIG.activeCoupons.map((c) => ({
+    code: c.code,
+    discount: c.discountType === 'percentage' ? `${c.discountValue}% OFF` : `R$ ${c.discountValue.toFixed(2).replace('.', ',')} OFF`,
+    description: c.description,
+    badge: COUPON_META[c.code]?.badge ?? 'Oferta Especial',
+    isApplied: COUPON_META[c.code]?.isApplied ?? false,
+    category: COUPON_META[c.code]?.category ?? 'Geral',
+  }));
 
   const handleCopy = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -63,7 +54,7 @@ export function CouponsView({ onBackToChat }: CouponsViewProps) {
         </div>
 
         <span className="text-xs px-3 py-1 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/30 font-mono-tech font-bold">
-          3 Cupons Ativos
+          {coupons.length} Cupons Ativos
         </span>
       </div>
 

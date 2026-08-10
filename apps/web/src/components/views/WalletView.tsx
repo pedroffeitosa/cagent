@@ -10,6 +10,8 @@ interface WalletViewProps {
 
 export function WalletView({ userProfile, onBackToChat }: WalletViewProps) {
   const balance = userProfile.walletBalance || 42.50;
+  const purchaseHistory = userProfile.purchaseHistory || [];
+  const totalCashbackEarned = purchaseHistory.reduce((sum, tx) => sum + tx.cashbackEarned, 0);
 
   return (
     <div className="flex-1 flex flex-col p-8 max-w-5xl mx-auto w-full gap-8 overflow-y-auto custom-scrollbar animate-in fade-in duration-200">
@@ -71,10 +73,10 @@ export function WalletView({ userProfile, onBackToChat }: WalletViewProps) {
 
           <div>
             <span className="font-heading font-extrabold text-3xl text-amber-400">
-              R$ 49,90
+              R$ {totalCashbackEarned.toFixed(2).replace('.', ',')}
             </span>
             <span className="text-xs text-slate-400 block mt-2">
-              Gerado em 3 compras via canal $Agent
+              Gerado em {purchaseHistory.length} {purchaseHistory.length === 1 ? 'compra' : 'compras'} via canal $Agent
             </span>
           </div>
 
@@ -92,7 +94,7 @@ export function WalletView({ userProfile, onBackToChat }: WalletViewProps) {
 
           <div>
             <span className="font-heading font-extrabold text-2xl text-white">
-              VIP {userProfile.badge || 'Emerald'}
+              {userProfile.badge || 'VIP Emerald'}
             </span>
             <span className="text-xs text-slate-400 block mt-2">
               Taxa preferencial de 5% cashback em todos os pedidos
@@ -116,25 +118,30 @@ export function WalletView({ userProfile, onBackToChat }: WalletViewProps) {
         </div>
 
         <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800/80 text-xs">
-          {[
-            { id: 'tx-1', title: 'Cashback $Agent — Camisa Oficial Fluminense FC Tricolor', date: 'Hoje, 14:21', type: 'Cashback', amount: '+ R$ 17,45', status: 'Confirmado' },
-            { id: 'tx-2', title: 'Cashback $Agent — Tênis de Corrida Nike Air Zoom Pegasus Pro', date: 'Ontem, 18:40', type: 'Cashback', amount: '+ R$ 22,45', status: 'Confirmado' },
-            { id: 'tx-3', title: 'Bônus de Boas-Vindas $Agent Sports', date: '05 de Ago', type: 'Bônus', amount: '+ R$ 10,00', status: 'Concluído' },
-          ].map((tx) => (
+          {purchaseHistory.length === 0 && (
+            <div className="p-6 text-center text-slate-500">Nenhuma movimentação ainda.</div>
+          )}
+          {purchaseHistory.map((tx) => (
             <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-slate-900/40 transition">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
                   <Coins className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div>
-                  <span className="font-bold text-white block text-sm">{tx.title}</span>
-                  <span className="text-[11px] text-slate-500 font-mono-tech mt-0.5">{tx.date} • {tx.type}</span>
+                  <span className="font-bold text-white block text-sm">
+                    {tx.amount > 0 ? `Cashback $Agent — ${tx.productName}` : tx.productName}
+                  </span>
+                  <span className="text-[11px] text-slate-500 font-mono-tech mt-0.5">
+                    {tx.date} • {tx.amount > 0 ? 'Cashback' : 'Bônus'}
+                  </span>
                 </div>
               </div>
 
               <div className="text-right">
-                <span className="font-mono-tech font-extrabold text-emerald-400 text-sm block">{tx.amount}</span>
-                <span className="text-[10px] text-slate-400 font-medium">{tx.status}</span>
+                <span className="font-mono-tech font-extrabold text-emerald-400 text-sm block">
+                  + R$ {tx.cashbackEarned.toFixed(2).replace('.', ',')}
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium">Confirmado</span>
               </div>
             </div>
           ))}

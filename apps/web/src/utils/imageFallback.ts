@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const DEFAULT_PRODUCT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1517649763962-0c623266010b?w=600&auto=format&fit=crop&q=80';
+export const DEFAULT_PRODUCT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1614632537190-23e4146777db?w=600&auto=format&fit=crop&q=80';
 
 export const handleImageError = (
   e: React.SyntheticEvent<HTMLImageElement, Event>,
