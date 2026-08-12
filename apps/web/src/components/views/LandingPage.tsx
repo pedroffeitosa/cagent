@@ -119,6 +119,41 @@ const IMPACT_STATS = [
   { icon: ShieldCheck, value: '100%', label: 'Disponibilidade (fallback local)', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
 ];
 
+const BACKGROUND_ORBS = [
+  {
+    id: 'emerald',
+    color: 'bg-emerald-500/10',
+    size: 'w-[32rem] h-[32rem]',
+    style: { top: '-10rem', left: '-10rem' },
+    animate: { x: [0, 40, -15, 0], y: [0, -25, 20, 0] },
+    duration: 26,
+  },
+  {
+    id: 'cyan',
+    color: 'bg-cyan-500/10',
+    size: 'w-[30rem] h-[30rem]',
+    style: { top: '8rem', right: '-12rem' },
+    animate: { x: [0, -30, 15, 0], y: [0, 25, -15, 0] },
+    duration: 30,
+  },
+  {
+    id: 'purple',
+    color: 'bg-purple-500/10',
+    size: 'w-[26rem] h-[26rem]',
+    style: { bottom: '-8rem', left: '10%' },
+    animate: { x: [0, 25, -20, 0], y: [0, -15, 10, 0] },
+    duration: 24,
+  },
+  {
+    id: 'amber',
+    color: 'bg-amber-500/10',
+    size: 'w-[22rem] h-[22rem]',
+    style: { bottom: '10%', right: '5%' },
+    animate: { x: [0, -20, 15, 0], y: [0, 15, -10, 0] },
+    duration: 32,
+  },
+];
+
 const PARTNER_STORES = [
   { name: 'Deco Sports & Performance', cashback: '5%', current: true },
   { name: 'Nike Brasil Official', cashback: '5%', current: false },
@@ -580,84 +615,109 @@ export function LandingPage({ onEnter }: LandingPageProps) {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-y-auto custom-scrollbar">
-      {/* Ambient Background Glow */}
+      {/* Ambient Background: dot grid + grain + drifting color orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-[32rem] h-[32rem] bg-emerald-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 -right-40 w-[32rem] h-[32rem] bg-cyan-500/10 rounded-full blur-3xl" />
+        <div
+          className="absolute inset-0 opacity-[0.4] [.theme-light_&]:opacity-[0.5]"
+          style={{
+            backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+            color: 'hsl(var(--muted-foreground))',
+            maskImage: 'radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 100%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 100%)',
+          }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.035] mix-blend-overlay"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")",
+            backgroundSize: '120px 120px',
+          }}
+        />
+        {BACKGROUND_ORBS.map((orb) => (
+          <motion.div
+            key={orb.id}
+            className={`absolute rounded-full blur-3xl ${orb.color} ${orb.size}`}
+            style={orb.style}
+            animate={orb.animate}
+            transition={{ duration: orb.duration, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        ))}
       </div>
 
       <div className="relative">
         {/* ------------------------------------------------------------- */}
         {/* NAVBAR */}
         {/* ------------------------------------------------------------- */}
-        <header
-          className={`sticky top-0 z-30 backdrop-blur-md transition-all duration-300 ${
-            isScrolled
-              ? 'bg-background/90 border-b border-border shadow-lg shadow-black/5'
-              : 'bg-background/60 border-b border-transparent'
-          }`}
-        >
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-            <TypingBrand />
+        <header className="sticky top-0 z-30 px-3 sm:px-6 pt-3">
+          <div
+            className={`max-w-6xl mx-auto rounded-2xl border backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] ${
+              isScrolled
+                ? 'bg-background/70 border-border shadow-lg shadow-black/10'
+                : 'bg-background/40 border-border/60 shadow-md shadow-black/5'
+            }`}
+          >
+            <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-5 h-14">
+              <div className="w-28 shrink-0">
+                <TypingBrand />
+              </div>
 
-            <nav className="hidden md:flex items-center gap-1 text-xs font-medium text-muted-foreground">
-              {NAV_LINKS.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="group relative px-3 py-2 hover:text-foreground transition-colors"
+              <nav className="hidden md:flex items-center justify-center gap-1 text-xs font-medium text-muted-foreground">
+                {NAV_LINKS.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="group relative px-3 py-2 hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                    <span className="absolute left-3 right-3 -bottom-0.5 h-px bg-emerald-400 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                  </a>
+                ))}
+              </nav>
+
+              <div className="flex items-center justify-end gap-2.5">
+                <ThemeToggle />
+                <button
+                  type="button"
+                  onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                  aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+                  className="md:hidden w-9 h-9 rounded-xl border border-border bg-card/60 flex items-center justify-center text-foreground shrink-0"
                 >
-                  {link.label}
-                  <span className="absolute left-3 right-3 -bottom-0.5 h-px bg-emerald-400 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-                </a>
-              ))}
-            </nav>
-
-            <div className="flex items-center gap-2.5">
-              <ThemeToggle />
-              <Button onClick={onEnter} size="sm" className="hidden sm:inline-flex gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
-                <span>Testar como funciona</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Button>
-              <button
-                type="button"
-                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-                aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
-                className="md:hidden w-9 h-9 rounded-xl border border-border bg-card/60 flex items-center justify-center text-foreground shrink-0"
-              >
-                {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-              </button>
+                  {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
-          </div>
 
-          <AnimatePresence>
-            {isMobileMenuOpen && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
-                className="md:hidden overflow-hidden border-b border-border bg-background/95 backdrop-blur-md"
-              >
-                <nav className="max-w-6xl mx-auto px-6 py-4 flex flex-col gap-1 text-sm">
-                  {NAV_LINKS.map((link) => (
-                    <a
-                      key={link.href}
-                      href={link.href}
-                      onClick={handleNavClick}
-                      className="px-3 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                  <Button onClick={onEnter} size="sm" className="mt-2 gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
-                    <span>Testar como funciona</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Button>
-                </nav>
-              </motion.div>
-            )}
-          </AnimatePresence>
+            <AnimatePresence>
+              {isMobileMenuOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="md:hidden overflow-hidden border-t border-border"
+                >
+                  <nav className="px-3 py-3 flex flex-col gap-1 text-sm">
+                    {NAV_LINKS.map((link) => (
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        onClick={handleNavClick}
+                        className="px-3 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                    <Button onClick={onEnter} size="sm" className="mt-2 gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
+                      <span>Testar como funciona</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Button>
+                  </nav>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </header>
 
         {/* ------------------------------------------------------------- */}
