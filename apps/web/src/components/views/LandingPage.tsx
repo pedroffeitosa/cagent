@@ -1077,7 +1077,14 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                 <React.Fragment key={product.id}>
                   <div className="glass-card rounded-2xl p-4 border border-border flex flex-col">
                     <div className="aspect-[4/3] rounded-xl overflow-hidden bg-muted mb-3">
-                      <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" onError={handleImageError} />
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        onError={handleImageError}
+                      />
                     </div>
                     <h4 className="font-heading font-bold text-sm text-foreground leading-snug" title={product.name}>{product.name}</h4>
                     <p className="text-sm font-heading font-bold text-emerald-400 mt-1">R$ {product.price}</p>
