@@ -2,6 +2,15 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export type ThemePreset = 'default' | 'light' | 'midnight' | 'royal';
 
+const THEME_STORAGE_KEY = 'cagent-theme-preset';
+const VALID_PRESETS: ThemePreset[] = ['default', 'light', 'midnight', 'royal'];
+
+function getStoredThemePreset(): ThemePreset {
+  if (typeof window === 'undefined') return 'default';
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  return VALID_PRESETS.includes(stored as ThemePreset) ? (stored as ThemePreset) : 'default';
+}
+
 interface ThemeContextType {
   themePreset: ThemePreset;
   setThemePreset: (preset: ThemePreset) => void;
@@ -10,7 +19,12 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [themePreset, setThemePreset] = useState<ThemePreset>('default');
+  const [themePreset, setThemePresetState] = useState<ThemePreset>(getStoredThemePreset);
+
+  const setThemePreset = (preset: ThemePreset) => {
+    setThemePresetState(preset);
+    window.localStorage.setItem(THEME_STORAGE_KEY, preset);
+  };
 
   useEffect(() => {
     const root = document.documentElement;

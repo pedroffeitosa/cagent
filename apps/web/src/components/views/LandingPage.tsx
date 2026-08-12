@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, type Variants } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import {
   Sparkles,
   Zap,
@@ -24,8 +24,13 @@ import {
   TrendingUp,
   TrendingDown,
   Trophy,
+  Sun,
+  Moon,
+  Menu,
+  X,
 } from 'lucide-react';
 import { Button } from '../ui/button';
+import { useTheme } from '../ThemeProvider';
 import { MOCK_USER_PROFILES, MOCK_STORE_PRODUCTS, MOCK_STORE_CONFIG } from '@cagent/shared';
 import { handleImageError } from '../../utils/imageFallback';
 
@@ -188,7 +193,7 @@ function HeroShowcase() {
     <div className="relative">
       <div className="glass-panel rounded-3xl p-5 shadow-2xl shadow-emerald-500/5 min-h-[400px] flex flex-col">
         {/* Header: current feature badge */}
-        <div className="flex items-center gap-2 pb-3 border-b border-slate-800/80 shrink-0">
+        <div className="flex items-center gap-2 pb-3 border-b border-border/80 shrink-0">
           <motion.div
             key={`icon-${slide.id}`}
             initial={{ scale: 0.6, opacity: 0 }}
@@ -203,11 +208,11 @@ function HeroShowcase() {
             initial={{ opacity: 0, x: -6 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.25 }}
-            className="text-xs font-semibold text-white"
+            className="text-xs font-semibold text-foreground"
           >
             {slide.label}
           </motion.span>
-          <span className="ml-auto text-[10px] font-mono-tech text-slate-500 flex items-center gap-1.5">
+          <span className="ml-auto text-[10px] font-mono-tech text-muted-foreground flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             ao vivo
           </span>
@@ -233,9 +238,9 @@ function HeroShowcase() {
                     <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 mt-1">
                       <Bot className="w-3.5 h-3.5 text-emerald-400" />
                     </div>
-                    <div className="glass-card rounded-2xl rounded-tl-none p-3 text-xs text-slate-200 flex-1">
+                    <div className="glass-card rounded-2xl rounded-tl-none p-3 text-xs text-foreground flex-1">
                       Encontrei 2 itens no seu perfil ({demoPersona.sizes.clothing} / {demoPersona.sizes.shoes}) com cupom aplicado.
-                      <div className="mt-2 pt-2 border-t border-slate-800 flex items-center gap-2 flex-wrap">
+                      <div className="mt-2 pt-2 border-t border-border flex items-center gap-2 flex-wrap">
                         <span className="text-amber-400 font-bold flex items-center gap-1 text-[10px]">
                           <Gift className="w-3 h-3" /> Cupom VIPFLUMESH
                         </span>
@@ -249,10 +254,10 @@ function HeroShowcase() {
                   <div className="grid grid-cols-2 gap-3 pt-4">
                     {demoProducts.map((product) => (
                       <div key={product.id} className="glass-card rounded-2xl p-3 border border-emerald-500/30">
-                        <div className="aspect-square rounded-xl overflow-hidden bg-slate-900 mb-2">
+                        <div className="aspect-square rounded-xl overflow-hidden bg-muted mb-2">
                           <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" onError={handleImageError} />
                         </div>
-                        <p className="text-[11px] font-semibold text-white truncate" title={product.name}>{product.name}</p>
+                        <p className="text-[11px] font-semibold text-foreground truncate" title={product.name}>{product.name}</p>
                         <p className="text-xs font-heading font-bold text-emerald-400 mt-0.5">R$ {product.price}</p>
                       </div>
                     ))}
@@ -264,8 +269,8 @@ function HeroShowcase() {
                 <div className="flex flex-col gap-4">
                   <div className="flex items-end justify-between">
                     <div>
-                      <span className="text-[10px] text-slate-400 font-mono-tech uppercase block">Saldo disponível</span>
-                      <span className="font-heading font-extrabold text-3xl text-white">
+                      <span className="text-[10px] text-muted-foreground font-mono-tech uppercase block">Saldo disponível</span>
+                      <span className="font-heading font-extrabold text-3xl text-foreground">
                         R$ {(demoPersona.walletBalance || 0).toFixed(2).replace('.', ',')}
                       </span>
                     </div>
@@ -279,7 +284,7 @@ function HeroShowcase() {
                     </motion.span>
                   </div>
 
-                  <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden">
+                  <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
                     <motion.div
                       className="h-full rounded-full bg-gradient-to-r from-amber-400 to-emerald-400"
                       initial={{ width: '0%' }}
@@ -291,7 +296,7 @@ function HeroShowcase() {
                   <motion.div variants={staggerContainer} initial="hidden" animate="show" className="flex flex-col gap-2">
                     {(demoPersona.purchaseHistory || []).slice(0, 2).map((tx) => (
                       <motion.div key={tx.id} variants={staggerItem} className="glass-card rounded-xl p-3 flex items-center justify-between text-xs">
-                        <span className="text-slate-300 truncate pr-2">{tx.productName}</span>
+                        <span className="text-foreground truncate pr-2">{tx.productName}</span>
                         <span className="text-emerald-400 font-mono-tech font-bold shrink-0">+ R$ {tx.cashbackEarned.toFixed(2).replace('.', ',')}</span>
                       </motion.div>
                     ))}
@@ -302,14 +307,14 @@ function HeroShowcase() {
               {slide.id === 'coupons' && (
                 <motion.div variants={staggerContainer} initial="hidden" animate="show" className="flex flex-col gap-3">
                   {activeCoupons.map((coupon) => (
-                    <motion.div key={coupon.code} variants={staggerItem} className="glass-card rounded-2xl p-3 flex items-center justify-between border border-slate-800">
+                    <motion.div key={coupon.code} variants={staggerItem} className="glass-card rounded-2xl p-3 flex items-center justify-between border border-border">
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0">
                           <Ticket className="w-4 h-4 text-cyan-400" />
                         </div>
                         <div>
-                          <span className="font-mono-tech font-bold text-white text-xs block">{coupon.code}</span>
-                          <span className="text-[10px] text-slate-500 truncate block max-w-[160px]">{coupon.description}</span>
+                          <span className="font-mono-tech font-bold text-foreground text-xs block">{coupon.code}</span>
+                          <span className="text-[10px] text-muted-foreground truncate block max-w-[160px]">{coupon.description}</span>
                         </div>
                       </div>
                       <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold shrink-0 flex items-center gap-1">
@@ -322,7 +327,7 @@ function HeroShowcase() {
 
               {slide.id === 'filters' && (
                 <div className="flex flex-col gap-4">
-                  <p className="text-xs text-slate-400">Filtros permanentes de {demoPersona.name.split(' ')[0]}, aplicados em qualquer loja da rede:</p>
+                  <p className="text-xs text-muted-foreground">Filtros permanentes de {demoPersona.name.split(' ')[0]}, aplicados em qualquer loja da rede:</p>
                   <motion.div variants={staggerContainer} initial="hidden" animate="show" className="flex flex-wrap gap-2">
                     {[
                       `Tamanho ${demoPersona.sizes.clothing}`,
@@ -333,7 +338,7 @@ function HeroShowcase() {
                       <motion.span
                         key={chip}
                         variants={staggerItem}
-                        className="px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-medium"
+                        className="px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 [.theme-light_&]:text-purple-700 text-xs font-medium"
                       >
                         {chip}
                       </motion.span>
@@ -343,7 +348,7 @@ function HeroShowcase() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="glass-card rounded-xl p-3 flex items-center gap-2 text-xs text-emerald-300"
+                    className="glass-card rounded-xl p-3 flex items-center gap-2 text-xs text-emerald-300 [.theme-light_&]:text-emerald-700"
                   >
                     <SlidersHorizontal className="w-4 h-4 text-emerald-400 shrink-0" />
                     Vitrine reordenada automaticamente com esses filtros — sem recadastro.
@@ -353,7 +358,7 @@ function HeroShowcase() {
 
               {slide.id === 'mobile' && (
                 <div className="flex flex-col gap-4">
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground">
                     O mesmo motor do $Agent nasce como o app oficial da sua loja — iOS &amp; Android:
                   </p>
 
@@ -395,7 +400,7 @@ function HeroShowcase() {
                       <motion.span
                         key={platform}
                         variants={staggerItem}
-                        className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-[10px] font-semibold text-slate-200 flex items-center gap-1.5"
+                        className="px-3 py-1.5 rounded-xl bg-muted border border-border text-[10px] font-semibold text-foreground flex items-center gap-1.5"
                       >
                         <Smartphone className="w-3 h-3 text-indigo-400" />
                         {platform}
@@ -407,7 +412,7 @@ function HeroShowcase() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="glass-card rounded-xl p-3 flex items-center gap-2 text-xs text-indigo-300"
+                    className="glass-card rounded-xl p-3 flex items-center gap-2 text-xs text-indigo-300 [.theme-light_&]:text-indigo-700"
                   >
                     <Zap className="w-4 h-4 text-indigo-400 shrink-0" />
                     React Native (Expo) — pronto para virar o app exclusivo do lojista.
@@ -422,14 +427,14 @@ function HeroShowcase() {
                       key={store.name}
                       variants={staggerItem}
                       className={`rounded-xl p-3 flex items-center justify-between border ${
-                        store.current ? 'bg-emerald-950/30 border-emerald-500/40' : 'glass-card border-slate-800'
+                        store.current ? 'bg-emerald-950/30 border-emerald-500/40' : 'glass-card border-border'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center shrink-0">
-                          <Store className="w-3.5 h-3.5 text-slate-300" />
+                        <div className="w-7 h-7 rounded-lg bg-muted border border-border flex items-center justify-center shrink-0">
+                          <Store className="w-3.5 h-3.5 text-foreground" />
                         </div>
-                        <span className="text-xs text-slate-200 truncate">{store.name}</span>
+                        <span className="text-xs text-foreground truncate">{store.name}</span>
                       </div>
                       <span className="text-[10px] font-mono-tech font-bold text-emerald-400 shrink-0">{store.cashback} cashback</span>
                     </motion.div>
@@ -438,7 +443,7 @@ function HeroShowcase() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="text-[10px] text-slate-500 text-center pt-1"
+                    className="text-[10px] text-muted-foreground text-center pt-1"
                   >
                     Saldo e perfil sincronizados entre todas as lojas conectadas
                   </motion.span>
@@ -455,7 +460,7 @@ function HeroShowcase() {
               onClick={() => restartTimer(i)}
               title={s.label}
               className={`h-1.5 rounded-full transition-all ${
-                i === activeIndex ? `w-6 ${COLOR_MAP[s.color].dot}` : 'w-1.5 bg-slate-700 hover:bg-slate-600'
+                i === activeIndex ? `w-6 ${COLOR_MAP[s.color].dot}` : 'w-1.5 bg-border hover:bg-muted-foreground/40'
               }`}
             />
           ))}
@@ -466,8 +471,8 @@ function HeroShowcase() {
       <div className="absolute -bottom-5 -left-5 glass-panel rounded-2xl px-4 py-2.5 flex items-center gap-2 border border-emerald-500/30 shadow-xl hidden sm:flex">
         <Wallet className="w-4 h-4 text-emerald-400" />
         <div className="leading-tight">
-          <span className="block text-[9px] text-slate-400 font-mono-tech">Saldo cashback</span>
-          <span className="block text-xs font-bold text-white">R$ {(demoPersona.walletBalance || 0).toFixed(2).replace('.', ',')}</span>
+          <span className="block text-[9px] text-muted-foreground font-mono-tech">Saldo cashback</span>
+          <span className="block text-xs font-bold text-foreground">R$ {(demoPersona.walletBalance || 0).toFixed(2).replace('.', ',')}</span>
         </div>
       </div>
     </div>
@@ -513,9 +518,68 @@ function TypingBrand() {
   );
 }
 
-export function LandingPage({ onEnter }: LandingPageProps) {
+const NAV_LINKS = [
+  { href: '#recursos', label: 'Recursos' },
+  { href: '#como-funciona', label: 'Como funciona' },
+  { href: '#lojistas', label: 'Para Lojistas' },
+];
+
+function ThemeToggle() {
+  const { themePreset, setThemePreset } = useTheme();
+  const isLight = themePreset === 'light';
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 overflow-y-auto custom-scrollbar">
+    <button
+      type="button"
+      onClick={() => setThemePreset(isLight ? 'default' : 'light')}
+      title={isLight ? 'Mudar para tema escuro' : 'Mudar para tema claro'}
+      aria-label={isLight ? 'Mudar para tema escuro' : 'Mudar para tema claro'}
+      className="relative w-9 h-9 rounded-xl border border-border bg-card/60 flex items-center justify-center overflow-hidden text-muted-foreground hover:text-foreground hover:border-emerald-500/40 transition-colors shrink-0"
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        {isLight ? (
+          <motion.span
+            key="moon"
+            initial={{ opacity: 0, rotate: -60, scale: 0.5 }}
+            animate={{ opacity: 1, rotate: 0, scale: 1 }}
+            exit={{ opacity: 0, rotate: 60, scale: 0.5 }}
+            transition={{ duration: 0.25 }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <Moon className="w-4 h-4" />
+          </motion.span>
+        ) : (
+          <motion.span
+            key="sun"
+            initial={{ opacity: 0, rotate: -60, scale: 0.5 }}
+            animate={{ opacity: 1, rotate: 0, scale: 1 }}
+            exit={{ opacity: 0, rotate: 60, scale: 0.5 }}
+            transition={{ duration: 0.25 }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <Sun className="w-4 h-4" />
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </button>
+  );
+}
+
+export function LandingPage({ onEnter }: LandingPageProps) {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 8);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleNavClick = () => setIsMobileMenuOpen(false);
+
+  return (
+    <div className="min-h-screen bg-background text-foreground overflow-y-auto custom-scrollbar">
       {/* Ambient Background Glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-40 -left-40 w-[32rem] h-[32rem] bg-emerald-500/10 rounded-full blur-3xl" />
@@ -526,19 +590,74 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         {/* ------------------------------------------------------------- */}
         {/* NAVBAR */}
         {/* ------------------------------------------------------------- */}
-        <header className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80">
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <header
+          className={`sticky top-0 z-30 backdrop-blur-md transition-all duration-300 ${
+            isScrolled
+              ? 'bg-background/90 border-b border-border shadow-lg shadow-black/5'
+              : 'bg-background/60 border-b border-transparent'
+          }`}
+        >
+          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
             <TypingBrand />
-            <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-400">
-              <a href="#recursos" className="hover:text-white transition">Recursos</a>
-              <a href="#como-funciona" className="hover:text-white transition">Como funciona</a>
-              <a href="#lojistas" className="hover:text-white transition">Para Lojistas</a>
+
+            <nav className="hidden md:flex items-center gap-1 text-xs font-medium text-muted-foreground">
+              {NAV_LINKS.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="group relative px-3 py-2 hover:text-foreground transition-colors"
+                >
+                  {link.label}
+                  <span className="absolute left-3 right-3 -bottom-0.5 h-px bg-emerald-400 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                </a>
+              ))}
             </nav>
-            <Button onClick={onEnter} size="sm" className="gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
-              <span>Testar como funciona</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Button>
+
+            <div className="flex items-center gap-2.5">
+              <ThemeToggle />
+              <Button onClick={onEnter} size="sm" className="hidden sm:inline-flex gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
+                <span>Testar como funciona</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+                className="md:hidden w-9 h-9 rounded-xl border border-border bg-card/60 flex items-center justify-center text-foreground shrink-0"
+              >
+                {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
+
+          <AnimatePresence>
+            {isMobileMenuOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className="md:hidden overflow-hidden border-b border-border bg-background/95 backdrop-blur-md"
+              >
+                <nav className="max-w-6xl mx-auto px-6 py-4 flex flex-col gap-1 text-sm">
+                  {NAV_LINKS.map((link) => (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      onClick={handleNavClick}
+                      className="px-3 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                  <Button onClick={onEnter} size="sm" className="mt-2 gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
+                    <span>Testar como funciona</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Button>
+                </nav>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </header>
 
         {/* ------------------------------------------------------------- */}
@@ -546,17 +665,17 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         {/* ------------------------------------------------------------- */}
         <section className="max-w-6xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
           <div className="flex flex-col gap-6">
-            <span className="inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-full bg-slate-900 border border-emerald-500/30 text-[11px] font-mono-tech text-emerald-400">
+            <span className="inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-full bg-muted border border-emerald-500/30 text-[11px] font-mono-tech text-emerald-400">
               <Sparkles className="w-3.5 h-3.5" />
               Hackathon Agents for Commerce · Deco 2026
             </span>
 
-            <h1 className="font-heading font-extrabold text-4xl sm:text-5xl leading-[1.1] tracking-tight text-white">
+            <h1 className="font-heading font-extrabold text-4xl sm:text-5xl leading-[1.1] tracking-tight text-foreground">
               Um canal de vendas <span className="text-emerald-400">agêntico e personalizado</span>, pronto em minutos
             </h1>
 
-            <p className="text-sm sm:text-base text-slate-400 leading-relaxed max-w-lg">
-              O <strong className="text-white">$Agent</strong> é um canal turnkey que qualquer lojista instala em minutos: vitrine reordenada por IA, cupons, cashback e filtros personalizados para cada cliente — sem cadastro repetido, sem infraestrutura complexa.
+            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-lg">
+              O <strong className="text-foreground">$Agent</strong> é um canal turnkey que qualquer lojista instala em minutos: vitrine reordenada por IA, cupons, cashback e filtros personalizados para cada cliente — sem cadastro repetido, sem infraestrutura complexa.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -571,7 +690,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               </a>
             </div>
 
-            <div className="flex flex-wrap items-center gap-6 pt-4 text-[11px] text-slate-500">
+            <div className="flex flex-wrap items-center gap-6 pt-4 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> Fork &amp; Connect ready</span>
               <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> Web + Mobile (Expo)</span>
               <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> BYOK multi-LLM</span>
@@ -592,15 +711,15 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           variants={revealStagger}
           className="max-w-6xl mx-auto px-6 pb-16"
         >
-          <div className="glass-panel rounded-3xl border border-slate-800 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-800/80">
+          <div className="glass-panel rounded-3xl border border-border grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border/80">
             {IMPACT_STATS.map((stat) => (
               <motion.div key={stat.label} variants={fadeInUp} className="p-6 flex items-center gap-4">
                 <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center shrink-0 ${stat.color}`}>
                   <stat.icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="font-heading font-extrabold text-2xl text-white block leading-none">{stat.value}</span>
-                  <span className="text-xs text-slate-400 mt-1 block">{stat.label}</span>
+                  <span className="font-heading font-extrabold text-2xl text-foreground block leading-none">{stat.value}</span>
+                  <span className="text-xs text-muted-foreground mt-1 block">{stat.label}</span>
                 </div>
               </motion.div>
             ))}
@@ -617,18 +736,18 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           variants={revealStagger}
           className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 gap-6"
         >
-          <motion.div variants={fadeInUp} className="glass-card rounded-3xl p-7 border border-slate-800">
+          <motion.div variants={fadeInUp} className="glass-card rounded-3xl p-7 border border-border">
             <span className="text-[11px] font-mono-tech text-red-400 uppercase tracking-wider">O problema</span>
-            <h3 className="font-heading font-bold text-xl text-white mt-2">Personalização passiva e fragmentada</h3>
-            <p className="text-sm text-slate-400 mt-3 leading-relaxed">
+            <h3 className="font-heading font-bold text-xl text-foreground mt-2">Personalização passiva e fragmentada</h3>
+            <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
               O cliente ajusta filtro de tamanho, cor e preço toda vez que entra em uma loja nova. As lojas não compartilham contexto entre si — o resultado é busca genérica, abandono de carrinho e conversão perdida.
             </p>
           </motion.div>
           <motion.div variants={fadeInUp} className="glass-card rounded-3xl p-7 border border-emerald-500/30 bg-emerald-950/10">
             <span className="text-[11px] font-mono-tech text-emerald-400 uppercase tracking-wider">A solução $Agent</span>
-            <h3 className="font-heading font-bold text-xl text-white mt-2">Um canal contextual único, plug &amp; play</h3>
-            <p className="text-sm text-slate-300 mt-3 leading-relaxed">
-              O perfil, histórico e saldo de cashback do cliente atravessam qualquer loja conectada à rede. O lojista instala o canal, conecta o catálogo, e a vitrine já nasce personalizada — <strong className="text-white">vende mais e roda por menos</strong>.
+            <h3 className="font-heading font-bold text-xl text-foreground mt-2">Um canal contextual único, plug &amp; play</h3>
+            <p className="text-sm text-foreground mt-3 leading-relaxed">
+              O perfil, histórico e saldo de cashback do cliente atravessam qualquer loja conectada à rede. O lojista instala o canal, conecta o catálogo, e a vitrine já nasce personalizada — <strong className="text-foreground">vende mais e roda por menos</strong>.
             </p>
           </motion.div>
         </motion.section>
@@ -638,8 +757,8 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         {/* ------------------------------------------------------------- */}
         <section id="recursos" className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20">
           <div className="text-center max-w-xl mx-auto mb-12">
-            <h2 className="font-heading font-extrabold text-3xl text-white">Tudo que um canal de vendas agêntico precisa</h2>
-            <p className="text-sm text-slate-400 mt-3">Recursos prontos para uso, sem integração pesada para o piloto.</p>
+            <h2 className="font-heading font-extrabold text-3xl text-foreground">Tudo que um canal de vendas agêntico precisa</h2>
+            <p className="text-sm text-muted-foreground mt-3">Recursos prontos para uso, sem integração pesada para o piloto.</p>
           </div>
 
           <motion.div
@@ -654,13 +773,13 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                 key={feature.title}
                 variants={fadeInUp}
                 whileHover={{ y: -4 }}
-                className="glass-card rounded-3xl p-6 border border-slate-800 hover:border-slate-700 transition-colors"
+                className="glass-card rounded-3xl p-6 border border-border hover:border-primary/40 transition-colors"
               >
                 <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center mb-4 ${feature.color}`}>
                   <feature.icon className="w-5 h-5" />
                 </div>
-                <h4 className="font-heading font-bold text-base text-white">{feature.title}</h4>
-                <p className="text-xs text-slate-400 mt-2 leading-relaxed">{feature.description}</p>
+                <h4 className="font-heading font-bold text-base text-foreground">{feature.title}</h4>
+                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{feature.description}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -677,30 +796,30 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           className="max-w-6xl mx-auto px-6 py-16"
         >
           <motion.div variants={fadeInUp} className="text-center max-w-xl mx-auto mb-12">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-[11px] font-mono-tech text-purple-300 mb-4">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-[11px] font-mono-tech text-purple-300 [.theme-light_&]:text-purple-700 mb-4">
               <Swords className="w-3.5 h-3.5" />
               Batalha Swords
             </span>
-            <h2 className="font-heading font-extrabold text-3xl text-white">Dois produtos entram, um veredito sai</h2>
-            <p className="text-sm text-slate-400 mt-3">O agente compara especificações técnicas e explica, em português claro, qual produto é ideal para aquele cliente.</p>
+            <h2 className="font-heading font-extrabold text-3xl text-foreground">Dois produtos entram, um veredito sai</h2>
+            <p className="text-sm text-muted-foreground mt-3">O agente compara especificações técnicas e explica, em português claro, qual produto é ideal para aquele cliente.</p>
           </motion.div>
 
           <motion.div variants={fadeInUp} className="glass-panel rounded-3xl border border-purple-500/20 p-6 md:p-8">
             <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center">
               {[swordsProductA, swordsProductB].map((product, i) => (
                 <React.Fragment key={product.id}>
-                  <div className="glass-card rounded-2xl p-4 border border-slate-800 flex flex-col">
-                    <div className="aspect-[4/3] rounded-xl overflow-hidden bg-slate-900 mb-3">
+                  <div className="glass-card rounded-2xl p-4 border border-border flex flex-col">
+                    <div className="aspect-[4/3] rounded-xl overflow-hidden bg-muted mb-3">
                       <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" onError={handleImageError} />
                     </div>
-                    <h4 className="font-heading font-bold text-sm text-white leading-snug" title={product.name}>{product.name}</h4>
+                    <h4 className="font-heading font-bold text-sm text-foreground leading-snug" title={product.name}>{product.name}</h4>
                     <p className="text-sm font-heading font-bold text-emerald-400 mt-1">R$ {product.price}</p>
-                    <div className="mt-3 pt-3 border-t border-slate-800 flex flex-col gap-1.5 text-[11px] text-slate-400">
+                    <div className="mt-3 pt-3 border-t border-border flex flex-col gap-1.5 text-[11px] text-muted-foreground">
                       {product.technicalSpecs?.material && (
-                        <span><span className="text-slate-500">Material:</span> {product.technicalSpecs.material}</span>
+                        <span><span className="text-muted-foreground">Material:</span> {product.technicalSpecs.material}</span>
                       )}
                       {product.technicalSpecs?.cleatType && (
-                        <span><span className="text-slate-500">Trava:</span> {product.technicalSpecs.cleatType}</span>
+                        <span><span className="text-muted-foreground">Trava:</span> {product.technicalSpecs.cleatType}</span>
                       )}
                     </div>
                   </div>
@@ -709,7 +828,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                       <div className="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/40 flex items-center justify-center">
                         <Swords className="w-4 h-4 text-purple-400" />
                       </div>
-                      <span className="font-heading font-extrabold text-xs text-purple-400">VS</span>
+                      <span className="font-heading font-extrabold text-xs text-purple-400 [.theme-light_&]:text-purple-700">VS</span>
                     </div>
                   )}
                 </React.Fragment>
@@ -718,12 +837,12 @@ export function LandingPage({ onEnter }: LandingPageProps) {
 
             <div className="mt-6 rounded-2xl bg-purple-950/20 border border-purple-500/30 p-5 flex items-start gap-3">
               <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center shrink-0">
-                <Trophy className="w-4 h-4 text-purple-300" />
+                <Trophy className="w-4 h-4 text-purple-300 [.theme-light_&]:text-purple-700" />
               </div>
               <div>
-                <span className="text-[11px] font-mono-tech text-purple-300 uppercase tracking-wider">Veredito agêntico</span>
-                <p className="text-sm text-slate-200 mt-1 leading-relaxed">
-                  Para {demoPersona.name.split(' ')[0]}, que joga futebol society, a <strong className="text-white">{swordsProductA.name}</strong> vence: trava multidirecional baixa ideal para grama sintética, no tamanho {demoPersona.sizes.shoes} disponível em estoque.
+                <span className="text-[11px] font-mono-tech text-purple-300 [.theme-light_&]:text-purple-700 uppercase tracking-wider">Veredito agêntico</span>
+                <p className="text-sm text-foreground mt-1 leading-relaxed">
+                  Para {demoPersona.name.split(' ')[0]}, que joga futebol society, a <strong className="text-foreground">{swordsProductA.name}</strong> vence: trava multidirecional baixa ideal para grama sintética, no tamanho {demoPersona.sizes.shoes} disponível em estoque.
                 </p>
               </div>
             </div>
@@ -742,34 +861,34 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20"
         >
           <motion.div variants={fadeInUp} className="text-center max-w-xl mx-auto mb-12">
-            <h2 className="font-heading font-extrabold text-3xl text-white">Como funciona</h2>
-            <p className="text-sm text-slate-400 mt-3">Do fork ao primeiro cliente personalizado, em três passos.</p>
+            <h2 className="font-heading font-extrabold text-3xl text-foreground">Como funciona</h2>
+            <p className="text-sm text-muted-foreground mt-3">Do fork ao primeiro cliente personalizado, em três passos.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {STEPS.map((step) => (
-              <motion.div key={step.number} variants={fadeInUp} className="glass-card rounded-3xl p-6 border border-slate-800 relative overflow-hidden">
-                <span className="absolute -top-3 -right-2 font-heading font-extrabold text-6xl text-slate-800/60 select-none">
+              <motion.div key={step.number} variants={fadeInUp} className="glass-card rounded-3xl p-6 border border-border relative overflow-hidden">
+                <span className="absolute -top-3 -right-2 font-heading font-extrabold text-6xl text-muted-foreground/60 select-none">
                   {step.number}
                 </span>
                 <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4 text-emerald-400 relative">
                   <step.icon className="w-5 h-5" />
                 </div>
-                <h4 className="font-heading font-bold text-base text-white relative">{step.title}</h4>
-                <p className="text-xs text-slate-400 mt-2 leading-relaxed relative">{step.description}</p>
+                <h4 className="font-heading font-bold text-base text-foreground relative">{step.title}</h4>
+                <p className="text-xs text-muted-foreground mt-2 leading-relaxed relative">{step.description}</p>
               </motion.div>
             ))}
           </div>
 
           <motion.div variants={fadeInUp} className="flex flex-col items-center gap-3 pt-10 text-center">
-            <p className="text-xs text-slate-500 max-w-sm">
+            <p className="text-xs text-muted-foreground max-w-sm">
               Quer o passo a passo completo, a arquitetura e os endpoints da API? Confira a documentação.
             </p>
             <a href={DOCS_URL} target="_blank" rel="noopener noreferrer">
               <Button variant="secondary" size="lg" className="gap-2">
                 <FileText className="w-4 h-4 text-emerald-400" />
                 <span>Ver Documentação</span>
-                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
               </Button>
             </a>
           </motion.div>
@@ -786,34 +905,34 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           variants={fadeInUp}
           className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20"
         >
-          <div className="glass-panel rounded-3xl p-8 md:p-10 border border-cyan-500/30 grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950">
+          <div className="glass-panel rounded-3xl p-8 md:p-10 border border-cyan-500/30 grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-gradient-to-r from-background via-card to-background">
             <div>
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 font-mono-tech text-[11px] mb-4">
                 <Store className="w-3.5 h-3.5" />
                 Para lojistas
               </span>
-              <h3 className="font-heading font-bold text-2xl text-white">Instalação rápida, sem trocar sua stack</h3>
-              <p className="text-sm text-slate-300 mt-3 leading-relaxed">
+              <h3 className="font-heading font-bold text-2xl text-foreground">Instalação rápida, sem trocar sua stack</h3>
+              <p className="text-sm text-foreground mt-3 leading-relaxed">
                 Fork do repositório, troque os adaptadores de catálogo em <code className="font-mono-tech text-emerald-400">packages/shared/src/mocks.ts</code> pelos seus dados reais e faça deploy em 1 clique. Sem autenticação nem banco de dados obrigatórios para validar o piloto.
               </p>
-              <p className="text-sm text-slate-400 mt-3 leading-relaxed">
+              <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
                 Mais que um canal de vendas: cada busca, filtro e compra aproxima você do seu cliente e vira dado de contexto — a base para, quando fizer sentido, escalar para um app mobile próprio e ainda mais robusto.
               </p>
             </div>
             <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3 text-sm text-slate-200">
+              <div className="flex items-center gap-3 text-sm text-foreground">
                 <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
                 <span>Open-source, licença MIT, white-label</span>
               </div>
-              <div className="flex items-center gap-3 text-sm text-slate-200">
+              <div className="flex items-center gap-3 text-sm text-foreground">
                 <Zap className="w-5 h-5 text-emerald-400 shrink-0" />
                 <span>Deploy em 1 clique (Vercel + Serverless Functions)</span>
               </div>
-              <div className="flex items-center gap-3 text-sm text-slate-200">
+              <div className="flex items-center gap-3 text-sm text-foreground">
                 <MessageSquare className="w-5 h-5 text-emerald-400 shrink-0" />
                 <span>BYOK: Gemini, OpenAI ou Anthropic — sua escolha</span>
               </div>
-              <div className="flex items-center gap-3 text-sm text-slate-200">
+              <div className="flex items-center gap-3 text-sm text-foreground">
                 <Smartphone className="w-5 h-5 text-emerald-400 shrink-0" />
                 <span>Pronto para virar app nativo iOS &amp; Android — $SuaLoja</span>
               </div>
@@ -831,8 +950,8 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           variants={fadeInUp}
           className="max-w-4xl mx-auto px-6 pb-20 text-center flex flex-col items-center gap-5"
         >
-          <h2 className="font-heading font-extrabold text-3xl text-white">Veja o $Agent em ação agora</h2>
-          <p className="text-sm text-slate-400 max-w-md">
+          <h2 className="font-heading font-extrabold text-3xl text-foreground">Veja o $Agent em ação agora</h2>
+          <p className="text-sm text-muted-foreground max-w-md">
             Navegue pela demo com o perfil de Pedro França e veja a vitrine, os cupons e o cashback se ajustarem em tempo real.
           </p>
           <Button onClick={onEnter} size="lg" className="gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
@@ -844,10 +963,10 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         {/* ------------------------------------------------------------- */}
         {/* FOOTER */}
         {/* ------------------------------------------------------------- */}
-        <footer className="border-t border-slate-800/80">
+        <footer className="border-t border-border/80">
           <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
             <span className="logo-agent-financial text-lg tracking-tighter">$Agent</span>
-            <p className="text-[11px] text-slate-500 text-center sm:text-right">
+            <p className="text-[11px] text-muted-foreground text-center sm:text-right">
               Desenvolvido para o Hackathon Agents for Commerce — Deco (2026). MVP em modo mock, sem autenticação ou banco de dados.
             </p>
           </div>
