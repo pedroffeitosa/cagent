@@ -638,14 +638,11 @@ function SegmentedSide({ rating, color, growFrom }: { rating: number; color: 'em
   );
 }
 
-function AxisLabel({ rating, category, sign, isWinner, color }: { rating: number; category: string; sign: '-' | '+'; isWinner: boolean; color: 'emerald' | 'cyan' }) {
+function AxisLabel({ rating, category, side, isWinner, color }: { rating: number; category: string; side: 'left' | 'right'; isWinner: boolean; color: 'emerald' | 'cyan' }) {
   const text = color === 'emerald' ? 'text-emerald-400' : 'text-cyan-400';
   return (
-    <span className={`text-[11px] flex items-center gap-1.5 ${sign === '-' ? 'flex-row-reverse text-right' : 'text-left'}`}>
-      <span className={`font-mono-tech font-bold ${isWinner ? text : 'text-muted-foreground'}`}>
-        {sign}
-        {rating}
-      </span>
+    <span className={`text-[11px] flex items-center gap-1.5 ${side === 'left' ? 'flex-row-reverse text-right' : 'text-left'}`}>
+      <span className={`font-mono-tech font-bold ${isWinner ? text : 'text-muted-foreground'}`}>{rating}</span>
       <span className={isWinner ? 'font-semibold text-foreground' : 'text-muted-foreground'}>{category}</span>
     </span>
   );
@@ -695,8 +692,8 @@ function PerformanceComparison({
               </div>
 
               <div className="flex items-center justify-between mt-2.5">
-                <AxisLabel rating={attr.a} category={attr.track[attr.a - 1]} sign="-" isWinner={aWins} color="emerald" />
-                <AxisLabel rating={attr.b} category={attr.track[attr.b - 1]} sign="+" isWinner={!aWins} color="cyan" />
+                <AxisLabel rating={attr.a} category={attr.track[attr.a - 1]} side="left" isWinner={aWins} color="emerald" />
+                <AxisLabel rating={attr.b} category={attr.track[attr.b - 1]} side="right" isWinner={!aWins} color="cyan" />
               </div>
             </div>
           );
