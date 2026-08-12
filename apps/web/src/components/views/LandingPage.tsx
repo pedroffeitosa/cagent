@@ -115,16 +115,22 @@ const swordsProductB = MOCK_STORE_PRODUCTS.find((p) => p.id === 'prod-fld-05') ?
 
 interface SpectrumAttribute {
   label: string;
-  track: string[];
+  /** Qualitative word for each rating, 1-5 — track[rating - 1]. */
+  track: [string, string, string, string, string];
+  /** Nike Tiempo's rating, 1-5. */
   a: number;
+  /** Adidas Predator's rating, 1-5, on that same criterion. */
   b: number;
 }
 
+// Every attribute rates both cleats on the exact same yardstick (e.g. "how
+// good is each one specifically on natural grass") so the two numbers are
+// genuinely comparable — not two unrelated categorical facts.
 const SWORDS_COMPARISON: SpectrumAttribute[] = [
-  { label: 'Terreno ideal', track: ['Society', 'Misto', 'Campo natural'], a: 8, b: 92 },
-  { label: 'Toque na bola', track: ['Básico', 'Médio', 'Alto'], a: 88, b: 55 },
-  { label: 'Tração no solo', track: ['Baixa', 'Média', 'Alta'], a: 52, b: 90 },
-  { label: 'Durabilidade', track: ['Baixa', 'Média', 'Alta'], a: 62, b: 85 },
+  { label: 'Performance em campo natural', track: ['Muito limitada', 'Limitada', 'Moderada', 'Boa', 'Ideal'], a: 2, b: 3 },
+  { label: 'Toque na bola', track: ['Muito básico', 'Básico', 'Médio', 'Bom', 'Excelente'], a: 4, b: 3 },
+  { label: 'Tração no solo', track: ['Muito baixa', 'Baixa', 'Média', 'Alta', 'Muito alta'], a: 3, b: 5 },
+  { label: 'Durabilidade', track: ['Muito baixa', 'Baixa', 'Média', 'Alta', 'Muito alta'], a: 3, b: 4 },
 ];
 
 const IMPACT_STATS = [
@@ -609,15 +615,27 @@ function CountUpValue({ target, prefix = '', suffix = '' }: { target: number; pr
   );
 }
 
-function categoryLabel(track: string[], value: number): string {
-  const index = Math.min(track.length - 1, Math.floor((value / 100) * track.length));
-  return track[index];
-}
+const RATING_SCALE = 5;
 
-// Maps a 0-100 score to a small 1-5 rating — reads like "distance from
-// the zero line" instead of an abstract percentage.
-function toRating(value: number): number {
-  return Math.max(1, Math.round((value / 100) * 5));
+// One side's rating rendered as discrete sectors instead of a smooth fill —
+// segments closest to the shared zero-line light up first, so the count of
+// lit segments IS the rating (no need to eyeball a percentage width).
+function SegmentedSide({ rating, color, growFrom }: { rating: number; color: 'emerald' | 'cyan'; growFrom: 'start' | 'end' }) {
+  const fill = color === 'emerald' ? 'bg-emerald-400' : 'bg-cyan-400';
+  return (
+    <div className={`flex-1 flex items-center gap-1 ${growFrom === 'end' ? 'flex-row-reverse' : ''}`}>
+      {Array.from({ length: RATING_SCALE }).map((_, i) => (
+        <motion.span
+          key={i}
+          className={`h-2 flex-1 rounded-sm ${i < rating ? fill : 'bg-muted'}`}
+          initial={{ scaleY: 0.3, opacity: 0 }}
+          whileInView={{ scaleY: 1, opacity: 1 }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{ duration: 0.25, delay: i * 0.05, ease: 'easeOut' }}
+        />
+      ))}
+    </div>
+  );
 }
 
 function AxisLabel({ rating, category, sign, isWinner, color }: { rating: number; category: string; sign: '-' | '+'; isWinner: boolean; color: 'emerald' | 'cyan' }) {
@@ -662,41 +680,23 @@ function PerformanceComparison({
 
       <div className="flex flex-col gap-6">
         {attributes.map((attr) => {
-          const ratingA = toRating(attr.a);
-          const ratingB = toRating(attr.b);
           const aWins = attr.a >= attr.b;
 
           return (
             <div key={attr.label}>
               <span className="text-xs font-semibold text-foreground block mb-3 text-center">{attr.label}</span>
 
-              {/* Diverging bar: shared zero-line in the middle, each product's
-                  bar grows outward from it — left favors A, right favors B. */}
-              <div className="flex items-stretch h-2">
-                <div className="flex-1 flex justify-end overflow-hidden rounded-l-full bg-muted">
-                  <motion.div
-                    className="h-full rounded-l-full bg-gradient-to-l from-emerald-500 to-emerald-400"
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${attr.a}%` }}
-                    viewport={{ once: true, amount: 0.6 }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                  />
-                </div>
-                <div className="w-px bg-border shrink-0 z-10" />
-                <div className="flex-1 flex justify-start overflow-hidden rounded-r-full bg-muted">
-                  <motion.div
-                    className="h-full rounded-r-full bg-gradient-to-r from-cyan-500 to-cyan-400"
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${attr.b}%` }}
-                    viewport={{ once: true, amount: 0.6 }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                  />
-                </div>
+              {/* Shared zero-line in the middle; each side lights up sectors
+                  outward from it — left favors A, right favors B. */}
+              <div className="flex items-stretch h-2 gap-1.5">
+                <SegmentedSide rating={attr.a} color="emerald" growFrom="end" />
+                <div className="w-px bg-border shrink-0" />
+                <SegmentedSide rating={attr.b} color="cyan" growFrom="start" />
               </div>
 
               <div className="flex items-center justify-between mt-2.5">
-                <AxisLabel rating={ratingA} category={categoryLabel(attr.track, attr.a)} sign="-" isWinner={aWins} color="emerald" />
-                <AxisLabel rating={ratingB} category={categoryLabel(attr.track, attr.b)} sign="+" isWinner={!aWins} color="cyan" />
+                <AxisLabel rating={attr.a} category={attr.track[attr.a - 1]} sign="-" isWinner={aWins} color="emerald" />
+                <AxisLabel rating={attr.b} category={attr.track[attr.b - 1]} sign="+" isWinner={!aWins} color="cyan" />
               </div>
             </div>
           );
