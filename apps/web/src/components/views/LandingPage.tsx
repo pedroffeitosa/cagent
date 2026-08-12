@@ -614,42 +614,22 @@ function categoryLabel(track: string[], value: number): string {
   return track[index];
 }
 
-function ComparisonBar({
-  value,
-  category,
-  isWinner,
-  color,
-}: {
-  value: number;
-  category: string;
-  isWinner: boolean;
-  color: 'emerald' | 'cyan';
-}) {
-  const dot = color === 'emerald' ? 'bg-emerald-400' : 'bg-cyan-400';
-  const badge =
-    color === 'emerald'
-      ? 'bg-emerald-500/10 border-emerald-500/30'
-      : 'bg-cyan-500/10 border-cyan-500/30';
-  const fill = color === 'emerald' ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-cyan-500 to-cyan-400';
+// Maps a 0-100 score to a small 1-5 rating — reads like "distance from
+// the zero line" instead of an abstract percentage.
+function toRating(value: number): number {
+  return Math.max(1, Math.round((value / 100) * 5));
+}
 
+function AxisLabel({ rating, category, sign, isWinner, color }: { rating: number; category: string; sign: '-' | '+'; isWinner: boolean; color: 'emerald' | 'cyan' }) {
+  const text = color === 'emerald' ? 'text-emerald-400' : 'text-cyan-400';
   return (
-    <div className="flex items-center gap-3">
-      <span className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${badge}`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
+    <span className={`text-[11px] flex items-center gap-1.5 ${sign === '-' ? 'flex-row-reverse text-right' : 'text-left'}`}>
+      <span className={`font-mono-tech font-bold ${isWinner ? text : 'text-muted-foreground'}`}>
+        {sign}
+        {rating}
       </span>
-      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-        <motion.div
-          className={`h-full rounded-full ${fill}`}
-          initial={{ width: 0 }}
-          whileInView={{ width: `${value}%` }}
-          viewport={{ once: true, amount: 0.6 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-        />
-      </div>
-      <span className={`text-[11px] w-[92px] text-right shrink-0 ${isWinner ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
-        {category}
-      </span>
-    </div>
+      <span className={isWinner ? 'font-semibold text-foreground' : 'text-muted-foreground'}>{category}</span>
+    </span>
   );
 }
 
@@ -680,26 +660,47 @@ function PerformanceComparison({
         </div>
       </div>
 
-      <div className="flex flex-col gap-5">
-        {attributes.map((attr) => (
-          <div key={attr.label}>
-            <span className="text-xs font-semibold text-foreground block mb-2.5">{attr.label}</span>
-            <div className="flex flex-col gap-1.5">
-              <ComparisonBar
-                value={attr.a}
-                category={categoryLabel(attr.track, attr.a)}
-                isWinner={attr.a >= attr.b}
-                color="emerald"
-              />
-              <ComparisonBar
-                value={attr.b}
-                category={categoryLabel(attr.track, attr.b)}
-                isWinner={attr.b > attr.a}
-                color="cyan"
-              />
+      <div className="flex flex-col gap-6">
+        {attributes.map((attr) => {
+          const ratingA = toRating(attr.a);
+          const ratingB = toRating(attr.b);
+          const aWins = attr.a >= attr.b;
+
+          return (
+            <div key={attr.label}>
+              <span className="text-xs font-semibold text-foreground block mb-3 text-center">{attr.label}</span>
+
+              {/* Diverging bar: shared zero-line in the middle, each product's
+                  bar grows outward from it — left favors A, right favors B. */}
+              <div className="flex items-stretch h-2">
+                <div className="flex-1 flex justify-end overflow-hidden rounded-l-full bg-muted">
+                  <motion.div
+                    className="h-full rounded-l-full bg-gradient-to-l from-emerald-500 to-emerald-400"
+                    initial={{ width: 0 }}
+                    whileInView={{ width: `${attr.a}%` }}
+                    viewport={{ once: true, amount: 0.6 }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                  />
+                </div>
+                <div className="w-px bg-border shrink-0 z-10" />
+                <div className="flex-1 flex justify-start overflow-hidden rounded-r-full bg-muted">
+                  <motion.div
+                    className="h-full rounded-r-full bg-gradient-to-r from-cyan-500 to-cyan-400"
+                    initial={{ width: 0 }}
+                    whileInView={{ width: `${attr.b}%` }}
+                    viewport={{ once: true, amount: 0.6 }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mt-2.5">
+                <AxisLabel rating={ratingA} category={categoryLabel(attr.track, attr.a)} sign="-" isWinner={aWins} color="emerald" />
+                <AxisLabel rating={ratingB} category={categoryLabel(attr.track, attr.b)} sign="+" isWinner={!aWins} color="cyan" />
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
