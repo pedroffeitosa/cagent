@@ -586,7 +586,7 @@ function ScrollProgressBar() {
   return (
     <motion.div
       style={{ scaleX }}
-      className="absolute left-0 right-0 -bottom-px h-[2px] origin-left bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 rounded-full"
+      className="absolute left-0 right-0 bottom-0 h-[2px] origin-left bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 rounded-full"
     />
   );
 }
@@ -847,7 +847,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         {/* ------------------------------------------------------------- */}
         <header className="sticky top-0 z-30 px-3 sm:px-6 pt-3">
           <div
-            className={`relative max-w-6xl mx-auto rounded-2xl border backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] ${
+            className={`relative overflow-hidden max-w-6xl mx-auto rounded-2xl border backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] ${
               isScrolled
                 ? 'bg-background/70 border-border shadow-lg shadow-black/10'
                 : 'bg-background/40 border-border/60 shadow-md shadow-black/5'
