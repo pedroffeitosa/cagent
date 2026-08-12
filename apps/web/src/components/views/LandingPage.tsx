@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { motion, AnimatePresence, animate, useScroll, useSpring, type Variants } from 'framer-motion';
 import {
   Sparkles,
   Zap,
@@ -114,9 +114,9 @@ const swordsProductA = MOCK_STORE_PRODUCTS.find((p) => p.id === 'prod-soc-04') ?
 const swordsProductB = MOCK_STORE_PRODUCTS.find((p) => p.id === 'prod-fld-05') ?? MOCK_STORE_PRODUCTS[4];
 
 const IMPACT_STATS = [
-  { icon: TrendingUp, value: '+35%', label: 'Conversão Search-to-Cart', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
-  { icon: TrendingDown, value: '-60%', label: 'Custo de atendimento', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
-  { icon: ShieldCheck, value: '100%', label: 'Disponibilidade (fallback local)', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
+  { icon: TrendingUp, target: 35, prefix: '+', suffix: '%', label: 'Conversão Search-to-Cart', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
+  { icon: TrendingDown, target: 60, prefix: '-', suffix: '%', label: 'Custo de atendimento', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
+  { icon: ShieldCheck, target: 100, prefix: '', suffix: '%', label: 'Disponibilidade (fallback local)', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
 ];
 
 const BACKGROUND_ORBS = [
@@ -559,6 +559,42 @@ const NAV_LINKS = [
   { href: '#lojistas', label: 'Para Lojistas' },
 ];
 
+function ScrollProgressBar() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 300, damping: 40, restDelta: 0.001 });
+
+  return (
+    <motion.div
+      style={{ scaleX }}
+      className="absolute left-0 right-0 -bottom-px h-[2px] origin-left bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 rounded-full"
+    />
+  );
+}
+
+function CountUpValue({ target, prefix = '', suffix = '' }: { target: number; prefix?: string; suffix?: string }) {
+  const [display, setDisplay] = useState(0);
+  const hasAnimated = useRef(false);
+
+  return (
+    <motion.span
+      onViewportEnter={() => {
+        if (hasAnimated.current) return;
+        hasAnimated.current = true;
+        animate(0, target, {
+          duration: 1.3,
+          ease: 'easeOut',
+          onUpdate: (v) => setDisplay(Math.round(v)),
+        });
+      }}
+      viewport={{ once: true, amount: 0.6 }}
+    >
+      {prefix}
+      {display}
+      {suffix}
+    </motion.span>
+  );
+}
+
 function ThemeToggle() {
   const { themePreset, setThemePreset } = useTheme();
   const isLight = themePreset === 'light';
@@ -603,6 +639,7 @@ function ThemeToggle() {
 export function LandingPage({ onEnter }: LandingPageProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 8);
@@ -611,10 +648,28 @@ export function LandingPage({ onEnter }: LandingPageProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const sections = NAV_LINKS.map((link) => document.getElementById(link.href.slice(1))).filter(
+      (el): el is HTMLElement => el !== null
+    );
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        });
+      },
+      { rootMargin: '-45% 0px -50% 0px', threshold: 0 }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
   const handleNavClick = () => setIsMobileMenuOpen(false);
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-y-auto custom-scrollbar">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Ambient Background: dot grid + grain + drifting color orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div
@@ -652,28 +707,36 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         {/* ------------------------------------------------------------- */}
         <header className="sticky top-0 z-30 px-3 sm:px-6 pt-3">
           <div
-            className={`max-w-6xl mx-auto rounded-2xl border backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] ${
+            className={`relative max-w-6xl mx-auto rounded-2xl border backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] ${
               isScrolled
                 ? 'bg-background/70 border-border shadow-lg shadow-black/10'
                 : 'bg-background/40 border-border/60 shadow-md shadow-black/5'
             }`}
           >
+            <ScrollProgressBar />
             <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-5 h-14">
               <div className="w-28 shrink-0">
                 <TypingBrand />
               </div>
 
               <nav className="hidden md:flex items-center justify-center gap-1 text-xs font-medium text-muted-foreground">
-                {NAV_LINKS.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    className="group relative px-3 py-2 hover:text-foreground transition-colors"
-                  >
-                    {link.label}
-                    <span className="absolute left-3 right-3 -bottom-0.5 h-px bg-emerald-400 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-                  </a>
-                ))}
+                {NAV_LINKS.map((link) => {
+                  const isActive = activeSection === link.href.slice(1);
+                  return (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      className={`group relative px-3 py-2 transition-colors ${isActive ? 'text-foreground' : 'hover:text-foreground'}`}
+                    >
+                      {link.label}
+                      <span
+                        className={`absolute left-3 right-3 -bottom-0.5 h-px bg-emerald-400 transition-transform origin-left ${
+                          isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                        }`}
+                      />
+                    </a>
+                  );
+                })}
               </nav>
 
               <div className="flex items-center justify-end gap-2.5">
@@ -778,7 +841,9 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   <stat.icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="font-heading font-extrabold text-2xl text-foreground block leading-none">{stat.value}</span>
+                  <span className="font-heading font-extrabold text-2xl text-foreground block leading-none">
+                    <CountUpValue target={stat.target} prefix={stat.prefix} suffix={stat.suffix} />
+                  </span>
                   <span className="text-xs text-muted-foreground mt-1 block">{stat.label}</span>
                 </div>
               </motion.div>
@@ -926,16 +991,16 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {STEPS.map((step) => (
-              <motion.div key={step.number} variants={fadeInUp} className="glass-card rounded-3xl p-6 border border-border relative overflow-hidden">
-                <span className="absolute -top-3 -right-2 font-heading font-extrabold text-6xl text-muted-foreground/60 select-none">
-                  {step.number}
-                </span>
-                <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4 text-emerald-400 relative">
+            {STEPS.map((step, index) => (
+              <motion.div key={step.number} variants={fadeInUp} className="glass-card rounded-3xl p-6 border border-border relative">
+                {index < STEPS.length - 1 && (
+                  <div className="hidden md:block absolute top-[2.875rem] left-full w-6 h-px bg-gradient-to-r from-border to-transparent z-10" />
+                )}
+                <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4 text-emerald-400">
                   <step.icon className="w-5 h-5" />
                 </div>
-                <h4 className="font-heading font-bold text-base text-foreground relative">{step.title}</h4>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed relative">{step.description}</p>
+                <h4 className="font-heading font-bold text-base text-foreground">{step.title}</h4>
+                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{step.description}</p>
               </motion.div>
             ))}
           </div>
