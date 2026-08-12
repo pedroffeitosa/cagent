@@ -21,6 +21,9 @@ import {
   ExternalLink,
   FileText,
   Bell,
+  TrendingUp,
+  TrendingDown,
+  Trophy,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { MOCK_USER_PROFILES, MOCK_STORE_PRODUCTS, MOCK_STORE_CONFIG } from '@cagent/shared';
@@ -102,6 +105,15 @@ const demoPersona = MOCK_USER_PROFILES[0];
 const demoProducts = MOCK_STORE_PRODUCTS.slice(0, 2);
 const activeCoupons = MOCK_STORE_CONFIG.activeCoupons;
 
+const swordsProductA = MOCK_STORE_PRODUCTS.find((p) => p.id === 'prod-soc-04') ?? MOCK_STORE_PRODUCTS[3];
+const swordsProductB = MOCK_STORE_PRODUCTS.find((p) => p.id === 'prod-fld-05') ?? MOCK_STORE_PRODUCTS[4];
+
+const IMPACT_STATS = [
+  { icon: TrendingUp, value: '+35%', label: 'Conversão Search-to-Cart', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
+  { icon: TrendingDown, value: '-60%', label: 'Custo de atendimento', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
+  { icon: ShieldCheck, value: '100%', label: 'Disponibilidade (fallback local)', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
+];
+
 const PARTNER_STORES = [
   { name: 'Deco Sports & Performance', cashback: '5%', current: true },
   { name: 'Nike Brasil Official', cashback: '5%', current: false },
@@ -136,6 +148,16 @@ const staggerContainer: Variants = {
 const staggerItem: Variants = {
   hidden: { opacity: 0, y: 8 },
   show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
+};
+
+const fadeInUp: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: 'easeOut' } },
+};
+
+const revealStagger: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
 };
 
 function HeroShowcase() {
@@ -561,59 +583,172 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         </section>
 
         {/* ------------------------------------------------------------- */}
+        {/* IMPACTO / ESTATÍSTICAS */}
+        {/* ------------------------------------------------------------- */}
+        <motion.section
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.4 }}
+          variants={revealStagger}
+          className="max-w-6xl mx-auto px-6 pb-16"
+        >
+          <div className="glass-panel rounded-3xl border border-slate-800 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-800/80">
+            {IMPACT_STATS.map((stat) => (
+              <motion.div key={stat.label} variants={fadeInUp} className="p-6 flex items-center gap-4">
+                <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center shrink-0 ${stat.color}`}>
+                  <stat.icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-heading font-extrabold text-2xl text-white block leading-none">{stat.value}</span>
+                  <span className="text-xs text-slate-400 mt-1 block">{stat.label}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* ------------------------------------------------------------- */}
         {/* PROBLEMA -> SOLUÇÃO */}
         {/* ------------------------------------------------------------- */}
-        <section className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="glass-card rounded-3xl p-7 border border-slate-800">
+        <motion.section
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={revealStagger}
+          className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
+          <motion.div variants={fadeInUp} className="glass-card rounded-3xl p-7 border border-slate-800">
             <span className="text-[11px] font-mono-tech text-red-400 uppercase tracking-wider">O problema</span>
             <h3 className="font-heading font-bold text-xl text-white mt-2">Personalização passiva e fragmentada</h3>
             <p className="text-sm text-slate-400 mt-3 leading-relaxed">
               O cliente ajusta filtro de tamanho, cor e preço toda vez que entra em uma loja nova. As lojas não compartilham contexto entre si — o resultado é busca genérica, abandono de carrinho e conversão perdida.
             </p>
-          </div>
-          <div className="glass-card rounded-3xl p-7 border border-emerald-500/30 bg-emerald-950/10">
+          </motion.div>
+          <motion.div variants={fadeInUp} className="glass-card rounded-3xl p-7 border border-emerald-500/30 bg-emerald-950/10">
             <span className="text-[11px] font-mono-tech text-emerald-400 uppercase tracking-wider">A solução $Agent</span>
             <h3 className="font-heading font-bold text-xl text-white mt-2">Um canal contextual único, plug &amp; play</h3>
             <p className="text-sm text-slate-300 mt-3 leading-relaxed">
               O perfil, histórico e saldo de cashback do cliente atravessam qualquer loja conectada à rede. O lojista instala o canal, conecta o catálogo, e a vitrine já nasce personalizada — <strong className="text-white">vende mais e roda por menos</strong>.
             </p>
-          </div>
-        </section>
+          </motion.div>
+        </motion.section>
 
         {/* ------------------------------------------------------------- */}
         {/* RECURSOS */}
         {/* ------------------------------------------------------------- */}
-        <section id="recursos" className="max-w-6xl mx-auto px-6 py-16">
+        <section id="recursos" className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20">
           <div className="text-center max-w-xl mx-auto mb-12">
             <h2 className="font-heading font-extrabold text-3xl text-white">Tudo que um canal de vendas agêntico precisa</h2>
             <p className="text-sm text-slate-400 mt-3">Recursos prontos para uso, sem integração pesada para o piloto.</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.15 }}
+            variants={revealStagger}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+          >
             {FEATURES.map((feature) => (
-              <div key={feature.title} className="glass-card rounded-3xl p-6 border border-slate-800 hover:border-slate-700 transition">
+              <motion.div
+                key={feature.title}
+                variants={fadeInUp}
+                whileHover={{ y: -4 }}
+                className="glass-card rounded-3xl p-6 border border-slate-800 hover:border-slate-700 transition-colors"
+              >
                 <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center mb-4 ${feature.color}`}>
                   <feature.icon className="w-5 h-5" />
                 </div>
                 <h4 className="font-heading font-bold text-base text-white">{feature.title}</h4>
                 <p className="text-xs text-slate-400 mt-2 leading-relaxed">{feature.description}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </section>
+
+        {/* ------------------------------------------------------------- */}
+        {/* BATALHA SWORDS */}
+        {/* ------------------------------------------------------------- */}
+        <motion.section
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={revealStagger}
+          className="max-w-6xl mx-auto px-6 py-16"
+        >
+          <motion.div variants={fadeInUp} className="text-center max-w-xl mx-auto mb-12">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-[11px] font-mono-tech text-purple-300 mb-4">
+              <Swords className="w-3.5 h-3.5" />
+              Batalha Swords
+            </span>
+            <h2 className="font-heading font-extrabold text-3xl text-white">Dois produtos entram, um veredito sai</h2>
+            <p className="text-sm text-slate-400 mt-3">O agente compara especificações técnicas e explica, em português claro, qual produto é ideal para aquele cliente.</p>
+          </motion.div>
+
+          <motion.div variants={fadeInUp} className="glass-panel rounded-3xl border border-purple-500/20 p-6 md:p-8">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center">
+              {[swordsProductA, swordsProductB].map((product, i) => (
+                <React.Fragment key={product.id}>
+                  <div className="glass-card rounded-2xl p-4 border border-slate-800 flex flex-col">
+                    <div className="aspect-[4/3] rounded-xl overflow-hidden bg-slate-900 mb-3">
+                      <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" onError={handleImageError} />
+                    </div>
+                    <h4 className="font-heading font-bold text-sm text-white leading-snug" title={product.name}>{product.name}</h4>
+                    <p className="text-sm font-heading font-bold text-emerald-400 mt-1">R$ {product.price}</p>
+                    <div className="mt-3 pt-3 border-t border-slate-800 flex flex-col gap-1.5 text-[11px] text-slate-400">
+                      {product.technicalSpecs?.material && (
+                        <span><span className="text-slate-500">Material:</span> {product.technicalSpecs.material}</span>
+                      )}
+                      {product.technicalSpecs?.cleatType && (
+                        <span><span className="text-slate-500">Trava:</span> {product.technicalSpecs.cleatType}</span>
+                      )}
+                    </div>
+                  </div>
+                  {i === 0 && (
+                    <div className="flex md:flex-col items-center justify-center gap-2 shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/40 flex items-center justify-center">
+                        <Swords className="w-4 h-4 text-purple-400" />
+                      </div>
+                      <span className="font-heading font-extrabold text-xs text-purple-400">VS</span>
+                    </div>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+
+            <div className="mt-6 rounded-2xl bg-purple-950/20 border border-purple-500/30 p-5 flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center shrink-0">
+                <Trophy className="w-4 h-4 text-purple-300" />
+              </div>
+              <div>
+                <span className="text-[11px] font-mono-tech text-purple-300 uppercase tracking-wider">Veredito agêntico</span>
+                <p className="text-sm text-slate-200 mt-1 leading-relaxed">
+                  Para {demoPersona.name.split(' ')[0]}, que joga futebol society, a <strong className="text-white">{swordsProductA.name}</strong> vence: trava multidirecional baixa ideal para grama sintética, no tamanho {demoPersona.sizes.shoes} disponível em estoque.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </motion.section>
 
         {/* ------------------------------------------------------------- */}
         {/* COMO FUNCIONA */}
         {/* ------------------------------------------------------------- */}
-        <section id="como-funciona" className="max-w-6xl mx-auto px-6 py-16">
-          <div className="text-center max-w-xl mx-auto mb-12">
+        <motion.section
+          id="como-funciona"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={revealStagger}
+          className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20"
+        >
+          <motion.div variants={fadeInUp} className="text-center max-w-xl mx-auto mb-12">
             <h2 className="font-heading font-extrabold text-3xl text-white">Como funciona</h2>
             <p className="text-sm text-slate-400 mt-3">Do fork ao primeiro cliente personalizado, em três passos.</p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {STEPS.map((step) => (
-              <div key={step.number} className="glass-card rounded-3xl p-6 border border-slate-800 relative overflow-hidden">
+              <motion.div key={step.number} variants={fadeInUp} className="glass-card rounded-3xl p-6 border border-slate-800 relative overflow-hidden">
                 <span className="absolute -top-3 -right-2 font-heading font-extrabold text-6xl text-slate-800/60 select-none">
                   {step.number}
                 </span>
@@ -622,11 +757,11 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                 </div>
                 <h4 className="font-heading font-bold text-base text-white relative">{step.title}</h4>
                 <p className="text-xs text-slate-400 mt-2 leading-relaxed relative">{step.description}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
 
-          <div className="flex flex-col items-center gap-3 pt-10 text-center">
+          <motion.div variants={fadeInUp} className="flex flex-col items-center gap-3 pt-10 text-center">
             <p className="text-xs text-slate-500 max-w-sm">
               Quer o passo a passo completo, a arquitetura e os endpoints da API? Confira a documentação.
             </p>
@@ -637,13 +772,20 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                 <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
               </Button>
             </a>
-          </div>
-        </section>
+          </motion.div>
+        </motion.section>
 
         {/* ------------------------------------------------------------- */}
         {/* PARA LOJISTAS */}
         {/* ------------------------------------------------------------- */}
-        <section id="lojistas" className="max-w-6xl mx-auto px-6 py-16">
+        <motion.section
+          id="lojistas"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.25 }}
+          variants={fadeInUp}
+          className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20"
+        >
           <div className="glass-panel rounded-3xl p-8 md:p-10 border border-cyan-500/30 grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950">
             <div>
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 font-mono-tech text-[11px] mb-4">
@@ -677,12 +819,18 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* ------------------------------------------------------------- */}
         {/* CTA FINAL */}
         {/* ------------------------------------------------------------- */}
-        <section className="max-w-4xl mx-auto px-6 pb-20 text-center flex flex-col items-center gap-5">
+        <motion.section
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.4 }}
+          variants={fadeInUp}
+          className="max-w-4xl mx-auto px-6 pb-20 text-center flex flex-col items-center gap-5"
+        >
           <h2 className="font-heading font-extrabold text-3xl text-white">Veja o $Agent em ação agora</h2>
           <p className="text-sm text-slate-400 max-w-md">
             Navegue pela demo com o perfil de Pedro França e veja a vitrine, os cupons e o cashback se ajustarem em tempo real.
@@ -691,7 +839,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
             <span>Testar como funciona</span>
             <ArrowRight className="w-4 h-4" />
           </Button>
-        </section>
+        </motion.section>
 
         {/* ------------------------------------------------------------- */}
         {/* FOOTER */}
