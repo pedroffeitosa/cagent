@@ -591,6 +591,37 @@ function ScrollProgressBar() {
   );
 }
 
+function CursorGlow({ containerRef }: { containerRef: React.RefObject<HTMLElement> }) {
+  const glowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const handleMove = (e: MouseEvent) => {
+      const rect = el.getBoundingClientRect();
+      const node = glowRef.current;
+      if (!node) return;
+      node.style.left = `${e.clientX - rect.left}px`;
+      node.style.top = `${e.clientY - rect.top}px`;
+    };
+
+    el.addEventListener('mousemove', handleMove);
+    return () => el.removeEventListener('mousemove', handleMove);
+  }, [containerRef]);
+
+  return (
+    <div
+      ref={glowRef}
+      className="absolute w-[36rem] h-[36rem] rounded-full pointer-events-none hidden lg:block transition-[left,top] duration-500 ease-out"
+      style={{
+        transform: 'translate(-50%, -50%)',
+        background: 'radial-gradient(circle, rgba(16,185,129,0.16), transparent 70%)',
+      }}
+    />
+  );
+}
+
 function CountUpValue({ target, prefix = '', suffix = '' }: { target: number; prefix?: string; suffix?: string }) {
   const [display, setDisplay] = useState(0);
   const hasAnimated = useRef(false);
@@ -775,6 +806,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
   }, []);
 
   const handleNavClick = () => setIsMobileMenuOpen(false);
+  const heroRef = useRef<HTMLElement>(null);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -894,7 +926,9 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         {/* ------------------------------------------------------------- */}
         {/* HERO */}
         {/* ------------------------------------------------------------- */}
-        <section className="max-w-6xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+        <section ref={heroRef} className="relative overflow-hidden max-w-6xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+          <CursorGlow containerRef={heroRef} />
+
           <div className="flex flex-col gap-6">
             <span className="inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-full bg-muted border border-emerald-500/30 text-[11px] font-mono-tech text-emerald-400">
               <Sparkles className="w-3.5 h-3.5" />
