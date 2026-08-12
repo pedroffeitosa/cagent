@@ -60,6 +60,14 @@ const PROVIDER_LABELS: Record<string, string> = {
   custom: 'Regras Locais',
 };
 
+// Um endpoint serverless dedicado por provider — adicionar um novo provider ao BYOK
+// é criar `api/agent-<provider>.ts` (ver api/_shared.ts) e registrar a rota aqui.
+const PROVIDER_ENDPOINTS: Partial<Record<AIProviderType, string>> = {
+  gemini: '/api/agent',
+  anthropic: '/api/agent-claude',
+  openai: '/api/agent-openai',
+};
+
 interface ChatMessage {
   id: string;
   sender: 'user' | 'agent';
@@ -237,28 +245,39 @@ export default function App() {
     }
 
     try {
-      const endpoint = aiProvider === 'anthropic' ? '/api/agent-claude' : '/api/agent';
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userQuery: queryText,
-          userProfile: userProfile,
-          storeContext: MOCK_STORE_CONTEXT,
-          provider: aiProvider,
-          customApiKey: customApiKey || undefined,
-        }),
-      });
+      const endpoint = PROVIDER_ENDPOINTS[aiProvider];
 
       let data: AgentResponsePayload;
-      if (response.ok) {
-        data = await response.json();
-      } else {
+      if (!endpoint) {
+        // Provider sem adapter registrado: cai direto no motor de regras local
+        // em vez de silenciosamente disparar a chamada para outro provider.
         data = runLocalRuleEngine({
           userQuery: queryText,
           userProfile: userProfile,
           storeContext: MOCK_STORE_CONTEXT,
         });
+      } else {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userQuery: queryText,
+            userProfile: userProfile,
+            storeContext: MOCK_STORE_CONTEXT,
+            provider: aiProvider,
+            customApiKey: customApiKey || undefined,
+          }),
+        });
+
+        if (response.ok) {
+          data = await response.json();
+        } else {
+          data = runLocalRuleEngine({
+            userQuery: queryText,
+            userProfile: userProfile,
+            storeContext: MOCK_STORE_CONTEXT,
+          });
+        }
       }
 
       const agentMsg: ChatMessage = {

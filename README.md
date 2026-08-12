@@ -131,6 +131,25 @@ O repositório foi desenvolvido como uma **solução open-source templatizada** 
 
 ---
 
+## 🔑 Trocando de Provider de IA (BYOK)
+
+Cada provider tem seu próprio endpoint serverless em `api/`, todos construídos sobre o mesmo helper (`api/_shared.ts`) que cuida de CORS, parsing da resposta e fallback automático para o motor de regras local (`runLocalRuleEngine`) quando a chave não está configurada ou a chamada falha:
+
+| Provider  | Endpoint              | Variável de ambiente     |
+|-----------|------------------------|---------------------------|
+| Gemini    | `api/agent.ts`         | `GEMINI_API_KEY`          |
+| Anthropic | `api/agent-claude.ts`  | `ANTHROPIC_API_KEY`       |
+| OpenAI    | `api/agent-openai.ts`  | `OPENAI_API_KEY`          |
+
+O provider ativo é escolhido pelo usuário na UI (menu de Preferências → aba BYOK) e o front-end roteia a chamada para o endpoint correto via `PROVIDER_ENDPOINTS` em `apps/web/src/App.tsx`. Sem nenhuma chave configurada, o app funciona 100% com o motor de regras local — não há dependência obrigatória de nenhuma API externa.
+
+**Para adicionar um novo provider ao template:**
+1. Crie `api/agent-<provider>.ts` chamando `createAgentHandler(...)` (veja os três arquivos existentes como referência).
+2. Registre a variável de ambiente no `.env.example`.
+3. Adicione a entrada em `PROVIDER_ENDPOINTS` (`apps/web/src/App.tsx`) e na lista de opções da aba BYOK (`apps/web/src/components/PreferencesModal.tsx`).
+
+---
+
 ## 📄 Licença
 
 Este projeto é disponibilizado sob a licença **MIT** — permitindo livre uso, cópia, modificação, fork, redistribuição e integração comercial por qualquer loja ou desenvolvedor. Veja o arquivo [LICENSE](file:///home/jp/gh/cagent/LICENSE) para o texto completo.

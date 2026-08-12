@@ -5,6 +5,10 @@
   "dependencies": {
     "@cagent/shared": "*",
     "@google/generative-ai": "^0.21.0",
-    "@anthropic-ai/sdk": "^0.32.1"
+    "@anthropic-ai/sdk": "^0.60.0",
+    "openai": "^4.77.0"
+  },
+  "devDependencies": {
+    "@vercel/node": "^5.9.9"
   }
 }
