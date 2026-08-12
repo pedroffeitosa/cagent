@@ -609,6 +609,50 @@ function CountUpValue({ target, prefix = '', suffix = '' }: { target: number; pr
   );
 }
 
+function categoryLabel(track: string[], value: number): string {
+  const index = Math.min(track.length - 1, Math.floor((value / 100) * track.length));
+  return track[index];
+}
+
+function ComparisonBar({
+  value,
+  category,
+  isWinner,
+  color,
+}: {
+  value: number;
+  category: string;
+  isWinner: boolean;
+  color: 'emerald' | 'cyan';
+}) {
+  const dot = color === 'emerald' ? 'bg-emerald-400' : 'bg-cyan-400';
+  const badge =
+    color === 'emerald'
+      ? 'bg-emerald-500/10 border-emerald-500/30'
+      : 'bg-cyan-500/10 border-cyan-500/30';
+  const fill = color === 'emerald' ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-cyan-500 to-cyan-400';
+
+  return (
+    <div className="flex items-center gap-3">
+      <span className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${badge}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
+      </span>
+      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+        <motion.div
+          className={`h-full rounded-full ${fill}`}
+          initial={{ width: 0 }}
+          whileInView={{ width: `${value}%` }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+        />
+      </div>
+      <span className={`text-[11px] w-[92px] text-right shrink-0 ${isWinner ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
+        {category}
+      </span>
+    </div>
+  );
+}
+
 function PerformanceComparison({
   productA,
   productB,
@@ -624,38 +668,35 @@ function PerformanceComparison({
         <span className="text-[11px] font-mono-tech text-muted-foreground uppercase tracking-wider">
           Características de Performance
         </span>
-        <div className="flex items-center gap-4 text-[11px] font-medium">
-          <span className="flex items-center gap-1.5 text-emerald-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+        <div className="flex items-center gap-2.5 text-[11px] font-semibold">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             {productA.shortLabel}
           </span>
-          <span className="flex items-center gap-1.5 text-cyan-400">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 shrink-0" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
             {productB.shortLabel}
           </span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-5">
         {attributes.map((attr) => (
           <div key={attr.label}>
-            <span className="text-xs font-semibold text-foreground block mb-3">{attr.label}</span>
-            <div className="relative h-1.5 rounded-full bg-muted">
-              <span
-                className="absolute top-1/2 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-background shadow-md -translate-y-1/2 -translate-x-1/2"
-                style={{ left: `${attr.a}%` }}
+            <span className="text-xs font-semibold text-foreground block mb-2.5">{attr.label}</span>
+            <div className="flex flex-col gap-1.5">
+              <ComparisonBar
+                value={attr.a}
+                category={categoryLabel(attr.track, attr.a)}
+                isWinner={attr.a >= attr.b}
+                color="emerald"
               />
-              <span
-                className="absolute top-1/2 w-3.5 h-3.5 rounded-full bg-cyan-400 border-2 border-background shadow-md -translate-y-1/2 -translate-x-1/2"
-                style={{ left: `${attr.b}%` }}
+              <ComparisonBar
+                value={attr.b}
+                category={categoryLabel(attr.track, attr.b)}
+                isWinner={attr.b > attr.a}
+                color="cyan"
               />
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              {attr.track.map((t) => (
-                <span key={t} className="text-[10px] text-muted-foreground">
-                  {t}
-                </span>
-              ))}
             </div>
           </div>
         ))}
