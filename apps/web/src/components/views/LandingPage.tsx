@@ -113,6 +113,20 @@ const activeCoupons = MOCK_STORE_CONFIG.activeCoupons;
 const swordsProductA = MOCK_STORE_PRODUCTS.find((p) => p.id === 'prod-soc-04') ?? MOCK_STORE_PRODUCTS[3];
 const swordsProductB = MOCK_STORE_PRODUCTS.find((p) => p.id === 'prod-fld-05') ?? MOCK_STORE_PRODUCTS[4];
 
+interface SpectrumAttribute {
+  label: string;
+  track: string[];
+  a: number;
+  b: number;
+}
+
+const SWORDS_COMPARISON: SpectrumAttribute[] = [
+  { label: 'Terreno ideal', track: ['Society', 'Misto', 'Campo natural'], a: 8, b: 92 },
+  { label: 'Toque na bola', track: ['Básico', 'Médio', 'Alto'], a: 88, b: 55 },
+  { label: 'Tração no solo', track: ['Baixa', 'Média', 'Alta'], a: 52, b: 90 },
+  { label: 'Durabilidade', track: ['Baixa', 'Média', 'Alta'], a: 62, b: 85 },
+];
+
 const IMPACT_STATS = [
   { icon: TrendingUp, target: 35, prefix: '+', suffix: '%', label: 'Conversão Search-to-Cart', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
   { icon: TrendingDown, target: 60, prefix: '-', suffix: '%', label: 'Custo de atendimento', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
@@ -595,6 +609,61 @@ function CountUpValue({ target, prefix = '', suffix = '' }: { target: number; pr
   );
 }
 
+function PerformanceComparison({
+  productA,
+  productB,
+  attributes,
+}: {
+  productA: { shortLabel: string };
+  productB: { shortLabel: string };
+  attributes: SpectrumAttribute[];
+}) {
+  return (
+    <div className="mt-6 rounded-2xl border border-border bg-card/40 p-5 sm:p-6">
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+        <span className="text-[11px] font-mono-tech text-muted-foreground uppercase tracking-wider">
+          Características de Performance
+        </span>
+        <div className="flex items-center gap-4 text-[11px] font-medium">
+          <span className="flex items-center gap-1.5 text-emerald-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+            {productA.shortLabel}
+          </span>
+          <span className="flex items-center gap-1.5 text-cyan-400">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 shrink-0" />
+            {productB.shortLabel}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-6">
+        {attributes.map((attr) => (
+          <div key={attr.label}>
+            <span className="text-xs font-semibold text-foreground block mb-3">{attr.label}</span>
+            <div className="relative h-1.5 rounded-full bg-muted">
+              <span
+                className="absolute top-1/2 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-background shadow-md -translate-y-1/2 -translate-x-1/2"
+                style={{ left: `${attr.a}%` }}
+              />
+              <span
+                className="absolute top-1/2 w-3.5 h-3.5 rounded-full bg-cyan-400 border-2 border-background shadow-md -translate-y-1/2 -translate-x-1/2"
+                style={{ left: `${attr.b}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              {attr.track.map((t) => (
+                <span key={t} className="text-[10px] text-muted-foreground">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ThemeToggle() {
   const { themePreset, setThemePreset } = useTheme();
   const isLight = themePreset === 'light';
@@ -925,7 +994,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               <Swords className="w-3.5 h-3.5" />
               Batalha Swords
             </span>
-            <h2 className="font-heading font-extrabold text-3xl text-foreground">Dois produtos entram, um veredito sai</h2>
+            <h2 className="font-heading font-extrabold text-3xl text-foreground">Dois produtos, um veredito</h2>
             <p className="text-sm text-muted-foreground mt-3">O agente compara especificações técnicas e explica, em português claro, qual produto é ideal para aquele cliente.</p>
           </motion.div>
 
@@ -939,14 +1008,6 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                     </div>
                     <h4 className="font-heading font-bold text-sm text-foreground leading-snug" title={product.name}>{product.name}</h4>
                     <p className="text-sm font-heading font-bold text-emerald-400 mt-1">R$ {product.price}</p>
-                    <div className="mt-3 pt-3 border-t border-border flex flex-col gap-1.5 text-[11px] text-muted-foreground">
-                      {product.technicalSpecs?.material && (
-                        <span><span className="text-muted-foreground">Material:</span> {product.technicalSpecs.material}</span>
-                      )}
-                      {product.technicalSpecs?.cleatType && (
-                        <span><span className="text-muted-foreground">Trava:</span> {product.technicalSpecs.cleatType}</span>
-                      )}
-                    </div>
                   </div>
                   {i === 0 && (
                     <div className="flex md:flex-col items-center justify-center gap-2 shrink-0">
@@ -959,6 +1020,12 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                 </React.Fragment>
               ))}
             </div>
+
+            <PerformanceComparison
+              productA={{ shortLabel: 'Nike Tiempo' }}
+              productB={{ shortLabel: 'Adidas Predator' }}
+              attributes={SWORDS_COMPARISON}
+            />
 
             <div className="mt-6 rounded-2xl bg-purple-950/20 border border-purple-500/30 p-5 flex items-start gap-3">
               <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center shrink-0">
