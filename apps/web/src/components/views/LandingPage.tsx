@@ -28,6 +28,7 @@ import {
   Moon,
   Menu,
   X,
+  ArrowUp,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useTheme } from '../ThemeProvider';
@@ -575,6 +576,7 @@ function TypingBrand() {
 
 const NAV_LINKS = [
   { href: '#recursos', label: 'Recursos' },
+  { href: '#swords', label: 'Comparador' },
   { href: '#como-funciona', label: 'Como funciona' },
   { href: '#lojistas', label: 'Para Lojistas' },
 ];
@@ -772,6 +774,37 @@ function ThemeToggle() {
         )}
       </AnimatePresence>
     </button>
+  );
+}
+
+function ScrollToTopButton() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setIsVisible(window.scrollY > 640);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          initial={{ opacity: 0, y: 12, scale: 0.8 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 12, scale: 0.8 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          title="Voltar ao topo"
+          aria-label="Voltar ao topo"
+          className="fixed bottom-5 right-5 z-40 w-11 h-11 rounded-full border border-border bg-card/80 backdrop-blur-xl shadow-lg shadow-black/10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-emerald-500/40 transition-colors"
+        >
+          <ArrowUp className="w-4 h-4" />
+        </motion.button>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -1056,11 +1089,12 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         {/* BATALHA SWORDS */}
         {/* ------------------------------------------------------------- */}
         <motion.section
+          id="swords"
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, amount: 0.2 }}
           variants={revealStagger}
-          className="max-w-6xl mx-auto px-6 py-16"
+          className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20"
         >
           <motion.div variants={fadeInUp} className="text-center max-w-xl mx-auto mb-12">
             <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-[11px] font-mono-tech text-purple-300 [.theme-light_&]:text-purple-700 mb-4">
@@ -1244,6 +1278,8 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           </div>
         </footer>
       </div>
+
+      <ScrollToTopButton />
     </div>
   );
 }
