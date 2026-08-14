@@ -28,5 +28,10 @@ Thumbs.db
 !.vscode/settings.json
 .idea/
 
-# Local private docs (also covered in .git/info/exclude)
+# Local private docs & notebooks (also covered in .git/info/exclude)
 docs/
+.notebooklm/
+*.notebooklm
+CLAUDE_PLAYBOOK.md
+0*_*.md
+

@@ -35,6 +35,7 @@ import {
   Home
 } from 'lucide-react';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
+import { DemoScriptToolbar } from './components/DemoScriptToolbar';
 import { UserProfilePopover } from './components/UserProfilePopover';
 import { PreferencesModal } from './components/PreferencesModal';
 import { ProductCheckoutModal } from './components/ProductCheckoutModal';
@@ -323,6 +324,60 @@ export default function App() {
     setCurrentQuery('');
   };
 
+  // Interactive Demo Script Tour State (1-Click Pitch Steps 1..5)
+  const [demoStep, setDemoStep] = useState<number>(1);
+
+  const handleSelectDemoStep = (stepId: number) => {
+    setDemoStep(stepId);
+    switch (stepId) {
+      case 1:
+        // Passo 1: Perfil Pedro (0m00s - 0m30s)
+        setUserProfile(MOCK_USER_PROFILES[0]);
+        setActiveMainView('home');
+        setIsProfilePopoverOpen(true);
+        setSelectedCheckoutProduct(null);
+        setIsShareModalOpen(false);
+        break;
+      case 2:
+        // Passo 2: Busca Chuteira (0m30s - 1m15s)
+        setIsProfilePopoverOpen(false);
+        setUserProfile(MOCK_USER_PROFILES[0]);
+        setSelectedCheckoutProduct(null);
+        setIsShareModalOpen(false);
+        const queryText = 'Preciso de uma chuteira para jogar em campo de grama sintética no Rio de Janeiro';
+        setCurrentQuery(queryText);
+        handleRunAgent(queryText);
+        break;
+      case 3:
+        // Passo 3: Batalha Swords (1m15s - 2m00s)
+        setIsProfilePopoverOpen(false);
+        setSelectedCheckoutProduct(null);
+        setIsShareModalOpen(false);
+        setCartItems([
+          { product: MOCK_STORE_CONTEXT.catalog[2] || MOCK_STORE_CONTEXT.catalog[0], quantity: 1 },
+          { product: MOCK_STORE_CONTEXT.catalog[3] || MOCK_STORE_CONTEXT.catalog[1], quantity: 1 },
+        ]);
+        setActiveMainView('compare');
+        break;
+      case 4:
+        // Passo 4: Checkout 1-Clique com Cashback (2m00s - 2m30s)
+        setIsProfilePopoverOpen(false);
+        setIsShareModalOpen(false);
+        const checkoutItem = MOCK_STORE_CONTEXT.catalog[2] || MOCK_STORE_CONTEXT.catalog[0];
+        setSelectedCheckoutProduct(checkoutItem);
+        setActiveMainView('home');
+        break;
+      case 5:
+        // Passo 5: Compartilhamento QR Code Mobile (2m30s - 3m00s)
+        setIsProfilePopoverOpen(false);
+        setSelectedCheckoutProduct(null);
+        setIsShareModalOpen(true);
+        break;
+      default:
+        break;
+    }
+  };
+
   if (!hasEnteredApp) {
     return <LandingPage onEnter={() => setHasEnteredApp(true)} />;
   }
@@ -531,6 +586,13 @@ export default function App() {
       {/* ------------------------------------------------------------- */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden bg-slate-950">
         
+        {/* Interactive Pitch Demo Tour Bar (1-Click Steps 1..5) */}
+        <DemoScriptToolbar
+          currentStep={demoStep}
+          onSelectStep={handleSelectDemoStep}
+          onResetDemo={() => handleSelectDemoStep(1)}
+        />
+
         {/* Top Navbar Header with Breadcrumbs + Search Input + Actions */}
         <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 h-16 px-6 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-4 flex-1 max-w-xl">
