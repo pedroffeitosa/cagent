@@ -303,7 +303,7 @@ function HeroShowcase() {
   const colors = COLOR_MAP[slide.color];
 
   return (
-    <div className="relative" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
+    <div className="relative z-10" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
       <div className="glass-panel rounded-3xl p-5 shadow-2xl shadow-emerald-500/5 min-h-[400px] flex flex-col">
         {/* Header: current feature badge */}
         <div className="flex items-center gap-2 pb-3 border-b border-border/80 shrink-0">
@@ -679,10 +679,11 @@ function CursorGlow({ containerRef }: { containerRef: React.RefObject<HTMLElemen
   return (
     <div
       ref={glowRef}
-      className="absolute w-[36rem] h-[36rem] rounded-full pointer-events-none hidden lg:block transition-[left,top] duration-500 ease-out"
+      className="absolute z-0 w-[36rem] h-[36rem] rounded-full pointer-events-none hidden lg:block transition-[left,top] duration-500 ease-out"
       style={{
         transform: 'translate(-50%, -50%)',
         background: 'radial-gradient(circle, rgba(16,185,129,0.16), transparent 70%)',
+        mixBlendMode: 'screen',
       }}
     />
   );
@@ -1086,8 +1087,8 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           {/* ------------------------------------------------------------- */}
           <section ref={heroRef} className="relative overflow-hidden max-w-6xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
             <CursorGlow containerRef={heroRef} />
-  
-            <div className="flex flex-col gap-6">
+
+            <div className="relative z-10 flex flex-col gap-6">
               <span className="inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-full bg-muted border border-emerald-500/30 text-[11px] font-mono-tech text-emerald-400">
                 <Sparkles className="w-3.5 h-3.5" />
                 Hackathon Agents for Commerce · Deco 2026
