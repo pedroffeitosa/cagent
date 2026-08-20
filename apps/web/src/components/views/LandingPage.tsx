@@ -30,6 +30,8 @@ import {
   X,
   ArrowUp,
   Github,
+  ChevronDown,
+  HelpCircle,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useTheme } from '../ThemeProvider';
@@ -174,6 +176,39 @@ const BACKGROUND_ORBS = [
     style: { bottom: '10%', right: '5%' },
     animate: { x: [0, -20, 15, 0], y: [0, 15, -10, 0] },
     duration: 32,
+  },
+];
+
+const FAQ_ITEMS = [
+  {
+    question: 'Preciso trocar minha stack de e-commerce atual?',
+    answer:
+      'Não. É Fork & Connect: você troca só os adaptadores de catálogo e checkout em packages/shared pelos seus, mantendo o backend que já usa hoje.',
+  },
+  {
+    question: 'Os dados do cliente passam por algum serviço de terceiro?',
+    answer:
+      'O modelo é BYOK — você usa sua própria chave (Anthropic, OpenAI ou Gemini) e o motor roda no seu deploy. Hoje o MVP funciona em modo mock, sem autenticação nem banco de dados; ao conectar catálogo real, o dado continua trafegando só entre seu deploy e o provedor de LLM que você escolheu.',
+  },
+  {
+    question: 'Quanto custa colocar no ar?',
+    answer:
+      'O deploy 1-clique roda na Vercel, cujo plano gratuito cobre um piloto tranquilamente. O único custo variável é a chamada ao LLM — como é BYOK, você escolhe o provedor e paga direto a ele, sem markup.',
+  },
+  {
+    question: 'É open-source de verdade?',
+    answer:
+      'Sim, licença MIT, repositório público no GitHub. Fork livre, sem taxa de licenciamento.',
+  },
+  {
+    question: 'A vitrine que eu vejo na demo é meu catálogo real?',
+    answer:
+      'Não ainda — o MVP roda com dados mock (packages/shared/src/mocks.ts) para validar o piloto rápido. Trocar pelo catálogo e checkout reais é o passo seguinte do Fork & Connect.',
+  },
+  {
+    question: 'Preciso de um time de dev pra integrar?',
+    answer:
+      'Para subir a demo, não — é 1 clique. Para plugar catálogo e checkout reais, um dev front/back consegue trocar os adaptadores em poucas horas, sem infraestrutura nova.',
   },
 ];
 
@@ -607,6 +642,7 @@ const NAV_LINKS = [
   { href: '#swords', label: 'Comparador' },
   { href: '#como-funciona', label: 'Como funciona' },
   { href: '#lojistas', label: 'Para Lojistas' },
+  { href: '#faq', label: 'FAQ' },
 ];
 
 function ScrollProgressBar() {
@@ -833,6 +869,46 @@ function ScrollToTopButton() {
         </motion.button>
       )}
     </AnimatePresence>
+  );
+}
+
+function FAQAccordion() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
+  return (
+    <div className="flex flex-col gap-3">
+      {FAQ_ITEMS.map((item, index) => {
+        const isOpen = openIndex === index;
+        return (
+          <div key={item.question} className="glass-card rounded-2xl border border-border overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setOpenIndex(isOpen ? null : index)}
+              aria-expanded={isOpen}
+              className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
+            >
+              <span className="text-sm font-semibold text-foreground">{item.question}</span>
+              <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }} className="shrink-0 text-muted-foreground">
+                <ChevronDown className="w-4 h-4" />
+              </motion.span>
+            </button>
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="overflow-hidden"
+                >
+                  <p className="px-5 pb-4 text-sm text-muted-foreground leading-relaxed">{item.answer}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -1117,12 +1193,14 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               variants={revealStagger}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
             >
-              {FEATURES.map((feature) => (
+              {FEATURES.map((feature, index) => (
                 <motion.div
                   key={feature.title}
                   variants={fadeInUp}
                   whileHover={{ y: -4 }}
-                  className="glass-card rounded-3xl p-6 border border-border hover:border-primary/40 transition-colors"
+                  className={`glass-card rounded-3xl p-6 border border-border hover:border-primary/40 transition-colors ${
+                    index === FEATURES.length - 1 ? 'sm:col-span-2 lg:col-span-1 lg:col-start-2' : ''
+                  }`}
                 >
                   <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center mb-4 ${feature.color}`}>
                     <feature.icon className="w-5 h-5" />
@@ -1296,6 +1374,31 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           </motion.section>
   
           {/* ------------------------------------------------------------- */}
+          {/* FAQ */}
+          {/* ------------------------------------------------------------- */}
+          <motion.section
+            id="faq"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={revealStagger}
+            className="max-w-3xl mx-auto px-6 py-16 scroll-mt-20"
+          >
+            <motion.div variants={fadeInUp} className="text-center max-w-xl mx-auto mb-10">
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[11px] font-mono-tech text-cyan-400 mb-4">
+                <HelpCircle className="w-3.5 h-3.5" />
+                Perguntas frequentes
+              </span>
+              <h2 className="font-heading font-extrabold text-3xl text-foreground">Antes de instalar, tire suas dúvidas</h2>
+              <p className="text-sm text-muted-foreground mt-3">O que lojistas costumam perguntar antes de rodar o piloto.</p>
+            </motion.div>
+
+            <motion.div variants={fadeInUp}>
+              <FAQAccordion />
+            </motion.div>
+          </motion.section>
+
+          {/* ------------------------------------------------------------- */}
           {/* CTA FINAL */}
           {/* ------------------------------------------------------------- */}
           <motion.section
@@ -1319,20 +1422,49 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           {/* FOOTER */}
           {/* ------------------------------------------------------------- */}
           <footer className="border-t border-border/80">
-            <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <span className="logo-agent-financial text-lg tracking-tighter">$Agent</span>
-              <p className="text-[11px] text-muted-foreground text-center sm:text-right">
-                Desenvolvido para o Hackathon Agents for Commerce — Deco (2026). MVP em modo mock, sem autenticação ou banco de dados.
-              </p>
-              <a
-                href={GITHUB_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors shrink-0"
-              >
-                <Github className="w-3.5 h-3.5" />
-                <span>Código-fonte</span>
-              </a>
+            <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
+              <div className="col-span-2 sm:col-span-1 flex flex-col gap-3">
+                <span className="logo-agent-financial text-lg tracking-tighter">$Agent</span>
+                <p className="text-[11px] text-muted-foreground leading-relaxed max-w-[16rem]">
+                  Canal de vendas agêntico e personalizado, pronto para qualquer lojista instalar.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2.5">
+                <span className="text-[11px] font-mono-tech text-muted-foreground uppercase tracking-wider">Produto</span>
+                {NAV_LINKS.map((link) => (
+                  <a key={link.href} href={link.href} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors w-fit">
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-2.5">
+                <span className="text-[11px] font-mono-tech text-muted-foreground uppercase tracking-wider">Recursos</span>
+                <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors w-fit">
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Documentação</span>
+                </a>
+                <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors w-fit">
+                  <Github className="w-3.5 h-3.5" />
+                  <span>Código-fonte</span>
+                </a>
+              </div>
+
+              <div className="flex flex-col gap-2.5">
+                <span className="text-[11px] font-mono-tech text-muted-foreground uppercase tracking-wider">Comece agora</span>
+                <button type="button" onClick={onEnter} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors w-fit text-left">
+                  Testar como funciona
+                </button>
+              </div>
+            </div>
+
+            <div className="border-t border-border/60">
+              <div className="max-w-6xl mx-auto px-6 py-5">
+                <p className="text-[11px] text-muted-foreground text-center sm:text-left">
+                  Desenvolvido para o Hackathon Agents for Commerce — Deco (2026). MVP em modo mock, sem autenticação ou banco de dados.
+                </p>
+              </div>
             </div>
           </footer>
         </div>
