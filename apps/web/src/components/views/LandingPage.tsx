@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, animate, useScroll, useSpring, type Variants } from 'framer-motion';
+import { motion, AnimatePresence, animate, useScroll, useSpring, MotionConfig, type Variants } from 'framer-motion';
 import {
   Sparkles,
   Zap,
@@ -29,6 +29,7 @@ import {
   Menu,
   X,
   ArrowUp,
+  Github,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useTheme } from '../ThemeProvider';
@@ -40,6 +41,7 @@ interface LandingPageProps {
 }
 
 const DOCS_URL = 'https://dcagent.vercel.app';
+const GITHUB_URL = 'https://github.com/pedroffeitosa/cagent';
 
 const FEATURES = [
   {
@@ -221,32 +223,52 @@ const revealStagger: Variants = {
   show: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
 };
 
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleChange = () => setReduced(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  return reduced;
+}
+
 function HeroShowcase() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const isAutoAdvancing = !isPaused && !prefersReducedMotion;
 
   const restartTimer = (index: number) => {
     setActiveIndex(index);
     if (timerRef.current) clearInterval(timerRef.current);
+    if (!isAutoAdvancing) return;
     timerRef.current = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % HERO_SLIDES.length);
     }, 3200);
   };
 
   useEffect(() => {
+    if (!isAutoAdvancing) return;
     timerRef.current = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % HERO_SLIDES.length);
     }, 3200);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, []);
+  }, [isAutoAdvancing]);
 
   const slide = HERO_SLIDES[activeIndex];
   const colors = COLOR_MAP[slide.color];
 
   return (
-    <div className="relative">
+    <div className="relative" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
       <div className="glass-panel rounded-3xl p-5 shadow-2xl shadow-emerald-500/5 min-h-[400px] flex flex-col">
         {/* Header: current feature badge */}
         <div className="flex items-center gap-2 pb-3 border-b border-border/80 shrink-0">
@@ -541,8 +563,10 @@ function TypingBrand() {
   const [nameIndex, setNameIndex] = useState(0);
   const [text, setText] = useState('');
   const [phase, setPhase] = useState<'typing' | 'pausing' | 'deleting'>('typing');
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
+    if (prefersReducedMotion) return;
     const currentName = BRAND_NAMES[nameIndex];
     let timeout: ReturnType<typeof setTimeout>;
 
@@ -564,7 +588,11 @@ function TypingBrand() {
     }
 
     return () => clearTimeout(timeout);
-  }, [text, phase, nameIndex]);
+  }, [text, phase, nameIndex, prefersReducedMotion]);
+
+  if (prefersReducedMotion) {
+    return <span className="logo-agent-financial text-2xl tracking-tighter inline-flex items-center">{BRAND_NAMES[0]}</span>;
+  }
 
   return (
     <span className="logo-agent-financial text-2xl tracking-tighter inline-flex items-center">
@@ -842,444 +870,475 @@ export function LandingPage({ onEnter }: LandingPageProps) {
   const heroRef = useRef<HTMLElement>(null);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Ambient Background: dot grid + grain + drifting color orbs */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div
-          className="absolute inset-0 opacity-[0.4] [.theme-light_&]:opacity-[0.5]"
-          style={{
-            backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-            color: 'hsl(var(--muted-foreground))',
-            maskImage: 'radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 100%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 100%)',
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-[0.035] mix-blend-overlay"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")",
-            backgroundSize: '120px 120px',
-          }}
-        />
-        {BACKGROUND_ORBS.map((orb) => (
-          <motion.div
-            key={orb.id}
-            className={`absolute rounded-full blur-3xl ${orb.color} ${orb.size}`}
-            style={orb.style}
-            animate={orb.animate}
-            transition={{ duration: orb.duration, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        ))}
-      </div>
-
-      <div className="relative">
-        {/* ------------------------------------------------------------- */}
-        {/* NAVBAR */}
-        {/* ------------------------------------------------------------- */}
-        <header className="sticky top-0 z-30 px-3 sm:px-6 pt-3">
+    <MotionConfig reducedMotion="user">
+      <div className="min-h-screen bg-background text-foreground">
+        {/* Ambient Background: dot grid + grain + drifting color orbs */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
           <div
-            className={`relative overflow-hidden max-w-6xl mx-auto rounded-2xl border backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] ${
-              isScrolled
-                ? 'bg-background/70 border-border shadow-lg shadow-black/10'
-                : 'bg-background/40 border-border/60 shadow-md shadow-black/5'
-            }`}
-          >
-            <ScrollProgressBar />
-            <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-5 h-14">
-              <div className="w-28 shrink-0">
-                <TypingBrand />
-              </div>
-
-              <nav className="hidden md:flex items-center justify-center gap-1 text-xs font-medium text-muted-foreground">
-                {NAV_LINKS.map((link) => {
-                  const isActive = activeSection === link.href.slice(1);
-                  return (
-                    <a
-                      key={link.href}
-                      href={link.href}
-                      className={`group relative px-3 py-2 transition-colors ${isActive ? 'text-foreground' : 'hover:text-foreground'}`}
-                    >
-                      {link.label}
-                      <span
-                        className={`absolute left-3 right-3 -bottom-0.5 h-px bg-emerald-400 transition-transform origin-left ${
-                          isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-                        }`}
-                      />
-                    </a>
-                  );
-                })}
-              </nav>
-
-              <div className="flex items-center justify-end gap-2.5">
-                <ThemeToggle />
-                <button
-                  type="button"
-                  onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-                  aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
-                  className="md:hidden w-9 h-9 rounded-xl border border-border bg-card/60 flex items-center justify-center text-foreground shrink-0"
-                >
-                  {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <AnimatePresence>
-              {isMobileMenuOpen && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25, ease: 'easeOut' }}
-                  className="md:hidden overflow-hidden border-t border-border"
-                >
-                  <nav className="px-3 py-3 flex flex-col gap-1 text-sm">
-                    {NAV_LINKS.map((link) => (
+            className="absolute inset-0 opacity-[0.4] [.theme-light_&]:opacity-[0.5]"
+            style={{
+              backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)',
+              backgroundSize: '28px 28px',
+              color: 'hsl(var(--muted-foreground))',
+              maskImage: 'radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 100%)',
+              WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 100%)',
+            }}
+          />
+          <div
+            className="absolute inset-0 opacity-[0.035] mix-blend-overlay"
+            style={{
+              backgroundImage:
+                "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")",
+              backgroundSize: '120px 120px',
+            }}
+          />
+          {BACKGROUND_ORBS.map((orb) => (
+            <motion.div
+              key={orb.id}
+              className={`absolute rounded-full blur-3xl ${orb.color} ${orb.size}`}
+              style={orb.style}
+              animate={orb.animate}
+              transition={{ duration: orb.duration, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          ))}
+        </div>
+  
+        <div className="relative">
+          {/* ------------------------------------------------------------- */}
+          {/* NAVBAR */}
+          {/* ------------------------------------------------------------- */}
+          <header className="sticky top-0 z-30 px-3 sm:px-6 pt-3">
+            <div
+              className={`relative overflow-hidden max-w-6xl mx-auto rounded-2xl border backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] ${
+                isScrolled
+                  ? 'bg-background/70 border-border shadow-lg shadow-black/10'
+                  : 'bg-background/40 border-border/60 shadow-md shadow-black/5'
+              }`}
+            >
+              <ScrollProgressBar />
+              <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-5 h-14">
+                <div className="w-28 shrink-0">
+                  <TypingBrand />
+                </div>
+  
+                <nav className="hidden md:flex items-center justify-center gap-1 text-xs font-medium text-muted-foreground">
+                  {NAV_LINKS.map((link) => {
+                    const isActive = activeSection === link.href.slice(1);
+                    return (
                       <a
                         key={link.href}
                         href={link.href}
-                        onClick={handleNavClick}
-                        className="px-3 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        className={`group relative px-3 py-2 transition-colors ${isActive ? 'text-foreground' : 'hover:text-foreground'}`}
                       >
                         {link.label}
+                        <span
+                          className={`absolute left-3 right-3 -bottom-0.5 h-px bg-emerald-400 transition-transform origin-left ${
+                            isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                          }`}
+                        />
                       </a>
-                    ))}
-                    <Button onClick={onEnter} size="sm" className="mt-2 gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
-                      <span>Testar como funciona</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Button>
-                  </nav>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </header>
-
-        {/* ------------------------------------------------------------- */}
-        {/* HERO */}
-        {/* ------------------------------------------------------------- */}
-        <section ref={heroRef} className="relative overflow-hidden max-w-6xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
-          <CursorGlow containerRef={heroRef} />
-
-          <div className="flex flex-col gap-6">
-            <span className="inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-full bg-muted border border-emerald-500/30 text-[11px] font-mono-tech text-emerald-400">
-              <Sparkles className="w-3.5 h-3.5" />
-              Hackathon Agents for Commerce · Deco 2026
-            </span>
-
-            <h1 className="font-heading font-extrabold text-4xl sm:text-5xl leading-[1.1] tracking-tight text-foreground">
-              Um canal de vendas <span className="text-emerald-400">agêntico e personalizado</span>, pronto em minutos
-            </h1>
-
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-lg">
-              O <strong className="text-foreground">$Agent</strong> é um canal turnkey que qualquer lojista instala em minutos: vitrine reordenada por IA, cupons, cashback e filtros personalizados para cada cliente — sem cadastro repetido, sem infraestrutura complexa.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Button onClick={onEnter} size="lg" className="gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
-                <span>Testar como funciona</span>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-              <a href="#como-funciona">
-                <Button variant="secondary" size="lg" className="gap-2">
-                  <span>Ver como funciona</span>
+                    );
+                  })}
+                </nav>
+  
+                <div className="flex items-center justify-end gap-2.5">
+                  <a
+                    href={GITHUB_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Ver código no GitHub"
+                    aria-label="Ver código no GitHub"
+                    className="hidden sm:flex w-9 h-9 rounded-xl border border-border bg-card/60 items-center justify-center text-muted-foreground hover:text-foreground hover:border-emerald-500/40 transition-colors shrink-0"
+                  >
+                    <Github className="w-4 h-4" />
+                  </a>
+                  <ThemeToggle />
+                  <button
+                    type="button"
+                    onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                    aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+                    className="md:hidden w-9 h-9 rounded-xl border border-border bg-card/60 flex items-center justify-center text-foreground shrink-0"
+                  >
+                    {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+  
+              <AnimatePresence>
+                {isMobileMenuOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    className="md:hidden overflow-hidden border-t border-border"
+                  >
+                    <nav className="px-3 py-3 flex flex-col gap-1 text-sm">
+                      {NAV_LINKS.map((link) => (
+                        <a
+                          key={link.href}
+                          href={link.href}
+                          onClick={handleNavClick}
+                          className="px-3 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        >
+                          {link.label}
+                        </a>
+                      ))}
+                      <Button onClick={onEnter} size="sm" className="mt-2 gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
+                        <span>Testar como funciona</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Button>
+                      <a
+                        href={GITHUB_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={handleNavClick}
+                        className="sm:hidden mt-1 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-2"
+                      >
+                        <Github className="w-4 h-4" />
+                        <span>Ver código no GitHub</span>
+                      </a>
+                    </nav>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </header>
+  
+          {/* ------------------------------------------------------------- */}
+          {/* HERO */}
+          {/* ------------------------------------------------------------- */}
+          <section ref={heroRef} className="relative overflow-hidden max-w-6xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+            <CursorGlow containerRef={heroRef} />
+  
+            <div className="flex flex-col gap-6">
+              <span className="inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-full bg-muted border border-emerald-500/30 text-[11px] font-mono-tech text-emerald-400">
+                <Sparkles className="w-3.5 h-3.5" />
+                Hackathon Agents for Commerce · Deco 2026
+              </span>
+  
+              <h1 className="font-heading font-extrabold text-4xl sm:text-5xl leading-[1.1] tracking-tight text-foreground">
+                Um canal de vendas <span className="text-emerald-400">agêntico e personalizado</span>, pronto em minutos
+              </h1>
+  
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-lg">
+                O <strong className="text-foreground">$Agent</strong> é um canal turnkey que qualquer lojista instala em minutos: vitrine reordenada por IA, cupons, cashback e filtros personalizados para cada cliente — sem cadastro repetido, sem infraestrutura complexa.
+              </p>
+  
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Button onClick={onEnter} size="lg" className="gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
+                  <span>Testar como funciona</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
-              </a>
+                <a href="#como-funciona">
+                  <Button variant="secondary" size="lg" className="gap-2">
+                    <span>Ver como funciona</span>
+                  </Button>
+                </a>
+              </div>
+  
+              <div className="flex flex-wrap items-center gap-6 pt-4 text-[11px] text-muted-foreground">
+                <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> Fork &amp; Connect ready</span>
+                <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> Web + Mobile (Expo)</span>
+                <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> BYOK multi-LLM</span>
+              </div>
             </div>
-
-            <div className="flex flex-wrap items-center gap-6 pt-4 text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> Fork &amp; Connect ready</span>
-              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> Web + Mobile (Expo)</span>
-              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> BYOK multi-LLM</span>
-            </div>
-          </div>
-
-          {/* Hero Visual: vitrine animada ciclando pelas funcionalidades */}
-          <HeroShowcase />
-        </section>
-
-        {/* ------------------------------------------------------------- */}
-        {/* IMPACTO / ESTATÍSTICAS */}
-        {/* ------------------------------------------------------------- */}
-        <motion.section
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.4 }}
-          variants={revealStagger}
-          className="max-w-6xl mx-auto px-6 pb-16"
-        >
-          <div className="glass-panel rounded-3xl border border-border grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border/80">
-            {IMPACT_STATS.map((stat) => (
-              <motion.div key={stat.label} variants={fadeInUp} className="p-6 flex items-center gap-4">
-                <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center shrink-0 ${stat.color}`}>
-                  <stat.icon className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="font-heading font-extrabold text-2xl text-foreground block leading-none">
-                    <CountUpValue target={stat.target} prefix={stat.prefix} suffix={stat.suffix} />
-                  </span>
-                  <span className="text-xs text-muted-foreground mt-1 block">{stat.label}</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* ------------------------------------------------------------- */}
-        {/* PROBLEMA -> SOLUÇÃO */}
-        {/* ------------------------------------------------------------- */}
-        <motion.section
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={revealStagger}
-          className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 gap-6"
-        >
-          <motion.div variants={fadeInUp} className="glass-card rounded-3xl p-7 border border-border">
-            <span className="text-[11px] font-mono-tech text-red-400 uppercase tracking-wider">O problema</span>
-            <h3 className="font-heading font-bold text-xl text-foreground mt-2">Personalização passiva e fragmentada</h3>
-            <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-              O cliente ajusta filtro de tamanho, cor e preço toda vez que entra em uma loja nova. As lojas não compartilham contexto entre si — o resultado é busca genérica, abandono de carrinho e conversão perdida.
-            </p>
-          </motion.div>
-          <motion.div variants={fadeInUp} className="glass-card rounded-3xl p-7 border border-emerald-500/30 bg-emerald-950/10">
-            <span className="text-[11px] font-mono-tech text-emerald-400 uppercase tracking-wider">A solução $Agent</span>
-            <h3 className="font-heading font-bold text-xl text-foreground mt-2">Um canal contextual único, plug &amp; play</h3>
-            <p className="text-sm text-foreground mt-3 leading-relaxed">
-              O perfil, histórico e saldo de cashback do cliente atravessam qualquer loja conectada à rede. O lojista instala o canal, conecta o catálogo, e a vitrine já nasce personalizada — <strong className="text-foreground">vende mais e roda por menos</strong>.
-            </p>
-          </motion.div>
-        </motion.section>
-
-        {/* ------------------------------------------------------------- */}
-        {/* RECURSOS */}
-        {/* ------------------------------------------------------------- */}
-        <section id="recursos" className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20">
-          <div className="text-center max-w-xl mx-auto mb-12">
-            <h2 className="font-heading font-extrabold text-3xl text-foreground">Tudo que um canal de vendas agêntico precisa</h2>
-            <p className="text-sm text-muted-foreground mt-3">Recursos prontos para uso, sem integração pesada para o piloto.</p>
-          </div>
-
-          <motion.div
+  
+            {/* Hero Visual: vitrine animada ciclando pelas funcionalidades */}
+            <HeroShowcase />
+          </section>
+  
+          {/* ------------------------------------------------------------- */}
+          {/* IMPACTO / ESTATÍSTICAS */}
+          {/* ------------------------------------------------------------- */}
+          <motion.section
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, amount: 0.15 }}
+            viewport={{ once: true, amount: 0.4 }}
             variants={revealStagger}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+            className="max-w-6xl mx-auto px-6 pb-16"
           >
-            {FEATURES.map((feature) => (
-              <motion.div
-                key={feature.title}
-                variants={fadeInUp}
-                whileHover={{ y: -4 }}
-                className="glass-card rounded-3xl p-6 border border-border hover:border-primary/40 transition-colors"
-              >
-                <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center mb-4 ${feature.color}`}>
-                  <feature.icon className="w-5 h-5" />
-                </div>
-                <h4 className="font-heading font-bold text-base text-foreground">{feature.title}</h4>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{feature.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </section>
-
-        {/* ------------------------------------------------------------- */}
-        {/* BATALHA SWORDS */}
-        {/* ------------------------------------------------------------- */}
-        <motion.section
-          id="swords"
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={revealStagger}
-          className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20"
-        >
-          <motion.div variants={fadeInUp} className="text-center max-w-xl mx-auto mb-12">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-[11px] font-mono-tech text-purple-300 [.theme-light_&]:text-purple-700 mb-4">
-              <Swords className="w-3.5 h-3.5" />
-              Batalha Swords
-            </span>
-            <h2 className="font-heading font-extrabold text-3xl text-foreground">Dois produtos, um veredito</h2>
-            <p className="text-sm text-muted-foreground mt-3">O agente compara especificações técnicas e explica, em português claro, qual produto é ideal para aquele cliente.</p>
-          </motion.div>
-
-          <motion.div variants={fadeInUp} className="glass-panel rounded-3xl border border-purple-500/20 p-6 md:p-8">
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center">
-              {[swordsProductA, swordsProductB].map((product, i) => (
-                <React.Fragment key={product.id}>
-                  <div className="glass-card rounded-2xl p-4 border border-border flex flex-col">
-                    <div className="aspect-[4/3] rounded-xl overflow-hidden bg-muted mb-3">
-                      <img
-                        src={product.imageUrl}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                        onError={handleImageError}
-                      />
-                    </div>
-                    <h4 className="font-heading font-bold text-sm text-foreground leading-snug" title={product.name}>{product.name}</h4>
-                    <p className="text-sm font-heading font-bold text-emerald-400 mt-1">R$ {product.price}</p>
+            <div className="glass-panel rounded-3xl border border-border grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border/80">
+              {IMPACT_STATS.map((stat) => (
+                <motion.div key={stat.label} variants={fadeInUp} className="p-6 flex items-center gap-4">
+                  <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center shrink-0 ${stat.color}`}>
+                    <stat.icon className="w-5 h-5" />
                   </div>
-                  {i === 0 && (
-                    <div className="flex md:flex-col items-center justify-center gap-2 shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/40 flex items-center justify-center">
-                        <Swords className="w-4 h-4 text-purple-400" />
-                      </div>
-                      <span className="font-heading font-extrabold text-xs text-purple-400 [.theme-light_&]:text-purple-700">VS</span>
-                    </div>
-                  )}
-                </React.Fragment>
+                  <div>
+                    <span className="font-heading font-extrabold text-2xl text-foreground block leading-none">
+                      <CountUpValue target={stat.target} prefix={stat.prefix} suffix={stat.suffix} />
+                    </span>
+                    <span className="text-xs text-muted-foreground mt-1 block">{stat.label}</span>
+                  </div>
+                </motion.div>
               ))}
             </div>
-
-            <PerformanceComparison
-              productA={{ shortLabel: 'Nike Tiempo' }}
-              productB={{ shortLabel: 'Adidas Predator' }}
-              attributes={SWORDS_COMPARISON}
-            />
-
-            <div className="mt-6 rounded-2xl bg-purple-950/20 border border-purple-500/30 p-5 flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center shrink-0">
-                <Trophy className="w-4 h-4 text-purple-300 [.theme-light_&]:text-purple-700" />
+          </motion.section>
+  
+          {/* ------------------------------------------------------------- */}
+          {/* PROBLEMA -> SOLUÇÃO */}
+          {/* ------------------------------------------------------------- */}
+          <motion.section
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={revealStagger}
+            className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
+            <motion.div variants={fadeInUp} className="glass-card rounded-3xl p-7 border border-border">
+              <span className="text-[11px] font-mono-tech text-red-400 uppercase tracking-wider">O problema</span>
+              <h3 className="font-heading font-bold text-xl text-foreground mt-2">Personalização passiva e fragmentada</h3>
+              <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+                O cliente ajusta filtro de tamanho, cor e preço toda vez que entra em uma loja nova. As lojas não compartilham contexto entre si — o resultado é busca genérica, abandono de carrinho e conversão perdida.
+              </p>
+            </motion.div>
+            <motion.div variants={fadeInUp} className="glass-card rounded-3xl p-7 border border-emerald-500/30 bg-emerald-950/10">
+              <span className="text-[11px] font-mono-tech text-emerald-400 uppercase tracking-wider">A solução $Agent</span>
+              <h3 className="font-heading font-bold text-xl text-foreground mt-2">Um canal contextual único, plug &amp; play</h3>
+              <p className="text-sm text-foreground mt-3 leading-relaxed">
+                O perfil, histórico e saldo de cashback do cliente atravessam qualquer loja conectada à rede. O lojista instala o canal, conecta o catálogo, e a vitrine já nasce personalizada — <strong className="text-foreground">vende mais e roda por menos</strong>.
+              </p>
+            </motion.div>
+          </motion.section>
+  
+          {/* ------------------------------------------------------------- */}
+          {/* RECURSOS */}
+          {/* ------------------------------------------------------------- */}
+          <section id="recursos" className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20">
+            <div className="text-center max-w-xl mx-auto mb-12">
+              <h2 className="font-heading font-extrabold text-3xl text-foreground">Tudo que um canal de vendas agêntico precisa</h2>
+              <p className="text-sm text-muted-foreground mt-3">Recursos prontos para uso, sem integração pesada para o piloto.</p>
+            </div>
+  
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.15 }}
+              variants={revealStagger}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+            >
+              {FEATURES.map((feature) => (
+                <motion.div
+                  key={feature.title}
+                  variants={fadeInUp}
+                  whileHover={{ y: -4 }}
+                  className="glass-card rounded-3xl p-6 border border-border hover:border-primary/40 transition-colors"
+                >
+                  <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center mb-4 ${feature.color}`}>
+                    <feature.icon className="w-5 h-5" />
+                  </div>
+                  <h4 className="font-heading font-bold text-base text-foreground">{feature.title}</h4>
+                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{feature.description}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </section>
+  
+          {/* ------------------------------------------------------------- */}
+          {/* BATALHA SWORDS */}
+          {/* ------------------------------------------------------------- */}
+          <motion.section
+            id="swords"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={revealStagger}
+            className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20"
+          >
+            <motion.div variants={fadeInUp} className="text-center max-w-xl mx-auto mb-12">
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-[11px] font-mono-tech text-purple-300 [.theme-light_&]:text-purple-700 mb-4">
+                <Swords className="w-3.5 h-3.5" />
+                Batalha Swords
+              </span>
+              <h2 className="font-heading font-extrabold text-3xl text-foreground">Dois produtos, um veredito</h2>
+              <p className="text-sm text-muted-foreground mt-3">O agente compara especificações técnicas e explica, em português claro, qual produto é ideal para aquele cliente.</p>
+            </motion.div>
+  
+            <motion.div variants={fadeInUp} className="glass-panel rounded-3xl border border-purple-500/20 p-6 md:p-8">
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center">
+                {[swordsProductA, swordsProductB].map((product, i) => (
+                  <React.Fragment key={product.id}>
+                    <div className="glass-card rounded-2xl p-4 border border-border flex flex-col">
+                      <div className="aspect-[4/3] rounded-xl overflow-hidden bg-muted mb-3">
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                          onError={handleImageError}
+                        />
+                      </div>
+                      <h4 className="font-heading font-bold text-sm text-foreground leading-snug" title={product.name}>{product.name}</h4>
+                      <p className="text-sm font-heading font-bold text-emerald-400 mt-1">R$ {product.price}</p>
+                    </div>
+                    {i === 0 && (
+                      <div className="flex md:flex-col items-center justify-center gap-2 shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/40 flex items-center justify-center">
+                          <Swords className="w-4 h-4 text-purple-400" />
+                        </div>
+                        <span className="font-heading font-extrabold text-xs text-purple-400 [.theme-light_&]:text-purple-700">VS</span>
+                      </div>
+                    )}
+                  </React.Fragment>
+                ))}
               </div>
+  
+              <PerformanceComparison
+                productA={{ shortLabel: 'Nike Tiempo' }}
+                productB={{ shortLabel: 'Adidas Predator' }}
+                attributes={SWORDS_COMPARISON}
+              />
+  
+              <div className="mt-6 rounded-2xl bg-purple-950/20 border border-purple-500/30 p-5 flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center shrink-0">
+                  <Trophy className="w-4 h-4 text-purple-300 [.theme-light_&]:text-purple-700" />
+                </div>
+                <div>
+                  <span className="text-[11px] font-mono-tech text-purple-300 [.theme-light_&]:text-purple-700 uppercase tracking-wider">Veredito agêntico</span>
+                  <p className="text-sm text-foreground mt-1 leading-relaxed">
+                    Para {demoPersona.name.split(' ')[0]}, que joga futebol society, a <strong className="text-foreground">{swordsProductA.name}</strong> vence: trava multidirecional baixa ideal para grama sintética, no tamanho {demoPersona.sizes.shoes} disponível em estoque.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.section>
+  
+          {/* ------------------------------------------------------------- */}
+          {/* COMO FUNCIONA */}
+          {/* ------------------------------------------------------------- */}
+          <motion.section
+            id="como-funciona"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={revealStagger}
+            className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20"
+          >
+            <motion.div variants={fadeInUp} className="text-center max-w-xl mx-auto mb-12">
+              <h2 className="font-heading font-extrabold text-3xl text-foreground">Como funciona</h2>
+              <p className="text-sm text-muted-foreground mt-3">Do fork ao primeiro cliente personalizado, em três passos.</p>
+            </motion.div>
+  
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {STEPS.map((step, index) => (
+                <motion.div key={step.number} variants={fadeInUp} className="glass-card rounded-3xl p-6 border border-border relative">
+                  {index < STEPS.length - 1 && (
+                    <div className="hidden md:block absolute top-[2.875rem] left-full w-6 h-px bg-gradient-to-r from-border to-transparent z-10" />
+                  )}
+                  <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4 text-emerald-400">
+                    <step.icon className="w-5 h-5" />
+                  </div>
+                  <h4 className="font-heading font-bold text-base text-foreground">{step.title}</h4>
+                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{step.description}</p>
+                </motion.div>
+              ))}
+            </div>
+  
+            <motion.div variants={fadeInUp} className="flex flex-col items-center gap-3 pt-10 text-center">
+              <p className="text-xs text-muted-foreground max-w-sm">
+                Quer o passo a passo completo, a arquitetura e os endpoints da API? Confira a documentação.
+              </p>
+              <a href={DOCS_URL} target="_blank" rel="noopener noreferrer">
+                <Button variant="secondary" size="lg" className="gap-2">
+                  <FileText className="w-4 h-4 text-emerald-400" />
+                  <span>Ver Documentação</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+                </Button>
+              </a>
+            </motion.div>
+          </motion.section>
+  
+          {/* ------------------------------------------------------------- */}
+          {/* PARA LOJISTAS */}
+          {/* ------------------------------------------------------------- */}
+          <motion.section
+            id="lojistas"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.25 }}
+            variants={fadeInUp}
+            className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20"
+          >
+            <div className="glass-panel rounded-3xl p-8 md:p-10 border border-cyan-500/30 grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-gradient-to-r from-background via-card to-background">
               <div>
-                <span className="text-[11px] font-mono-tech text-purple-300 [.theme-light_&]:text-purple-700 uppercase tracking-wider">Veredito agêntico</span>
-                <p className="text-sm text-foreground mt-1 leading-relaxed">
-                  Para {demoPersona.name.split(' ')[0]}, que joga futebol society, a <strong className="text-foreground">{swordsProductA.name}</strong> vence: trava multidirecional baixa ideal para grama sintética, no tamanho {demoPersona.sizes.shoes} disponível em estoque.
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 font-mono-tech text-[11px] mb-4">
+                  <Store className="w-3.5 h-3.5" />
+                  Para lojistas
+                </span>
+                <h3 className="font-heading font-bold text-2xl text-foreground">Instalação rápida, sem trocar sua stack</h3>
+                <p className="text-sm text-foreground mt-3 leading-relaxed">
+                  Fork do repositório, troque os adaptadores de catálogo em <code className="font-mono-tech text-emerald-400">packages/shared/src/mocks.ts</code> pelos seus dados reais e faça deploy em 1 clique. Sem autenticação nem banco de dados obrigatórios para validar o piloto.
+                </p>
+                <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+                  Mais que um canal de vendas: cada busca, filtro e compra aproxima você do seu cliente e vira dado de contexto — a base para, quando fizer sentido, escalar para um app mobile próprio e ainda mais robusto.
                 </p>
               </div>
-            </div>
-          </motion.div>
-        </motion.section>
-
-        {/* ------------------------------------------------------------- */}
-        {/* COMO FUNCIONA */}
-        {/* ------------------------------------------------------------- */}
-        <motion.section
-          id="como-funciona"
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={revealStagger}
-          className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20"
-        >
-          <motion.div variants={fadeInUp} className="text-center max-w-xl mx-auto mb-12">
-            <h2 className="font-heading font-extrabold text-3xl text-foreground">Como funciona</h2>
-            <p className="text-sm text-muted-foreground mt-3">Do fork ao primeiro cliente personalizado, em três passos.</p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {STEPS.map((step, index) => (
-              <motion.div key={step.number} variants={fadeInUp} className="glass-card rounded-3xl p-6 border border-border relative">
-                {index < STEPS.length - 1 && (
-                  <div className="hidden md:block absolute top-[2.875rem] left-full w-6 h-px bg-gradient-to-r from-border to-transparent z-10" />
-                )}
-                <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4 text-emerald-400">
-                  <step.icon className="w-5 h-5" />
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 text-sm text-foreground">
+                  <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <span>Open-source, licença MIT, white-label</span>
                 </div>
-                <h4 className="font-heading font-bold text-base text-foreground">{step.title}</h4>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{step.description}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          <motion.div variants={fadeInUp} className="flex flex-col items-center gap-3 pt-10 text-center">
-            <p className="text-xs text-muted-foreground max-w-sm">
-              Quer o passo a passo completo, a arquitetura e os endpoints da API? Confira a documentação.
-            </p>
-            <a href={DOCS_URL} target="_blank" rel="noopener noreferrer">
-              <Button variant="secondary" size="lg" className="gap-2">
-                <FileText className="w-4 h-4 text-emerald-400" />
-                <span>Ver Documentação</span>
-                <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-              </Button>
-            </a>
-          </motion.div>
-        </motion.section>
-
-        {/* ------------------------------------------------------------- */}
-        {/* PARA LOJISTAS */}
-        {/* ------------------------------------------------------------- */}
-        <motion.section
-          id="lojistas"
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.25 }}
-          variants={fadeInUp}
-          className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20"
-        >
-          <div className="glass-panel rounded-3xl p-8 md:p-10 border border-cyan-500/30 grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-gradient-to-r from-background via-card to-background">
-            <div>
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 font-mono-tech text-[11px] mb-4">
-                <Store className="w-3.5 h-3.5" />
-                Para lojistas
-              </span>
-              <h3 className="font-heading font-bold text-2xl text-foreground">Instalação rápida, sem trocar sua stack</h3>
-              <p className="text-sm text-foreground mt-3 leading-relaxed">
-                Fork do repositório, troque os adaptadores de catálogo em <code className="font-mono-tech text-emerald-400">packages/shared/src/mocks.ts</code> pelos seus dados reais e faça deploy em 1 clique. Sem autenticação nem banco de dados obrigatórios para validar o piloto.
-              </p>
-              <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-                Mais que um canal de vendas: cada busca, filtro e compra aproxima você do seu cliente e vira dado de contexto — a base para, quando fizer sentido, escalar para um app mobile próprio e ainda mais robusto.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3 text-sm text-foreground">
-                <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
-                <span>Open-source, licença MIT, white-label</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-foreground">
-                <Zap className="w-5 h-5 text-emerald-400 shrink-0" />
-                <span>Deploy em 1 clique (Vercel + Serverless Functions)</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-foreground">
-                <MessageSquare className="w-5 h-5 text-emerald-400 shrink-0" />
-                <span>BYOK: Gemini, OpenAI ou Anthropic — sua escolha</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-foreground">
-                <Smartphone className="w-5 h-5 text-emerald-400 shrink-0" />
-                <span>Pronto para virar app nativo iOS &amp; Android — $SuaLoja</span>
+                <div className="flex items-center gap-3 text-sm text-foreground">
+                  <Zap className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <span>Deploy em 1 clique (Vercel + Serverless Functions)</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-foreground">
+                  <MessageSquare className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <span>BYOK: Gemini, OpenAI ou Anthropic — sua escolha</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-foreground">
+                  <Smartphone className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <span>Pronto para virar app nativo iOS &amp; Android — $SuaLoja</span>
+                </div>
               </div>
             </div>
-          </div>
-        </motion.section>
-
-        {/* ------------------------------------------------------------- */}
-        {/* CTA FINAL */}
-        {/* ------------------------------------------------------------- */}
-        <motion.section
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.4 }}
-          variants={fadeInUp}
-          className="max-w-4xl mx-auto px-6 pb-20 text-center flex flex-col items-center gap-5"
-        >
-          <h2 className="font-heading font-extrabold text-3xl text-foreground">Veja o $Agent em ação agora</h2>
-          <p className="text-sm text-muted-foreground max-w-md">
-            Navegue pela demo com o perfil de Pedro França e veja a vitrine, os cupons e o cashback se ajustarem em tempo real.
-          </p>
-          <Button onClick={onEnter} size="lg" className="gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
-            <span>Testar como funciona</span>
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-        </motion.section>
-
-        {/* ------------------------------------------------------------- */}
-        {/* FOOTER */}
-        {/* ------------------------------------------------------------- */}
-        <footer className="border-t border-border/80">
-          <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <span className="logo-agent-financial text-lg tracking-tighter">$Agent</span>
-            <p className="text-[11px] text-muted-foreground text-center sm:text-right">
-              Desenvolvido para o Hackathon Agents for Commerce — Deco (2026). MVP em modo mock, sem autenticação ou banco de dados.
+          </motion.section>
+  
+          {/* ------------------------------------------------------------- */}
+          {/* CTA FINAL */}
+          {/* ------------------------------------------------------------- */}
+          <motion.section
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.4 }}
+            variants={fadeInUp}
+            className="max-w-4xl mx-auto px-6 pb-20 text-center flex flex-col items-center gap-5"
+          >
+            <h2 className="font-heading font-extrabold text-3xl text-foreground">Veja o $Agent em ação agora</h2>
+            <p className="text-sm text-muted-foreground max-w-md">
+              Navegue pela demo com o perfil de Pedro França e veja a vitrine, os cupons e o cashback se ajustarem em tempo real.
             </p>
-          </div>
-        </footer>
+            <Button onClick={onEnter} size="lg" className="gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
+              <span>Testar como funciona</span>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </motion.section>
+  
+          {/* ------------------------------------------------------------- */}
+          {/* FOOTER */}
+          {/* ------------------------------------------------------------- */}
+          <footer className="border-t border-border/80">
+            <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <span className="logo-agent-financial text-lg tracking-tighter">$Agent</span>
+              <p className="text-[11px] text-muted-foreground text-center sm:text-right">
+                Desenvolvido para o Hackathon Agents for Commerce — Deco (2026). MVP em modo mock, sem autenticação ou banco de dados.
+              </p>
+              <a
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              >
+                <Github className="w-3.5 h-3.5" />
+                <span>Código-fonte</span>
+              </a>
+            </div>
+          </footer>
+        </div>
+  
+        <ScrollToTopButton />
       </div>
-
-      <ScrollToTopButton />
-    </div>
+    </MotionConfig>
   );
 }
