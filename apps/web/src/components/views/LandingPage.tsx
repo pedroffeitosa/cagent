@@ -368,7 +368,7 @@ function HeroShowcase() {
                     {demoProducts.map((product) => (
                       <div key={product.id} className="glass-card rounded-2xl p-3 border border-emerald-500/30">
                         <div className="aspect-square rounded-xl overflow-hidden bg-muted mb-2">
-                          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" onError={handleImageError} />
+                          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" decoding="async" onError={handleImageError} />
                         </div>
                         <p className="text-[11px] font-semibold text-foreground truncate" title={product.name}>{product.name}</p>
                         <p className="text-xs font-heading font-bold text-emerald-400 mt-0.5">R$ {product.price}</p>
@@ -880,12 +880,16 @@ function FAQAccordion() {
     <div className="flex flex-col gap-3">
       {FAQ_ITEMS.map((item, index) => {
         const isOpen = openIndex === index;
+        const buttonId = `faq-button-${index}`;
+        const panelId = `faq-panel-${index}`;
         return (
           <div key={item.question} className="glass-card rounded-2xl border border-border overflow-hidden">
             <button
               type="button"
+              id={buttonId}
               onClick={() => setOpenIndex(isOpen ? null : index)}
               aria-expanded={isOpen}
+              aria-controls={panelId}
               className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
             >
               <span className="text-sm font-semibold text-foreground">{item.question}</span>
@@ -896,6 +900,9 @@ function FAQAccordion() {
             <AnimatePresence initial={false}>
               {isOpen && (
                 <motion.div
+                  id={panelId}
+                  role="region"
+                  aria-labelledby={buttonId}
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
@@ -917,6 +924,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const navContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 8);
@@ -924,6 +932,26 @@ export function LandingPage({ onEnter }: LandingPageProps) {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMobileMenuOpen(false);
+    };
+    const handleClickOutside = (e: MouseEvent) => {
+      if (navContainerRef.current && !navContainerRef.current.contains(e.target as Node)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMobileMenuOpen]);
 
   useEffect(() => {
     const sections = NAV_LINKS.map((link) => document.getElementById(link.href.slice(1))).filter(
@@ -949,6 +977,13 @@ export function LandingPage({ onEnter }: LandingPageProps) {
   return (
     <MotionConfig reducedMotion="user">
       <div className="min-h-screen bg-background text-foreground">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:rounded-xl focus:bg-emerald-500 focus:text-slate-950 focus:font-bold focus:shadow-lg"
+        >
+          Pular para o conteúdo
+        </a>
+
         {/* Ambient Background: dot grid + grain + drifting color orbs */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
           <div
@@ -986,6 +1021,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           {/* ------------------------------------------------------------- */}
           <header className="sticky top-0 z-30 px-3 sm:px-6 pt-3">
             <div
+              ref={navContainerRef}
               className={`relative overflow-hidden max-w-6xl mx-auto rounded-2xl border backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] ${
                 isScrolled
                   ? 'bg-background/70 border-border shadow-lg shadow-black/10'
@@ -1082,6 +1118,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
             </div>
           </header>
   
+          <main id="main-content">
           {/* ------------------------------------------------------------- */}
           {/* HERO */}
           {/* ------------------------------------------------------------- */}
@@ -1418,7 +1455,8 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               <ArrowRight className="w-4 h-4" />
             </Button>
           </motion.section>
-  
+          </main>
+
           {/* ------------------------------------------------------------- */}
           {/* FOOTER */}
           {/* ------------------------------------------------------------- */}
