@@ -12,14 +12,19 @@ import {
   Modal,
   Alert
 } from 'react-native';
-import { 
-  MOCK_USER_PROFILES, 
-  MOCK_STORE_CONTEXT, 
-  UserProfile, 
+import {
+  MOCK_USER_PROFILES,
+  MOCK_STORE_CONTEXT,
+  UserProfile,
   Product,
-  AgentResponsePayload, 
-  runLocalRuleEngine 
+  AgentResponsePayload,
+  runLocalRuleEngine
 } from '@cagent/shared';
+import { CartDrawerModal, CartItem } from './components/CartDrawerModal';
+import { WalletModal } from './components/WalletModal';
+import { CouponsModal } from './components/CouponsModal';
+import { ShareModal } from './components/ShareModal';
+import { CompareProductsScreen } from './screens/CompareProductsScreen';
 
 export default function App() {
   const [userProfile] = useState<UserProfile>(MOCK_USER_PROFILES[0]);
@@ -27,7 +32,40 @@ export default function App() {
   const [agentResponse, setAgentResponse] = useState<AgentResponsePayload | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isPurchased, setIsPurchased] = useState(false);
-  const [cartCount, setCartCount] = useState(2);
+  const [screen, setScreen] = useState<'home' | 'compare'>('home');
+
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [isCouponsModalOpen, setIsCouponsModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  const cartQuantityTotal = cartItems.reduce((acc, i) => acc + i.quantity, 0);
+
+  const handleAddToCart = (product: Product) => {
+    setCartItems(prev => {
+      const existing = prev.find(i => i.product.id === product.id);
+      if (existing) {
+        return prev.map(i => i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
+      }
+      return [...prev, { product, quantity: 1 }];
+    });
+    setIsCartDrawerOpen(true);
+  };
+
+  const handleUpdateCartQuantity = (productId: string, delta: number) => {
+    setCartItems(prev => prev.map(item => {
+      if (item.product.id === productId) {
+        const newQty = item.quantity + delta;
+        return newQty > 0 ? { ...item, quantity: newQty } : null;
+      }
+      return item;
+    }).filter(Boolean) as CartItem[]);
+  };
+
+  const handleRemoveCartItem = (productId: string) => {
+    setCartItems(prev => prev.filter(i => i.product.id !== productId));
+  };
 
   const activeProductIds = agentResponse?.recommendedProductIds;
   const displayedProducts = activeProductIds 
@@ -49,36 +87,60 @@ export default function App() {
     setTimeout(() => {
       setIsPurchased(false);
       setSelectedProduct(null);
-      setCartCount(prev => prev + 1);
     }, 2000);
   };
+
+  if (screen === 'compare') {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#020617" />
+        <CompareProductsScreen
+          products={cartItems.map(i => i.product)}
+          userProfile={userProfile}
+          onBackToCart={() => {
+            setScreen('home');
+            setIsCartDrawerOpen(true);
+          }}
+          onSelectProductToBuy={(product) => {
+            setScreen('home');
+            setSelectedProduct(product);
+          }}
+        />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#020617" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        
+
         {/* Top Navbar Header with $Agent Logo + Feature Chips */}
         <View style={styles.header}>
           <Text style={styles.logoText}>$Agent</Text>
-          
+
           <View style={styles.headerChipsRow}>
+            {/* Share Button */}
+            <TouchableOpacity style={styles.shareChip} onPress={() => setIsShareModalOpen(true)}>
+              <Text style={styles.shareChipText}>📤</Text>
+            </TouchableOpacity>
+
             {/* Coupon Chip */}
-            <View style={styles.couponChip}>
+            <TouchableOpacity style={styles.couponChip} onPress={() => setIsCouponsModalOpen(true)}>
               <Text style={styles.couponChipText}>🎟️ DECO10</Text>
-            </View>
+            </TouchableOpacity>
 
             {/* Cart Chip */}
-            <View style={styles.cartChip}>
-              <Text style={styles.cartChipText}>🛒 {cartCount}</Text>
-            </View>
+            <TouchableOpacity style={styles.cartChip} onPress={() => setIsCartDrawerOpen(true)}>
+              <Text style={styles.cartChipText}>🛒 {cartQuantityTotal}</Text>
+            </TouchableOpacity>
 
             {/* Wallet Saldo Chip */}
-            <View style={styles.walletChip}>
+            <TouchableOpacity style={styles.walletChip} onPress={() => setIsWalletModalOpen(true)}>
               <Text style={styles.walletChipText}>
                 R$ {(userProfile.walletBalance || 42.50).toFixed(2).replace('.', ',')}
               </Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -172,9 +234,9 @@ export default function App() {
                 
                 <View style={styles.productPriceRow}>
                   <Text style={styles.productPrice}>R$ {product.price}</Text>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.buyButton}
-                    onPress={() => setSelectedProduct(product)}
+                    onPress={() => handleAddToCart(product)}
                   >
                     <Text style={styles.buyButtonText}>Comprar</Text>
                   </TouchableOpacity>
@@ -227,6 +289,35 @@ export default function App() {
         </Modal>
       )}
 
+      <CartDrawerModal
+        isOpen={isCartDrawerOpen}
+        onClose={() => setIsCartDrawerOpen(false)}
+        cartItems={cartItems}
+        onUpdateQuantity={handleUpdateCartQuantity}
+        onRemoveItem={handleRemoveCartItem}
+        userProfile={userProfile}
+        onOpenComparePage={() => setScreen('compare')}
+      />
+
+      <WalletModal
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+        userProfile={userProfile}
+      />
+
+      <CouponsModal
+        isOpen={isCouponsModalOpen}
+        onClose={() => setIsCouponsModalOpen(false)}
+      />
+
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        userProfile={userProfile}
+        queryTitle={searchQuery || 'Busca Contextual'}
+        recommendedProducts={displayedProducts}
+      />
+
     </SafeAreaView>
   );
 }
@@ -256,6 +347,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  shareChip: {
+    backgroundColor: '#0f172a',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  shareChipText: {
+    fontSize: 12,
   },
   couponChip: {
     backgroundColor: '#0f172a',
