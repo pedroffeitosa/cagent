@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MOCK_STORE_CONTEXT, Product, AIProviderType } from '@cagent/shared';
+import { MOCK_STORE_CONTEXT, Product, AIProviderType, sortProductsByProfileMatch } from '@cagent/shared';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
 import { AmbientBackground } from './components/AmbientBackground';
 import { DemoScriptToolbar } from './components/DemoScriptToolbar';
@@ -161,7 +161,7 @@ export default function App() {
         {activeMainView === 'home' && (
           <HomeStorefrontView
             userProfile={userProfile}
-            products={MOCK_STORE_CONTEXT.catalog}
+            products={sortProductsByProfileMatch(MOCK_STORE_CONTEXT.catalog, userProfile)}
             onOpenChat={(initialQuery) => {
               if (initialQuery) {
                 handleRunAgent(initialQuery);

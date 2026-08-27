@@ -6,6 +6,7 @@ import {
   AgentResponsePayload,
   AIProviderType,
   runLocalRuleEngine,
+  sortProductsByProfileMatch,
 } from '@cagent/shared';
 import { PROVIDER_ENDPOINTS } from '../lib/providers';
 import { ChatMessage, ChatSession, MainViewType } from '../types/chat';
@@ -74,7 +75,7 @@ export function useChatSessions({ userProfile, aiProvider, customApiKey, onNavig
   const activeProductIds = latestAgentResponse?.recommendedProductIds;
   const displayedProducts = activeProductIds
     ? MOCK_STORE_CONTEXT.catalog.filter(p => activeProductIds.includes(p.id))
-    : MOCK_STORE_CONTEXT.catalog;
+    : sortProductsByProfileMatch(MOCK_STORE_CONTEXT.catalog, userProfile);
 
   const handleRunAgent = async (queryText: string) => {
     if (!queryText.trim()) return;

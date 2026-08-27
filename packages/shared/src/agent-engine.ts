@@ -1,4 +1,4 @@
-import { AgentRequestPayload, AgentResponsePayload, Product } from './types';
+import { AgentRequestPayload, AgentResponsePayload, Product, UserProfile } from './types';
 
 /**
  * Provider-agnostic prompt builder shared by every LLM adapter (Gemini, Anthropic, OpenAI...).
@@ -143,4 +143,29 @@ export function getProductSuggestions(query: string, catalog: Product[], limit =
     .sort((a, b) => b.score - a.score);
 
   return scored.slice(0, limit).map((entry) => entry.product);
+}
+
+/**
+ * Reordenação dinâmica da vitrine (PLP): sem nenhuma busca ativa, o catálogo
+ * já entra ordenado pelo quanto cada produto combina com tamanho, estilo,
+ * cor favorita e orçamento do cliente — em vez da ordem fixa do catálogo.
+ */
+export function sortProductsByProfileMatch(products: Product[], userProfile: UserProfile): Product[] {
+  return products
+    .map((product, index) => {
+      let score = 0;
+
+      if (product.availableSizes.includes(userProfile.sizes.clothing)) score += 3;
+      if (product.availableSizes.includes(userProfile.sizes.shoes)) score += 3;
+
+      score += product.tags.filter((tag) => userProfile.stylePreferences.includes(tag)).length * 2;
+
+      if (product.colors.some((c) => userProfile.favoriteColors.includes(c))) score += 2;
+
+      if (!userProfile.maxBudget || product.price <= userProfile.maxBudget) score += 1;
+
+      return { product, score, index };
+    })
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map((entry) => entry.product);
 }
