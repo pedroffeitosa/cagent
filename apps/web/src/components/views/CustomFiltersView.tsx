@@ -43,22 +43,22 @@ export function CustomFiltersView({ userProfile, onBackToChat, onApplyPresetFilt
     <div className="flex-1 flex flex-col p-8 max-w-5xl mx-auto w-full gap-8 overflow-y-auto custom-scrollbar animate-in fade-in duration-200">
       
       {/* Top Navigation Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div className="flex items-center justify-between border-b border-border pb-4">
         <div className="flex items-center gap-3">
           <button
             onClick={onBackToChat}
-            className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition"
+            className="p-2 rounded-xl bg-card border border-border text-muted-foreground hover:text-foreground hover:border-border-strong transition"
             title="Voltar ao Chat"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h2 className="font-heading font-bold text-2xl text-white">Central de Filtros Personalizados &amp; Temáticos</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Configure filtros inteligentes permanentes que moldam as sugestões do $Agent</p>
+            <h2 className="font-heading font-bold text-2xl text-foreground">Central de Filtros Personalizados &amp; Temáticos</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Configure filtros inteligentes permanentes que moldam as sugestões do $Agent</p>
           </div>
         </div>
 
-        <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono-tech font-bold flex items-center gap-1.5">
+        <span className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/30 font-mono-tech font-bold flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5" />
           Filtro Ativo: {presetFilters.find(f => f.id === activeFilterId)?.name}
         </span>
@@ -74,34 +74,34 @@ export function CustomFiltersView({ userProfile, onBackToChat, onApplyPresetFilt
               onClick={() => handleSelectFilter(filter.id, filter.name, filter.colors)}
               className={`glass-card rounded-3xl p-6 border flex flex-col justify-between gap-4 cursor-pointer transition ${
                 isActive
-                  ? 'bg-slate-900/90 border-emerald-500 ring-2 ring-emerald-500/30 shadow-xl'
-                  : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                  ? 'bg-card/90 border-primary ring-2 ring-primary/30 shadow-xl'
+                  : 'bg-background/60 border-border hover:border-border-strong'
               }`}
             >
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-heading font-bold text-base text-white">{filter.name}</h4>
+                  <h4 className="font-heading font-bold text-base text-foreground">{filter.name}</h4>
                   {isActive && (
-                    <div className="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
                       <Check className="w-4 h-4 stroke-[3]" />
                     </div>
                   )}
                 </div>
 
                 {filter.badge && (
-                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono-tech w-fit">
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-primary/20 text-primary font-mono-tech w-fit">
                     {filter.badge}
                   </span>
                 )}
 
-                <p className="text-xs text-slate-400 leading-relaxed mt-1">{filter.description}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed mt-1">{filter.description}</p>
               </div>
 
-              <div className="pt-4 border-t border-slate-800/80">
-                <span className="text-[10px] text-slate-500 font-mono-tech block mb-1.5 uppercase">Cores Priorizadas:</span>
+              <div className="pt-4 border-t border-border/80">
+                <span className="text-[10px] text-faint font-mono-tech block mb-1.5 uppercase">Cores Priorizadas:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {filter.colors.map(c => (
-                    <span key={c} className="text-xs px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 font-medium">
+                    <span key={c} className="text-xs px-2.5 py-1 rounded-xl bg-card border border-border text-foreground font-medium">
                       {c}
                     </span>
                   ))}

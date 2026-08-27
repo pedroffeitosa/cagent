@@ -32,17 +32,15 @@ import {
   History,
   ChevronDown,
   ChevronUp,
-  Home
+  Home,
+  Menu
 } from 'lucide-react';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
+import { AmbientBackground } from './components/AmbientBackground';
 import { DemoScriptToolbar } from './components/DemoScriptToolbar';
 import { UserProfilePopover } from './components/UserProfilePopover';
 import { PreferencesModal } from './components/PreferencesModal';
 import { ProductCheckoutModal } from './components/ProductCheckoutModal';
-import { WalletModal } from './components/WalletModal';
-import { CouponsModal } from './components/CouponsModal';
-import { StoreMeshModal } from './components/StoreMeshModal';
-import { CustomFiltersModal } from './components/CustomFiltersModal';
 import { CartDrawerModal } from './components/CartDrawerModal';
 import { ShareContextModal } from './components/ShareContextModal';
 import { HomeStorefrontView } from './components/views/HomeStorefrontView';
@@ -118,10 +116,6 @@ export default function App() {
   const [isRightRailOpen, setIsRightRailOpen] = useState(true);
 
   // Top Header Feature Modals & Drawers
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-  const [isCouponsModalOpen, setIsCouponsModalOpen] = useState(false);
-  const [isStoreMeshModalOpen, setIsStoreMeshModalOpen] = useState(false);
-  const [isCustomFiltersModalOpen, setIsCustomFiltersModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // Chat History & Active Chat Sessions
@@ -199,6 +193,37 @@ export default function App() {
 
   const handleRemoveCartItem = (productId: string) => {
     setCartItems(prev => prev.filter(i => i.product.id !== productId));
+  };
+
+  // Fecha o loop do cashback: credita o saldo real e registra a movimentação
+  // no extrato, para que Carteira/Header reflitam a compra imediatamente.
+  const handlePurchaseComplete = (payload: { productName: string; amount: number; cashbackEarned: number }) => {
+    setUserProfile(prev => ({
+      ...prev,
+      walletBalance: Math.round(((prev.walletBalance || 0) + payload.cashbackEarned) * 100) / 100,
+      purchaseHistory: [
+        {
+          id: `order-${Date.now()}`,
+          productName: payload.productName,
+          date: 'Agora',
+          amount: payload.amount,
+          cashbackEarned: payload.cashbackEarned,
+        },
+        ...(prev.purchaseHistory || []),
+      ],
+    }));
+  };
+
+  const handleCartCheckoutComplete = (payload: { productName: string; amount: number; cashbackEarned: number }) => {
+    handlePurchaseComplete(payload);
+    setCartItems([]);
+  };
+
+  const handleAddBalance = (amount: number) => {
+    setUserProfile(prev => ({
+      ...prev,
+      walletBalance: Math.round(((prev.walletBalance || 0) + amount) * 100) / 100,
+    }));
   };
 
   // Get active session and past sessions
@@ -354,8 +379,10 @@ export default function App() {
         setSelectedCheckoutProduct(null);
         setIsShareModalOpen(false);
         setCartItems([
-          { product: MOCK_STORE_CONTEXT.catalog[2] || MOCK_STORE_CONTEXT.catalog[0], quantity: 1 },
-          { product: MOCK_STORE_CONTEXT.catalog[3] || MOCK_STORE_CONTEXT.catalog[1], quantity: 1 },
+          // Chuteira Society Tiempo Legend vs Chuteira de Campo Predator Elite —
+          // a dupla que corresponde à narrativa "Nike Mercurial vs Adidas Predator" do tour.
+          { product: MOCK_STORE_CONTEXT.catalog[3] || MOCK_STORE_CONTEXT.catalog[0], quantity: 1 },
+          { product: MOCK_STORE_CONTEXT.catalog[4] || MOCK_STORE_CONTEXT.catalog[1], quantity: 1 },
         ]);
         setActiveMainView('compare');
         break;
@@ -363,7 +390,8 @@ export default function App() {
         // Passo 4: Checkout 1-Clique com Cashback (2m00s - 2m30s)
         setIsProfilePopoverOpen(false);
         setIsShareModalOpen(false);
-        const checkoutItem = MOCK_STORE_CONTEXT.catalog[2] || MOCK_STORE_CONTEXT.catalog[0];
+        // Segue com o "vencedor" da Batalha Swords do Passo 3, para continuidade da narrativa.
+        const checkoutItem = MOCK_STORE_CONTEXT.catalog[3] || MOCK_STORE_CONTEXT.catalog[0];
         setSelectedCheckoutProduct(checkoutItem);
         setActiveMainView('home');
         break;
@@ -383,20 +411,21 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex overflow-hidden font-sans">
+    <div className="min-h-screen bg-background text-foreground flex overflow-hidden font-sans">
+      <AmbientBackground variant="viewport" className="z-0" />
 
       {/* ------------------------------------------------------------- */}
       {/* LEFT SIDEBAR: Collapsible ($Agent -> $A) + Simplified Chat    */}
       {/* ------------------------------------------------------------- */}
-      <aside 
-        className={`bg-slate-900 border-r border-slate-800/80 flex flex-col justify-between transition-all duration-300 z-20 relative ${
+      <aside
+        className={`bg-card/70 backdrop-blur-xl border-r border-border/80 flex flex-col justify-between transition-all duration-300 z-20 relative ${
           isSidebarCollapsed ? 'w-20' : 'w-72'
         } ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Top Logo Section (Clicking $Agent or $A returns to Home) */}
-        <div className={`h-16 border-b border-slate-800/80 flex items-center shrink-0 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
+        <div className={`h-16 border-b border-border/80 flex items-center shrink-0 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
           <div 
             className="flex items-center gap-2 cursor-pointer group" 
             onClick={() => setActiveMainView('home')}
@@ -410,20 +439,20 @@ export default function App() {
           {/* Desktop Collapse / Expand Toggle Button (< or >) */}
           <button
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition"
+            className="hidden lg:flex p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-elevated/80 transition"
             title={isSidebarCollapsed ? 'Expandir Sidebar' : 'Recolher Sidebar'}
           >
             {isSidebarCollapsed ? (
-              <ChevronRight className="w-4 h-4 text-emerald-400" />
+              <ChevronRight className="w-4 h-4 text-primary" />
             ) : (
-              <ChevronLeft className="w-4 h-4 text-slate-400" />
+              <ChevronLeft className="w-4 h-4 text-muted-foreground" />
             )}
           </button>
 
           {/* Mobile Close Button */}
           <button
             onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden text-slate-400 hover:text-white p-1"
+            className="lg:hidden text-muted-foreground hover:text-foreground p-1"
           >
             <X className="w-5 h-5" />
           </button>
@@ -434,7 +463,7 @@ export default function App() {
           <button
             onClick={() => setHasEnteredApp(false)}
             title="Voltar para a página inicial do projeto"
-            className="mx-3 mt-3 text-left text-[10px] text-slate-500 hover:text-emerald-400 transition font-mono-tech shrink-0"
+            className="mx-3 mt-3 text-left text-[10px] text-faint hover:text-primary transition font-mono-tech shrink-0"
           >
             ← Sobre o $Agent
           </button>
@@ -449,11 +478,11 @@ export default function App() {
             title="Página Inicial da Loja"
             className={`w-full py-2.5 rounded-2xl border transition shadow-sm font-semibold text-xs tracking-wide flex items-center gap-2 ${
               activeMainView === 'home'
-                ? 'bg-slate-800 border-emerald-500/40 text-emerald-400'
-                : 'bg-slate-950/40 border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800/50'
+                ? 'bg-elevated border-primary/40 text-primary'
+                : 'bg-background/40 border-border/80 text-muted-foreground hover:text-foreground hover:bg-elevated/50'
             } ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4'}`}
           >
-            <Home className="w-4 h-4 text-emerald-400 shrink-0" />
+            <Home className="w-4 h-4 text-primary shrink-0" />
             {!isSidebarCollapsed && <span>Página Inicial</span>}
           </button>
 
@@ -461,17 +490,17 @@ export default function App() {
           <button
             onClick={handleNewChat}
             title="Conversar com $Agent IA"
-            className={`w-full py-2.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-emerald-500/40 text-slate-300 hover:text-white font-semibold text-xs tracking-wide flex items-center gap-2 hover:bg-slate-800/50 transition shadow-sm ${
+            className={`w-full py-2.5 rounded-2xl bg-background/60 border border-border/80 hover:border-primary/40 text-foreground hover:text-foreground font-semibold text-xs tracking-wide flex items-center gap-2 hover:bg-elevated/50 transition shadow-sm ${
               isSidebarCollapsed ? 'justify-center px-0' : 'px-4'
             }`}
           >
-            <Plus className="w-4 h-4 text-emerald-400 shrink-0" />
+            <Plus className="w-4 h-4 text-primary shrink-0" />
             {!isSidebarCollapsed && <span>Nova conversa</span>}
           </button>
 
           {/* Active Current Chat */}
           {!isSidebarCollapsed && (
-            <div className="px-3 pt-2 text-[11px] font-mono-tech text-slate-500 uppercase tracking-wider">
+            <div className="px-3 pt-2 text-[11px] font-mono-tech text-faint uppercase tracking-wider">
               Chat com IA
             </div>
           )}
@@ -485,15 +514,15 @@ export default function App() {
               }}
               className={`w-full text-left rounded-xl text-xs flex items-center transition group ${
                 activeMainView === 'chat'
-                  ? 'bg-slate-800 text-emerald-400 font-medium border border-emerald-500/30'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  ? 'bg-elevated text-primary font-medium border border-primary/30'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-elevated/50'
               } ${isSidebarCollapsed ? 'justify-center p-3' : 'p-3 gap-3'}`}
             >
-              <MessageSquare className="w-4 h-4 shrink-0 text-emerald-400" />
+              <MessageSquare className="w-4 h-4 shrink-0 text-primary" />
               {!isSidebarCollapsed && (
                 <div className="truncate flex-1">
-                  <span className="truncate block font-medium text-slate-200">{activeSession.title}</span>
-                  <span className="text-[10px] text-slate-400 block mt-0.5">{activeSession.timestamp}</span>
+                  <span className="truncate block font-medium text-foreground">{activeSession.title}</span>
+                  <span className="text-[10px] text-muted-foreground block mt-0.5">{activeSession.timestamp}</span>
                 </div>
               )}
             </button>
@@ -501,16 +530,16 @@ export default function App() {
 
           {/* Past Chats Collapsible Section */}
           {pastSessions.length > 0 && !isSidebarCollapsed && (
-            <div className="pt-2 border-t border-slate-800/60 flex flex-col gap-1">
+            <div className="pt-2 border-t border-border/60 flex flex-col gap-1">
               <button
                 onClick={() => setShowPastChats(!showPastChats)}
-                className="w-full px-3 py-1.5 rounded-xl text-left flex items-center justify-between text-xs text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition font-medium"
+                className="w-full px-3 py-1.5 rounded-xl text-left flex items-center justify-between text-xs text-muted-foreground hover:text-foreground hover:bg-elevated/40 transition font-medium"
               >
                 <div className="flex items-center gap-2">
-                  <History className="w-3.5 h-3.5 text-slate-500" />
+                  <History className="w-3.5 h-3.5 text-faint" />
                   <span>Chats anteriores ({pastSessions.length})</span>
                 </div>
-                {showPastChats ? <ChevronUp className="w-3.5 h-3.5 text-slate-500" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-500" />}
+                {showPastChats ? <ChevronUp className="w-3.5 h-3.5 text-faint" /> : <ChevronDown className="w-3.5 h-3.5 text-faint" />}
               </button>
 
               {/* Past Chats Dropdown */}
@@ -524,12 +553,12 @@ export default function App() {
                         setActiveChatId(session.id);
                         setActiveMainView('chat');
                       }}
-                      className="w-full text-left rounded-xl p-2.5 text-xs flex items-center gap-2.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition group"
+                      className="w-full text-left rounded-xl p-2.5 text-xs flex items-center gap-2.5 text-muted-foreground hover:text-foreground hover:bg-elevated/50 transition group"
                     >
-                      <MessageSquare className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 shrink-0" />
+                      <MessageSquare className="w-3.5 h-3.5 text-faint group-hover:text-foreground shrink-0" />
                       <div className="truncate flex-1">
-                        <span className="truncate block font-medium text-slate-300">{session.title}</span>
-                        <span className="text-[10px] text-slate-500 block">{session.timestamp}</span>
+                        <span className="truncate block font-medium text-foreground">{session.title}</span>
+                        <span className="text-[10px] text-faint block">{session.timestamp}</span>
                       </div>
                     </button>
                   ))}
@@ -541,11 +570,11 @@ export default function App() {
         </div>
 
         {/* Bottom User Account Popover Trigger */}
-        <div className="p-3 border-t border-slate-800/80 relative">
+        <div className="p-3 border-t border-border/80 relative">
           <button
             onClick={() => setIsProfilePopoverOpen(!isProfilePopoverOpen)}
             title={`Meu Perfil: ${userProfile.name}`}
-            className={`w-full rounded-2xl bg-slate-950/80 border border-slate-800/80 hover:border-emerald-500/40 text-left flex items-center transition group ${
+            className={`w-full rounded-2xl bg-background/80 border border-border/80 hover:border-primary/40 text-left flex items-center transition group ${
               isSidebarCollapsed ? 'justify-center p-2.5' : 'p-3 justify-between gap-3'
             }`}
           >
@@ -553,20 +582,20 @@ export default function App() {
               <img
                 src={userProfile.avatarUrl}
                 alt={userProfile.name}
-                className="w-9 h-9 rounded-xl object-cover border border-emerald-500/40 shrink-0"
+                className="w-9 h-9 rounded-xl object-cover border border-primary/40 shrink-0"
                 onError={handleImageError}
               />
               {!isSidebarCollapsed && (
                 <div className="truncate">
-                  <span className="text-xs font-bold text-white block truncate">{userProfile.name}</span>
-                  <span className="text-[10px] text-emerald-400 font-medium block">
+                  <span className="text-xs font-bold text-foreground block truncate">{userProfile.name}</span>
+                  <span className="text-[10px] text-primary font-medium block">
                     VIP • Saldo: R$ {(userProfile.walletBalance || 42.50).toFixed(2).replace('.', ',')}
                   </span>
                 </div>
               )}
             </div>
             {!isSidebarCollapsed && (
-              <SlidersHorizontal className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition shrink-0" />
+              <SlidersHorizontal className="w-4 h-4 text-faint group-hover:text-primary transition shrink-0" />
             )}
           </button>
 
@@ -584,7 +613,7 @@ export default function App() {
       {/* ------------------------------------------------------------- */}
       {/* MAIN WORKSPACE: Header + View Switcher                       */}
       {/* ------------------------------------------------------------- */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden bg-slate-950">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
         
         {/* Interactive Pitch Demo Tour Bar (1-Click Steps 1..5) */}
         <DemoScriptToolbar
@@ -594,24 +623,35 @@ export default function App() {
         />
 
         {/* Top Navbar Header with Breadcrumbs + Search Input + Actions */}
-        <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 h-16 px-6 flex items-center justify-between gap-4 shrink-0">
+        <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-md border-b border-border/80 h-16 px-6 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-4 flex-1 max-w-xl">
-            
+
+            {/* Mobile Sidebar Reopen Button */}
+            {!isSidebarOpen && (
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="lg:hidden p-1.5 -ml-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-elevated/80 transition shrink-0"
+                title="Abrir Menu"
+              >
+                <Menu className="w-4 h-4" />
+              </button>
+            )}
+
             {/* Dynamic Breadcrumb Header */}
-            <div className="flex items-center gap-2 font-heading font-semibold text-sm text-slate-200 tracking-tight shrink-0">
+            <div className="flex items-center gap-2 font-heading font-semibold text-sm text-foreground tracking-tight shrink-0">
               <button
                 onClick={() => setActiveMainView('home')}
-                className="hover:text-emerald-400 transition flex items-center gap-1.5"
+                className="hover:text-primary transition flex items-center gap-1.5"
                 title="Voltar para Página Inicial (Loja $Agent)"
               >
-                <Home className="w-4 h-4 text-emerald-400" />
+                <Home className="w-4 h-4 text-primary" />
                 <span>Loja $Agent</span>
               </button>
 
               {activeMainView !== 'home' && (
                 <>
-                  <span className="text-slate-600 font-mono-tech text-xs">/</span>
-                  <span className="text-emerald-400 text-xs font-medium">
+                  <span className="text-faint font-mono-tech text-xs">/</span>
+                  <span className="text-primary text-xs font-medium">
                     {activeMainView === 'chat' && 'Conversa Agêntica com IA'}
                     {activeMainView === 'wallet' && 'Minha Carteira & Cashback'}
                     {activeMainView === 'coupons' && 'Meus Cupons Exclusivos'}
@@ -625,16 +665,16 @@ export default function App() {
 
             {/* Header Search Input Bar (Linear / Raycast Style) */}
             <div className="relative flex-1 max-w-xs hidden sm:block">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Pesquisar com $Agent..."
                 value={currentQuery}
                 onChange={(e) => setCurrentQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleRunAgent(currentQuery)}
-                className="w-full pl-8 pr-10 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800 text-slate-100 placeholder:text-slate-500 text-xs focus:outline-none focus:border-emerald-500/50 transition shadow-inner"
+                className="w-full pl-8 pr-10 py-1.5 rounded-xl bg-background/60 border border-border text-foreground placeholder:text-faint text-xs focus:outline-none focus:border-primary/50 transition shadow-inner"
               />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono-tech text-slate-500 px-1 rounded bg-slate-900 border border-slate-800/80 pointer-events-none">
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono-tech text-faint px-1 rounded bg-card border border-border/80 pointer-events-none">
                 ⌘K
               </span>
             </div>
@@ -646,17 +686,17 @@ export default function App() {
             {/* Share Context Button */}
             <button
               onClick={() => setIsShareModalOpen(true)}
-              className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition"
+              className="p-2 rounded-xl bg-background/80 border border-border hover:border-border-strong text-foreground hover:text-foreground transition"
               title="Compartilhar Busca Agêntica"
             >
-              <Share2 className="w-4 h-4 text-slate-300" />
+              <Share2 className="w-4 h-4 text-foreground" />
             </button>
 
             {/* Custom Filters Button */}
             <button
               onClick={() => setActiveMainView('filters')}
-              className={`p-2 rounded-xl bg-slate-950/80 border transition ${
-                activeMainView === 'filters' ? 'border-emerald-500 text-emerald-400' : 'border-slate-800 text-slate-300 hover:text-white'
+              className={`p-2 rounded-xl bg-background/80 border transition ${
+                activeMainView === 'filters' ? 'border-primary text-primary' : 'border-border text-foreground hover:text-foreground'
               }`}
               title="Filtros Personalizados & Temáticos"
             >
@@ -666,8 +706,8 @@ export default function App() {
             {/* Store Mesh Button */}
             <button
               onClick={() => setActiveMainView('store')}
-              className={`p-2 rounded-xl bg-slate-950/80 border transition ${
-                activeMainView === 'store' ? 'border-cyan-400 text-cyan-400' : 'border-slate-800 text-slate-300 hover:text-white'
+              className={`p-2 rounded-xl bg-background/80 border transition ${
+                activeMainView === 'store' ? 'border-cyan-400 text-cyan-400' : 'border-border text-foreground hover:text-foreground'
               }`}
               title="Rede de Lojas Deco Mesh"
             >
@@ -677,8 +717,8 @@ export default function App() {
             {/* Coupons Button */}
             <button
               onClick={() => setActiveMainView('coupons')}
-              className={`p-2 rounded-xl bg-slate-950/80 border transition ${
-                activeMainView === 'coupons' ? 'border-amber-400 text-amber-400' : 'border-slate-800 text-slate-300 hover:text-white'
+              className={`p-2 rounded-xl bg-background/80 border transition ${
+                activeMainView === 'coupons' ? 'border-amber-400 text-amber-400' : 'border-border text-foreground hover:text-foreground'
               }`}
               title="Meus Cupons Exclusivos"
             >
@@ -688,12 +728,12 @@ export default function App() {
             {/* Shopping Cart Button (Left of Wallet Saldo) */}
             <button
               onClick={() => setIsCartDrawerOpen(true)}
-              className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition relative"
+              className="p-2 rounded-xl bg-background/80 border border-border hover:border-border-strong text-foreground hover:text-foreground transition relative"
               title="Meu Carrinho de Compras"
             >
-              <ShoppingCart className="w-4 h-4 text-slate-300" />
+              <ShoppingCart className="w-4 h-4 text-foreground" />
               {cartItems.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-slate-950 font-extrabold text-[9px] flex items-center justify-center font-mono-tech">
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground font-extrabold text-[9px] flex items-center justify-center font-mono-tech">
                   {cartItems.reduce((acc, i) => acc + i.quantity, 0)}
                 </span>
               )}
@@ -702,13 +742,13 @@ export default function App() {
             {/* Wallet & Saldo Chip (Far Right) */}
             <button
               onClick={() => setActiveMainView('wallet')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950/80 border transition ${
-                activeMainView === 'wallet' ? 'border-emerald-500 text-emerald-400' : 'border-slate-800 hover:border-emerald-500/40 text-slate-200'
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl bg-background/80 border transition ${
+                activeMainView === 'wallet' ? 'border-primary text-primary' : 'border-border hover:border-primary/40 text-foreground'
               }`}
               title="Minha Carteira & Cashback"
             >
-              <Wallet className="w-4 h-4 text-slate-300" />
-              <span className="font-mono-tech font-bold text-emerald-400 tracking-tight text-xs">
+              <Wallet className="w-4 h-4 text-foreground" />
+              <span className="font-mono-tech font-bold text-primary tracking-tight text-xs">
                 R${(userProfile.walletBalance || 42.50).toFixed(2).replace('.', ',')}
               </span>
             </button>
@@ -733,7 +773,7 @@ export default function App() {
         )}
 
         {activeMainView === 'wallet' && (
-          <WalletView userProfile={userProfile} onBackToChat={() => setActiveMainView('home')} />
+          <WalletView userProfile={userProfile} onBackToChat={() => setActiveMainView('home')} onAddBalance={handleAddBalance} />
         )}
 
         {activeMainView === 'coupons' && (
@@ -774,7 +814,7 @@ export default function App() {
           <div className="flex-1 flex overflow-hidden">
             
             {/* Left Column: Gemini Style Chat Experience */}
-            <div className="flex-1 flex flex-col justify-between p-6 overflow-y-auto custom-scrollbar border-r border-slate-800/80 relative">
+            <div className="flex-1 flex flex-col justify-between p-6 overflow-y-auto custom-scrollbar border-r border-border/80 relative">
               
               {/* Chat Stream Messages */}
               <div className="flex-1 flex flex-col gap-6 max-w-3xl w-full mx-auto pb-4">
@@ -782,14 +822,14 @@ export default function App() {
                 {/* Empty Chat Greeting (Gemini Style) */}
                 {(!activeSession || activeSession.messages.length === 0) && (
                   <div className="my-auto flex flex-col items-center justify-center text-center gap-4 py-12 animate-in fade-in zoom-in-95">
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-                      <Sparkles className="w-7 h-7 text-emerald-400" />
+                    <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center">
+                      <Sparkles className="w-7 h-7 text-primary" />
                     </div>
                     <div>
-                      <h2 className="font-heading font-bold text-2xl text-white">
+                      <h2 className="font-heading font-bold text-2xl text-foreground">
                         Olá, {userProfile.name.split(' ')[0]}! O que você quer pesquisar e comprar hoje?
                       </h2>
-                      <p className="text-xs text-slate-400 mt-2 max-w-md">
+                      <p className="text-xs text-muted-foreground mt-2 max-w-md">
                         O $Agent cruza seu perfil contextual (teto R$ {userProfile.maxBudget || '450'}) com o catálogo da loja.
                       </p>
                     </div>
@@ -808,7 +848,7 @@ export default function App() {
                             setCurrentQuery(sug);
                             handleRunAgent(sug);
                           }}
-                          className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 hover:text-emerald-300 transition text-xs"
+                          className="px-3.5 py-2 rounded-xl bg-card border border-border hover:border-primary/50 hover:text-primary transition text-xs"
                         >
                           💡 {sug}
                         </button>
@@ -821,34 +861,34 @@ export default function App() {
                 {activeSession && activeSession.messages.map((msg) => (
                   <div key={msg.id} className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                     {msg.sender === 'agent' && (
-                      <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 mt-1">
-                        <Bot className="w-4 h-4 text-emerald-400" />
+                      <div className="w-8 h-8 rounded-xl bg-primary/20 border border-primary/40 flex items-center justify-center shrink-0 mt-1">
+                        <Bot className="w-4 h-4 text-primary" />
                       </div>
                     )}
 
                     <div className={`max-w-xl text-xs rounded-2xl p-4 leading-relaxed ${
                       msg.sender === 'user'
-                        ? 'bg-emerald-600 text-slate-950 font-medium rounded-tr-none'
-                        : 'glass-panel border border-slate-800 text-slate-100 rounded-tl-none'
+                        ? 'bg-primary text-primary-foreground font-medium rounded-tr-none'
+                        : 'glass-panel border border-border text-foreground rounded-tl-none'
                     }`}>
                       <p className="text-sm">{msg.text}</p>
 
                       {/* Agent Response Meta & Coupon Calculation */}
                       {msg.responsePayload && (
-                        <div className="mt-3 pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex flex-col gap-2">
+                        <div className="mt-3 pt-3 border-t border-border text-[11px] text-muted-foreground flex flex-col gap-2">
                           <div className="flex items-center gap-2">
                             <span className="font-mono-tech flex-1">{msg.responsePayload.reasoningSummary}</span>
-                            <span className="shrink-0 px-2 py-0.5 rounded-full bg-slate-950 border border-slate-800 text-slate-400 font-mono-tech text-[9px]">
+                            <span className="shrink-0 px-2 py-0.5 rounded-full bg-background border border-border text-muted-foreground font-mono-tech text-[9px]">
                               via {PROVIDER_LABELS[msg.responsePayload.providerUsed] || msg.responsePayload.providerUsed}
                             </span>
                           </div>
                           {msg.responsePayload.appliedCoupon && (
-                            <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-950/80 border border-emerald-500/20">
+                            <div className="flex items-center gap-2 p-2 rounded-xl bg-background/80 border border-primary/20">
                               <span className="text-amber-400 font-bold flex items-center gap-1">
                                 <Gift className="w-3 h-3" />
                                 Cupom {msg.responsePayload.appliedCoupon.code}
                               </span>
-                              <span className="text-emerald-400 font-bold flex items-center gap-1">
+                              <span className="text-primary font-bold flex items-center gap-1">
                                 <Coins className="w-3 h-3" />
                                 + R$ {msg.responsePayload.estimatedCashback} Cashback
                               </span>
@@ -869,16 +909,16 @@ export default function App() {
                   value={currentQuery}
                   onChange={(e) => setCurrentQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleRunAgent(currentQuery)}
-                  className="w-full pl-5 pr-14 py-4 rounded-2xl bg-slate-900 border border-slate-800 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-500 transition shadow-inner"
+                  className="w-full pl-5 pr-14 py-4 rounded-2xl bg-card border border-border text-foreground placeholder-faint text-sm focus:outline-none focus:border-primary transition shadow-inner"
                 />
                 <button
                   onClick={() => handleRunAgent(currentQuery)}
                   disabled={loading}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition disabled:opacity-50"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl bg-primary hover:bg-primary text-primary-foreground font-bold transition disabled:opacity-50"
                   title="Enviar mensagem"
                 >
                   {loading ? (
-                    <span className="w-4 h-4 rounded-full border-2 border-slate-950 border-t-transparent animate-spin block" />
+                    <span className="w-4 h-4 rounded-full border-2 border-background border-t-transparent animate-spin block" />
                   ) : (
                     <Send className="w-4 h-4" />
                   )}
@@ -889,17 +929,17 @@ export default function App() {
 
             {/* Right Column: Optional Compact Product Rail ("Vitrine da Loja") */}
             {isRightRailOpen && (
-              <div className="w-80 lg:w-96 bg-slate-900/40 p-5 overflow-y-auto custom-scrollbar flex flex-col gap-4 shrink-0 animate-in slide-in-from-right duration-200">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
-                  <h4 className="font-heading font-bold text-sm text-white">Vitrine $Agent Loja</h4>
+              <div className="w-80 lg:w-96 bg-card/40 backdrop-blur-xl p-5 overflow-y-auto custom-scrollbar flex flex-col gap-4 shrink-0 animate-in slide-in-from-right duration-200">
+                <div className="flex items-center justify-between pb-3 border-b border-border/80">
+                  <h4 className="font-heading font-bold text-sm text-foreground">Vitrine $Agent Loja</h4>
                   
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-elevated text-muted-foreground border border-border-strong">
                       {displayedProducts.length} itens
                     </span>
                     <button
                       onClick={() => setIsRightRailOpen(false)}
-                      className="p-1 text-slate-500 hover:text-slate-300 transition"
+                      className="p-1 text-faint hover:text-foreground transition"
                       title="Ocultar Vitrine Lateral"
                     >
                       <X className="w-3.5 h-3.5" />
@@ -915,12 +955,12 @@ export default function App() {
                     return (
                       <div
                         key={product.id}
-                        className={`glass-card rounded-2xl p-3 flex gap-3 group transition-all duration-300 hover:border-slate-700 ${
-                          isMatch ? 'ring-1 ring-emerald-500/60 shadow-lg shadow-emerald-500/5' : ''
+                        className={`glass-card rounded-2xl p-3 flex gap-3 group transition-all duration-300 hover:border-border-strong ${
+                          isMatch ? 'ring-1 ring-primary/60 shadow-lg shadow-primary/5' : ''
                         }`}
                       >
                         {/* Compact Image */}
-                        <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-900 shrink-0">
+                        <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-card shrink-0">
                           <img
                             src={product.imageUrl}
                             alt={product.name}
@@ -928,7 +968,7 @@ export default function App() {
                             onError={handleImageError}
                           />
                           {isMatch && (
-                            <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 font-bold text-[8px]">
+                            <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-bold text-[8px]">
                               Match
                             </span>
                           )}
@@ -937,23 +977,23 @@ export default function App() {
                         {/* Product Details */}
                         <div className="flex-1 flex flex-col justify-between text-xs min-w-0">
                           <div>
-                            <div className="flex items-center justify-between text-[10px] text-slate-400 gap-1">
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground gap-1">
                               <span className="truncate">{product.category}</span>
-                              <span className="text-emerald-400 font-medium shrink-0">{product.storeName}</span>
+                              <span className="text-primary font-medium shrink-0">{product.storeName}</span>
                             </div>
-                            <h5 className="font-heading font-bold text-xs text-white truncate mt-0.5 group-hover:text-emerald-400 transition" title={product.name}>
+                            <h5 className="font-heading font-bold text-xs text-foreground truncate mt-0.5 group-hover:text-primary transition" title={product.name}>
                               {product.name}
                             </h5>
                           </div>
 
-                          <div className="flex items-center justify-between pt-2 border-t border-slate-800/60">
-                            <span className="font-heading font-extrabold text-sm text-white">
+                          <div className="flex items-center justify-between pt-2 border-t border-border/60">
+                            <span className="font-heading font-extrabold text-sm text-foreground">
                               R$ {product.price}
                             </span>
 
                             <button 
                               onClick={() => handleAddToCart(product)}
-                              className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:bg-emerald-500 hover:border-emerald-500 hover:text-slate-950 font-bold text-[10px] transition"
+                              className="px-2.5 py-1 rounded-lg bg-card border border-border-strong hover:bg-primary hover:border-primary hover:text-primary-foreground font-bold text-[10px] transition"
                             >
                               Comprar
                             </button>
@@ -964,6 +1004,18 @@ export default function App() {
                   })}
                 </div>
               </div>
+            )}
+
+            {/* Collapsed Rail Reopen Tab */}
+            {!isRightRailOpen && (
+              <button
+                onClick={() => setIsRightRailOpen(true)}
+                title="Mostrar Vitrine da Loja"
+                className="w-8 shrink-0 bg-card/40 border-l border-border/80 flex flex-col items-center justify-center gap-2 text-faint hover:text-primary hover:bg-card/70 transition"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <ShoppingBag className="w-4 h-4" />
+              </button>
             )}
 
           </div>
@@ -989,6 +1041,7 @@ export default function App() {
         onRemoveItem={handleRemoveCartItem}
         userProfile={userProfile}
         onOpenComparePage={() => setActiveMainView('compare')}
+        onCheckoutComplete={handleCartCheckoutComplete}
       />
 
       {/* Product Checkout Modal */}
@@ -997,32 +1050,7 @@ export default function App() {
         onClose={() => setSelectedCheckoutProduct(null)}
         product={selectedCheckoutProduct}
         userProfile={userProfile}
-      />
-
-      {/* Top Header Feature Modals (Quick Popup triggers) */}
-      <WalletModal
-        isOpen={isWalletModalOpen}
-        onClose={() => setIsWalletModalOpen(false)}
-        userProfile={userProfile}
-      />
-
-      <CouponsModal
-        isOpen={isCouponsModalOpen}
-        onClose={() => setIsCouponsModalOpen(false)}
-      />
-
-      <StoreMeshModal
-        isOpen={isStoreMeshModalOpen}
-        onClose={() => setIsStoreMeshModalOpen(false)}
-      />
-
-      <CustomFiltersModal
-        isOpen={isCustomFiltersModalOpen}
-        onClose={() => setIsCustomFiltersModalOpen(false)}
-        userProfile={userProfile}
-        onApplyPresetFilter={(name, colors) => {
-          handleRunAgent(`Filtrar por ${name} nas cores ${colors.join(', ')}`);
-        }}
+        onCheckoutComplete={handlePurchaseComplete}
       />
 
       {/* Full Linear-Style Preferences Modal */}
