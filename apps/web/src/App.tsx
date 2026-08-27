@@ -1,48 +1,15 @@
 import React, { useState } from 'react';
-import {
-  MOCK_USER_PROFILES,
-  MOCK_STORE_CONTEXT,
-  UserProfile,
-  Product,
-  AgentResponsePayload,
-  AIProviderType,
-  runLocalRuleEngine
-} from '@cagent/shared';
-import { 
-  Sparkles, 
-  Bot, 
-  ChevronRight,
-  ChevronLeft,
-  MessageSquare,
-  Plus,
-  User,
-  X,
-  SlidersHorizontal,
-  Send,
-  ShoppingBag,
-  Gift,
-  Coins,
-  Wallet,
-  Ticket,
-  Store,
-  Search,
-  Filter,
-  ShoppingCart,
-  Share2,
-  History,
-  ChevronDown,
-  ChevronUp,
-  Home,
-  Menu
-} from 'lucide-react';
+import { MOCK_STORE_CONTEXT, Product, AIProviderType } from '@cagent/shared';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
 import { AmbientBackground } from './components/AmbientBackground';
 import { DemoScriptToolbar } from './components/DemoScriptToolbar';
-import { UserProfilePopover } from './components/UserProfilePopover';
 import { PreferencesModal } from './components/PreferencesModal';
 import { ProductCheckoutModal } from './components/ProductCheckoutModal';
 import { CartDrawerModal } from './components/CartDrawerModal';
 import { ShareContextModal } from './components/ShareContextModal';
+import { Sidebar } from './components/layout/Sidebar';
+import { TopHeader } from './components/layout/TopHeader';
+import { ChatWorkspace } from './components/ChatWorkspace';
 import { HomeStorefrontView } from './components/views/HomeStorefrontView';
 import { WalletView } from './components/views/WalletView';
 import { CouponsView } from './components/views/CouponsView';
@@ -50,39 +17,11 @@ import { StoreBootstrapView } from './components/views/StoreBootstrapView';
 import { CustomFiltersView } from './components/views/CustomFiltersView';
 import { CompareProductsView } from './components/views/CompareProductsView';
 import { LandingPage } from './components/views/LandingPage';
-import { handleImageError } from './utils/imageFallback';
-
-const PROVIDER_LABELS: Record<string, string> = {
-  gemini: 'Gemini',
-  openai: 'OpenAI',
-  anthropic: 'Claude',
-  custom: 'Regras Locais',
-};
-
-// Um endpoint serverless dedicado por provider — adicionar um novo provider ao BYOK
-// é criar `api/agent-<provider>.ts` (ver api/_shared.ts) e registrar a rota aqui.
-const PROVIDER_ENDPOINTS: Partial<Record<AIProviderType, string>> = {
-  gemini: '/api/agent',
-  anthropic: '/api/agent-claude',
-  openai: '/api/agent-openai',
-};
-
-interface ChatMessage {
-  id: string;
-  sender: 'user' | 'agent';
-  text: string;
-  responsePayload?: AgentResponsePayload;
-  timestamp: string;
-}
-
-interface ChatSession {
-  id: string;
-  title: string;
-  timestamp: string;
-  messages: ChatMessage[];
-}
-
-type MainViewType = 'home' | 'chat' | 'wallet' | 'coupons' | 'store' | 'filters' | 'compare';
+import { useUserProfile } from './hooks/useUserProfile';
+import { useCart } from './hooks/useCart';
+import { useChatSessions } from './hooks/useChatSessions';
+import { useDemoTour } from './hooks/useDemoTour';
+import { MainViewType } from './types/chat';
 
 export default function App() {
   // Landing Page Gate: shown before the client enters the storefront demo
@@ -92,7 +31,7 @@ export default function App() {
   const [activeMainView, setActiveMainView] = useState<MainViewType>('home');
 
   // Account / Personal Context Profile
-  const [userProfile, setUserProfile] = useState<UserProfile>(MOCK_USER_PROFILES[0]);
+  const { userProfile, setUserProfile, creditCashback, addBalance } = useUserProfile();
   const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isPreferencesModalOpen, setIsPreferencesModalOpen] = useState(false);
@@ -107,10 +46,8 @@ export default function App() {
 
   // Shopping Cart State
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<{ product: Product; quantity: number }[]>([
-    { product: MOCK_STORE_CONTEXT.catalog[0], quantity: 1 },
-    { product: MOCK_STORE_CONTEXT.catalog[1], quantity: 1 },
-  ]);
+  const { cartItems, setCartItems, handleAddToCart, handleUpdateCartQuantity, handleRemoveCartItem, clearCart } =
+    useCart(() => setIsCartDrawerOpen(true));
 
   // Right Vitrine Sidebar Visibility Toggle
   const [isRightRailOpen, setIsRightRailOpen] = useState(true);
@@ -118,293 +55,46 @@ export default function App() {
   // Top Header Feature Modals & Drawers
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  // Chat History & Active Chat Sessions
-  const [chatSessions, setChatSessions] = useState<ChatSession[]>([
-    {
-      id: 'chat-1',
-      title: 'Busca Esportiva & Fluminense',
-      timestamp: 'Hoje, 14:20',
-      messages: [
-        {
-          id: 'msg-1',
-          sender: 'user',
-          text: 'Procuro uma camisa oficial do Fluminense Tricolor e chuteira no tamanho 41',
-          timestamp: '14:20',
-        },
-        {
-          id: 'msg-2',
-          sender: 'agent',
-          text: 'Encontrei a Camisa Oficial Tricolor 2026 e a Chuteira Tiempo Legend no seu tamanho!',
-          responsePayload: runLocalRuleEngine({
-            userQuery: 'Procuro uma camisa oficial do Fluminense Tricolor e chuteira no tamanho 41',
-            userProfile: MOCK_USER_PROFILES[0],
-            storeContext: MOCK_STORE_CONTEXT,
-          }),
-          timestamp: '14:21',
-        }
-      ]
-    },
-    {
-      id: 'chat-2',
-      title: 'Tênis de Corrida Maratona',
-      timestamp: 'Ontem',
-      messages: [
-        {
-          id: 'msg-3',
-          sender: 'user',
-          text: 'Tênis Nike Pegasus no meu tamanho 41 com bom amortecimento',
-          timestamp: 'Ontem',
-        }
-      ]
-    }
-  ]);
-
-  const [activeChatId, setActiveChatId] = useState<string>('chat-1');
-
-  // Input & Agent State
-  const [currentQuery, setCurrentQuery] = useState('');
-  const [loading, setLoading] = useState(false);
+  // Chat History & Agent Orchestration
+  const {
+    activeChatId,
+    setActiveChatId,
+    currentQuery,
+    setCurrentQuery,
+    loading,
+    activeSession,
+    pastSessions,
+    displayedProducts,
+    activeProductIds,
+    handleRunAgent,
+    handleNewChat,
+  } = useChatSessions({ userProfile, aiProvider, customApiKey, onNavigate: setActiveMainView });
 
   // Sidebar States
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // Cart Handlers
-  const handleAddToCart = (product: Product) => {
-    setCartItems(prev => {
-      const existing = prev.find(i => i.product.id === product.id);
-      if (existing) {
-        return prev.map(i => i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
-      }
-      return [...prev, { product, quantity: 1 }];
-    });
-    setIsCartDrawerOpen(true);
-  };
-
-  const handleUpdateCartQuantity = (productId: string, delta: number) => {
-    setCartItems(prev => prev.map(item => {
-      if (item.product.id === productId) {
-        const newQty = item.quantity + delta;
-        return newQty > 0 ? { ...item, quantity: newQty } : null;
-      }
-      return item;
-    }).filter(Boolean) as { product: Product; quantity: number }[]);
-  };
-
-  const handleRemoveCartItem = (productId: string) => {
-    setCartItems(prev => prev.filter(i => i.product.id !== productId));
-  };
-
-  // Fecha o loop do cashback: credita o saldo real e registra a movimentação
-  // no extrato, para que Carteira/Header reflitam a compra imediatamente.
-  const handlePurchaseComplete = (payload: { productName: string; amount: number; cashbackEarned: number }) => {
-    setUserProfile(prev => ({
-      ...prev,
-      walletBalance: Math.round(((prev.walletBalance || 0) + payload.cashbackEarned) * 100) / 100,
-      purchaseHistory: [
-        {
-          id: `order-${Date.now()}`,
-          productName: payload.productName,
-          date: 'Agora',
-          amount: payload.amount,
-          cashbackEarned: payload.cashbackEarned,
-        },
-        ...(prev.purchaseHistory || []),
-      ],
-    }));
-  };
-
   const handleCartCheckoutComplete = (payload: { productName: string; amount: number; cashbackEarned: number }) => {
-    handlePurchaseComplete(payload);
-    setCartItems([]);
+    creditCashback(payload);
+    clearCart();
   };
 
-  const handleAddBalance = (amount: number) => {
-    setUserProfile(prev => ({
-      ...prev,
-      walletBalance: Math.round(((prev.walletBalance || 0) + amount) * 100) / 100,
-    }));
-  };
-
-  // Get active session and past sessions
-  const activeSession = chatSessions.find(s => s.id === activeChatId) || chatSessions[0];
-  const pastSessions = chatSessions.filter(s => s.id !== activeSession?.id);
-
-  const latestAgentResponse = activeSession?.messages
-    .slice()
-    .reverse()
-    .find(m => m.sender === 'agent' && m.responsePayload)?.responsePayload;
-
-  // Recommended IDs from latest agent response
-  const activeProductIds = latestAgentResponse?.recommendedProductIds;
-  const displayedProducts = activeProductIds 
-    ? MOCK_STORE_CONTEXT.catalog.filter(p => activeProductIds.includes(p.id))
-    : MOCK_STORE_CONTEXT.catalog;
-
-  const handleRunAgent = async (queryText: string) => {
-    if (!queryText.trim()) return;
-    setLoading(true);
+  const handleSelectSession = (sessionId: string) => {
+    setActiveChatId(sessionId);
     setActiveMainView('chat');
-
-    const userMsg: ChatMessage = {
-      id: `msg-${Date.now()}-user`,
-      sender: 'user',
-      text: queryText,
-      timestamp: 'Agora',
-    };
-
-    let targetSessionId = activeChatId;
-
-    if (!targetSessionId) {
-      const newSessionId = `chat-${Date.now()}`;
-      const newSession: ChatSession = {
-        id: newSessionId,
-        title: queryText.length > 25 ? `${queryText.substring(0, 25)}...` : queryText,
-        timestamp: 'Agora',
-        messages: [userMsg],
-      };
-      setChatSessions(prev => [newSession, ...prev]);
-      setActiveChatId(newSessionId);
-      targetSessionId = newSessionId;
-    } else {
-      setChatSessions(prev => prev.map(s => s.id === targetSessionId ? { ...s, messages: [...s.messages, userMsg] } : s));
-    }
-
-    try {
-      const endpoint = PROVIDER_ENDPOINTS[aiProvider];
-
-      let data: AgentResponsePayload;
-      if (!endpoint) {
-        // Provider sem adapter registrado: cai direto no motor de regras local
-        // em vez de silenciosamente disparar a chamada para outro provider.
-        data = runLocalRuleEngine({
-          userQuery: queryText,
-          userProfile: userProfile,
-          storeContext: MOCK_STORE_CONTEXT,
-        });
-      } else {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userQuery: queryText,
-            userProfile: userProfile,
-            storeContext: MOCK_STORE_CONTEXT,
-            provider: aiProvider,
-            customApiKey: customApiKey || undefined,
-          }),
-        });
-
-        if (response.ok) {
-          data = await response.json();
-        } else {
-          data = runLocalRuleEngine({
-            userQuery: queryText,
-            userProfile: userProfile,
-            storeContext: MOCK_STORE_CONTEXT,
-          });
-        }
-      }
-
-      const agentMsg: ChatMessage = {
-        id: `msg-${Date.now()}-agent`,
-        sender: 'agent',
-        text: data.naturalLanguageReply,
-        responsePayload: data,
-        timestamp: 'Agora',
-      };
-
-      setChatSessions(prev => prev.map(s => s.id === targetSessionId ? { ...s, messages: [...s.messages, agentMsg] } : s));
-    } catch (err) {
-      const fallback = runLocalRuleEngine({
-        userQuery: queryText,
-        userProfile: userProfile,
-        storeContext: MOCK_STORE_CONTEXT,
-      });
-      const agentMsg: ChatMessage = {
-        id: `msg-${Date.now()}-agent`,
-        sender: 'agent',
-        text: fallback.naturalLanguageReply,
-        responsePayload: fallback,
-        timestamp: 'Agora',
-      };
-      setChatSessions(prev => prev.map(s => s.id === targetSessionId ? { ...s, messages: [...s.messages, agentMsg] } : s));
-    } finally {
-      setLoading(false);
-      setCurrentQuery('');
-    }
-  };
-
-  const handleNewChat = () => {
-    const newSessionId = `chat-${Date.now()}`;
-    const newSession: ChatSession = {
-      id: newSessionId,
-      title: 'Nova conversa',
-      timestamp: 'Agora',
-      messages: [],
-    };
-    setChatSessions(prev => [newSession, ...prev]);
-    setActiveChatId(newSessionId);
-    setActiveMainView('chat');
-    setCurrentQuery('');
   };
 
   // Interactive Demo Script Tour State (1-Click Pitch Steps 1..5)
-  const [demoStep, setDemoStep] = useState<number>(1);
-
-  const handleSelectDemoStep = (stepId: number) => {
-    setDemoStep(stepId);
-    switch (stepId) {
-      case 1:
-        // Passo 1: Perfil Pedro (0m00s - 0m30s)
-        setUserProfile(MOCK_USER_PROFILES[0]);
-        setActiveMainView('home');
-        setIsProfilePopoverOpen(true);
-        setSelectedCheckoutProduct(null);
-        setIsShareModalOpen(false);
-        break;
-      case 2:
-        // Passo 2: Busca Chuteira (0m30s - 1m15s)
-        setIsProfilePopoverOpen(false);
-        setUserProfile(MOCK_USER_PROFILES[0]);
-        setSelectedCheckoutProduct(null);
-        setIsShareModalOpen(false);
-        const queryText = 'Preciso de uma chuteira para jogar em campo de grama sintética no Rio de Janeiro';
-        setCurrentQuery(queryText);
-        handleRunAgent(queryText);
-        break;
-      case 3:
-        // Passo 3: Batalha Swords (1m15s - 2m00s)
-        setIsProfilePopoverOpen(false);
-        setSelectedCheckoutProduct(null);
-        setIsShareModalOpen(false);
-        setCartItems([
-          // Chuteira Society Tiempo Legend vs Chuteira de Campo Predator Elite —
-          // a dupla que corresponde à narrativa "Nike Mercurial vs Adidas Predator" do tour.
-          { product: MOCK_STORE_CONTEXT.catalog[3] || MOCK_STORE_CONTEXT.catalog[0], quantity: 1 },
-          { product: MOCK_STORE_CONTEXT.catalog[4] || MOCK_STORE_CONTEXT.catalog[1], quantity: 1 },
-        ]);
-        setActiveMainView('compare');
-        break;
-      case 4:
-        // Passo 4: Checkout 1-Clique com Cashback (2m00s - 2m30s)
-        setIsProfilePopoverOpen(false);
-        setIsShareModalOpen(false);
-        // Segue com o "vencedor" da Batalha Swords do Passo 3, para continuidade da narrativa.
-        const checkoutItem = MOCK_STORE_CONTEXT.catalog[3] || MOCK_STORE_CONTEXT.catalog[0];
-        setSelectedCheckoutProduct(checkoutItem);
-        setActiveMainView('home');
-        break;
-      case 5:
-        // Passo 5: Compartilhamento QR Code Mobile (2m30s - 3m00s)
-        setIsProfilePopoverOpen(false);
-        setSelectedCheckoutProduct(null);
-        setIsShareModalOpen(true);
-        break;
-      default:
-        break;
-    }
-  };
+  const { demoStep, handleSelectDemoStep } = useDemoTour({
+    setUserProfile,
+    setActiveMainView,
+    setIsProfilePopoverOpen,
+    setSelectedCheckoutProduct,
+    setIsShareModalOpen,
+    setCartItems,
+    handleRunAgent,
+    setCurrentQuery,
+  });
 
   if (!hasEnteredApp) {
     return <LandingPage onEnter={() => setHasEnteredApp(true)} />;
@@ -414,207 +104,33 @@ export default function App() {
     <div className="min-h-screen bg-background text-foreground flex overflow-hidden font-sans">
       <AmbientBackground variant="viewport" className="z-0" />
 
-      {/* ------------------------------------------------------------- */}
-      {/* LEFT SIDEBAR: Collapsible ($Agent -> $A) + Simplified Chat    */}
-      {/* ------------------------------------------------------------- */}
-      <aside
-        className={`bg-card/70 backdrop-blur-xl border-r border-border/80 flex flex-col justify-between transition-all duration-300 z-20 relative ${
-          isSidebarCollapsed ? 'w-20' : 'w-72'
-        } ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
-      >
-        {/* Top Logo Section (Clicking $Agent or $A returns to Home) */}
-        <div className={`h-16 border-b border-border/80 flex items-center shrink-0 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
-          <div 
-            className="flex items-center gap-2 cursor-pointer group" 
-            onClick={() => setActiveMainView('home')}
-            title="Voltar para Início (Loja $Agent)"
-          >
-            <span className="logo-agent-financial text-2xl tracking-tighter transition-all group-hover:opacity-90">
-              {isSidebarCollapsed ? '$A' : '$Agent'}
-            </span>
-          </div>
-
-          {/* Desktop Collapse / Expand Toggle Button (< or >) */}
-          <button
-            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="hidden lg:flex p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-elevated/80 transition"
-            title={isSidebarCollapsed ? 'Expandir Sidebar' : 'Recolher Sidebar'}
-          >
-            {isSidebarCollapsed ? (
-              <ChevronRight className="w-4 h-4 text-primary" />
-            ) : (
-              <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-            )}
-          </button>
-
-          {/* Mobile Close Button */}
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden text-muted-foreground hover:text-foreground p-1"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Back to Landing Page Link */}
-        {!isSidebarCollapsed && (
-          <button
-            onClick={() => setHasEnteredApp(false)}
-            title="Voltar para a página inicial do projeto"
-            className="mx-3 mt-3 text-left text-[10px] text-faint hover:text-primary transition font-mono-tech shrink-0"
-          >
-            ← Sobre o $Agent
-          </button>
-        )}
-
-        {/* Bottom-Aligned Controls (Página Inicial + Nova conversa + Chat Atual + Chats Anteriores) */}
-        <div className="flex-1 flex flex-col justify-end p-3 gap-2 overflow-y-auto custom-scrollbar">
-          
-          {/* Home Button */}
-          <button
-            onClick={() => setActiveMainView('home')}
-            title="Página Inicial da Loja"
-            className={`w-full py-2.5 rounded-2xl border transition shadow-sm font-semibold text-xs tracking-wide flex items-center gap-2 ${
-              activeMainView === 'home'
-                ? 'bg-elevated border-primary/40 text-primary'
-                : 'bg-background/40 border-border/80 text-muted-foreground hover:text-foreground hover:bg-elevated/50'
-            } ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4'}`}
-          >
-            <Home className="w-4 h-4 text-primary shrink-0" />
-            {!isSidebarCollapsed && <span>Página Inicial</span>}
-          </button>
-
-          {/* New Chat Button (Gemini Style Subtle) */}
-          <button
-            onClick={handleNewChat}
-            title="Conversar com $Agent IA"
-            className={`w-full py-2.5 rounded-2xl bg-background/60 border border-border/80 hover:border-primary/40 text-foreground hover:text-foreground font-semibold text-xs tracking-wide flex items-center gap-2 hover:bg-elevated/50 transition shadow-sm ${
-              isSidebarCollapsed ? 'justify-center px-0' : 'px-4'
-            }`}
-          >
-            <Plus className="w-4 h-4 text-primary shrink-0" />
-            {!isSidebarCollapsed && <span>Nova conversa</span>}
-          </button>
-
-          {/* Active Current Chat */}
-          {!isSidebarCollapsed && (
-            <div className="px-3 pt-2 text-[11px] font-mono-tech text-faint uppercase tracking-wider">
-              Chat com IA
-            </div>
-          )}
-
-          {activeSession && (
-            <button
-              title={activeSession.title}
-              onClick={() => {
-                setActiveChatId(activeSession.id);
-                setActiveMainView('chat');
-              }}
-              className={`w-full text-left rounded-xl text-xs flex items-center transition group ${
-                activeMainView === 'chat'
-                  ? 'bg-elevated text-primary font-medium border border-primary/30'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-elevated/50'
-              } ${isSidebarCollapsed ? 'justify-center p-3' : 'p-3 gap-3'}`}
-            >
-              <MessageSquare className="w-4 h-4 shrink-0 text-primary" />
-              {!isSidebarCollapsed && (
-                <div className="truncate flex-1">
-                  <span className="truncate block font-medium text-foreground">{activeSession.title}</span>
-                  <span className="text-[10px] text-muted-foreground block mt-0.5">{activeSession.timestamp}</span>
-                </div>
-              )}
-            </button>
-          )}
-
-          {/* Past Chats Collapsible Section */}
-          {pastSessions.length > 0 && !isSidebarCollapsed && (
-            <div className="pt-2 border-t border-border/60 flex flex-col gap-1">
-              <button
-                onClick={() => setShowPastChats(!showPastChats)}
-                className="w-full px-3 py-1.5 rounded-xl text-left flex items-center justify-between text-xs text-muted-foreground hover:text-foreground hover:bg-elevated/40 transition font-medium"
-              >
-                <div className="flex items-center gap-2">
-                  <History className="w-3.5 h-3.5 text-faint" />
-                  <span>Chats anteriores ({pastSessions.length})</span>
-                </div>
-                {showPastChats ? <ChevronUp className="w-3.5 h-3.5 text-faint" /> : <ChevronDown className="w-3.5 h-3.5 text-faint" />}
-              </button>
-
-              {/* Past Chats Dropdown */}
-              {showPastChats && (
-                <div className="flex flex-col gap-1 pl-2 pt-1 animate-in fade-in duration-150">
-                  {pastSessions.map((session) => (
-                    <button
-                      key={session.id}
-                      title={session.title}
-                      onClick={() => {
-                        setActiveChatId(session.id);
-                        setActiveMainView('chat');
-                      }}
-                      className="w-full text-left rounded-xl p-2.5 text-xs flex items-center gap-2.5 text-muted-foreground hover:text-foreground hover:bg-elevated/50 transition group"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5 text-faint group-hover:text-foreground shrink-0" />
-                      <div className="truncate flex-1">
-                        <span className="truncate block font-medium text-foreground">{session.title}</span>
-                        <span className="text-[10px] text-faint block">{session.timestamp}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-        </div>
-
-        {/* Bottom User Account Popover Trigger */}
-        <div className="p-3 border-t border-border/80 relative">
-          <button
-            onClick={() => setIsProfilePopoverOpen(!isProfilePopoverOpen)}
-            title={`Meu Perfil: ${userProfile.name}`}
-            className={`w-full rounded-2xl bg-background/80 border border-border/80 hover:border-primary/40 text-left flex items-center transition group ${
-              isSidebarCollapsed ? 'justify-center p-2.5' : 'p-3 justify-between gap-3'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <img
-                src={userProfile.avatarUrl}
-                alt={userProfile.name}
-                className="w-9 h-9 rounded-xl object-cover border border-primary/40 shrink-0"
-                onError={handleImageError}
-              />
-              {!isSidebarCollapsed && (
-                <div className="truncate">
-                  <span className="text-xs font-bold text-foreground block truncate">{userProfile.name}</span>
-                  <span className="text-[10px] text-primary font-medium block">
-                    VIP • Saldo: R$ {(userProfile.walletBalance || 42.50).toFixed(2).replace('.', ',')}
-                  </span>
-                </div>
-              )}
-            </div>
-            {!isSidebarCollapsed && (
-              <SlidersHorizontal className="w-4 h-4 text-faint group-hover:text-primary transition shrink-0" />
-            )}
-          </button>
-
-          {/* Linear-Style User Popover */}
-          <UserProfilePopover
-            isOpen={isProfilePopoverOpen}
-            onClose={() => setIsProfilePopoverOpen(false)}
-            userProfile={userProfile}
-            onOpenPreferences={() => setIsPreferencesModalOpen(true)}
-            onOpenThemeModal={() => setIsThemeModalOpen(true)}
-          />
-        </div>
-      </aside>
+      <Sidebar
+        activeMainView={activeMainView}
+        onNavigateHome={() => setActiveMainView('home')}
+        isSidebarCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isSidebarOpen={isSidebarOpen}
+        onCloseMobile={() => setIsSidebarOpen(false)}
+        onBackToLanding={() => setHasEnteredApp(false)}
+        onNewChat={handleNewChat}
+        activeSession={activeSession}
+        pastSessions={pastSessions}
+        onSelectSession={handleSelectSession}
+        showPastChats={showPastChats}
+        onToggleShowPastChats={() => setShowPastChats(!showPastChats)}
+        userProfile={userProfile}
+        isProfilePopoverOpen={isProfilePopoverOpen}
+        onToggleProfilePopover={() => setIsProfilePopoverOpen(!isProfilePopoverOpen)}
+        onCloseProfilePopover={() => setIsProfilePopoverOpen(false)}
+        onOpenPreferences={() => setIsPreferencesModalOpen(true)}
+        onOpenThemeModal={() => setIsThemeModalOpen(true)}
+      />
 
       {/* ------------------------------------------------------------- */}
       {/* MAIN WORKSPACE: Header + View Switcher                       */}
       {/* ------------------------------------------------------------- */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
-        
+
         {/* Interactive Pitch Demo Tour Bar (1-Click Steps 1..5) */}
         <DemoScriptToolbar
           currentStep={demoStep}
@@ -622,139 +138,23 @@ export default function App() {
           onResetDemo={() => handleSelectDemoStep(1)}
         />
 
-        {/* Top Navbar Header with Breadcrumbs + Search Input + Actions */}
-        <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-md border-b border-border/80 h-16 px-6 flex items-center justify-between gap-4 shrink-0">
-          <div className="flex items-center gap-4 flex-1 max-w-xl">
-
-            {/* Mobile Sidebar Reopen Button */}
-            {!isSidebarOpen && (
-              <button
-                onClick={() => setIsSidebarOpen(true)}
-                className="lg:hidden p-1.5 -ml-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-elevated/80 transition shrink-0"
-                title="Abrir Menu"
-              >
-                <Menu className="w-4 h-4" />
-              </button>
-            )}
-
-            {/* Dynamic Breadcrumb Header */}
-            <div className="flex items-center gap-2 font-heading font-semibold text-sm text-foreground tracking-tight shrink-0">
-              <button
-                onClick={() => setActiveMainView('home')}
-                className="hover:text-primary transition flex items-center gap-1.5"
-                title="Voltar para Página Inicial (Loja $Agent)"
-              >
-                <Home className="w-4 h-4 text-primary" />
-                <span>Loja $Agent</span>
-              </button>
-
-              {activeMainView !== 'home' && (
-                <>
-                  <span className="text-faint font-mono-tech text-xs">/</span>
-                  <span className="text-primary text-xs font-medium">
-                    {activeMainView === 'chat' && 'Conversa Agêntica com IA'}
-                    {activeMainView === 'wallet' && 'Minha Carteira & Cashback'}
-                    {activeMainView === 'coupons' && 'Meus Cupons Exclusivos'}
-                    {activeMainView === 'store' && 'Rede de Lojas Deco'}
-                    {activeMainView === 'filters' && 'Filtros Personalizados'}
-                    {activeMainView === 'compare' && 'Comparador de Atributos'}
-                  </span>
-                </>
-              )}
-            </div>
-
-            {/* Header Search Input Bar (Linear / Raycast Style) */}
-            <div className="relative flex-1 max-w-xs hidden sm:block">
-              <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Pesquisar com $Agent..."
-                value={currentQuery}
-                onChange={(e) => setCurrentQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleRunAgent(currentQuery)}
-                className="w-full pl-8 pr-10 py-1.5 rounded-xl bg-background/60 border border-border text-foreground placeholder:text-faint text-xs focus:outline-none focus:border-primary/50 transition shadow-inner"
-              />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono-tech text-faint px-1 rounded bg-card border border-border/80 pointer-events-none">
-                ⌘K
-              </span>
-            </div>
-          </div>
-
-          {/* Right Top Header Feature Actions (Share, Filters, Store, Ticket, ShoppingCart, Wallet) */}
-          <div className="flex items-center gap-2">
-            
-            {/* Share Context Button */}
-            <button
-              onClick={() => setIsShareModalOpen(true)}
-              className="p-2 rounded-xl bg-background/80 border border-border hover:border-border-strong text-foreground hover:text-foreground transition"
-              title="Compartilhar Busca Agêntica"
-            >
-              <Share2 className="w-4 h-4 text-foreground" />
-            </button>
-
-            {/* Custom Filters Button */}
-            <button
-              onClick={() => setActiveMainView('filters')}
-              className={`p-2 rounded-xl bg-background/80 border transition ${
-                activeMainView === 'filters' ? 'border-primary text-primary' : 'border-border text-foreground hover:text-foreground'
-              }`}
-              title="Filtros Personalizados & Temáticos"
-            >
-              <Filter className="w-4 h-4" />
-            </button>
-
-            {/* Store Mesh Button */}
-            <button
-              onClick={() => setActiveMainView('store')}
-              className={`p-2 rounded-xl bg-background/80 border transition ${
-                activeMainView === 'store' ? 'border-cyan-400 text-cyan-400' : 'border-border text-foreground hover:text-foreground'
-              }`}
-              title="Rede de Lojas Deco Mesh"
-            >
-              <Store className="w-4 h-4" />
-            </button>
-
-            {/* Coupons Button */}
-            <button
-              onClick={() => setActiveMainView('coupons')}
-              className={`p-2 rounded-xl bg-background/80 border transition ${
-                activeMainView === 'coupons' ? 'border-amber-400 text-amber-400' : 'border-border text-foreground hover:text-foreground'
-              }`}
-              title="Meus Cupons Exclusivos"
-            >
-              <Ticket className="w-4 h-4" />
-            </button>
-
-            {/* Shopping Cart Button (Left of Wallet Saldo) */}
-            <button
-              onClick={() => setIsCartDrawerOpen(true)}
-              className="p-2 rounded-xl bg-background/80 border border-border hover:border-border-strong text-foreground hover:text-foreground transition relative"
-              title="Meu Carrinho de Compras"
-            >
-              <ShoppingCart className="w-4 h-4 text-foreground" />
-              {cartItems.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground font-extrabold text-[9px] flex items-center justify-center font-mono-tech">
-                  {cartItems.reduce((acc, i) => acc + i.quantity, 0)}
-                </span>
-              )}
-            </button>
-
-            {/* Wallet & Saldo Chip (Far Right) */}
-            <button
-              onClick={() => setActiveMainView('wallet')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl bg-background/80 border transition ${
-                activeMainView === 'wallet' ? 'border-primary text-primary' : 'border-border hover:border-primary/40 text-foreground'
-              }`}
-              title="Minha Carteira & Cashback"
-            >
-              <Wallet className="w-4 h-4 text-foreground" />
-              <span className="font-mono-tech font-bold text-primary tracking-tight text-xs">
-                R${(userProfile.walletBalance || 42.50).toFixed(2).replace('.', ',')}
-              </span>
-            </button>
-
-          </div>
-        </header>
+        <TopHeader
+          isSidebarOpen={isSidebarOpen}
+          onOpenSidebar={() => setIsSidebarOpen(true)}
+          activeMainView={activeMainView}
+          onNavigateHome={() => setActiveMainView('home')}
+          currentQuery={currentQuery}
+          onQueryChange={setCurrentQuery}
+          onSubmitQuery={() => handleRunAgent(currentQuery)}
+          onOpenShareModal={() => setIsShareModalOpen(true)}
+          onNavigateFilters={() => setActiveMainView('filters')}
+          onNavigateStore={() => setActiveMainView('store')}
+          onNavigateCoupons={() => setActiveMainView('coupons')}
+          cartItemsCount={cartItems.reduce((acc, i) => acc + i.quantity, 0)}
+          onOpenCart={() => setIsCartDrawerOpen(true)}
+          walletBalance={userProfile.walletBalance || 42.50}
+          onNavigateWallet={() => setActiveMainView('wallet')}
+        />
 
         {/* View Content Renderer */}
         {activeMainView === 'home' && (
@@ -773,7 +173,7 @@ export default function App() {
         )}
 
         {activeMainView === 'wallet' && (
-          <WalletView userProfile={userProfile} onBackToChat={() => setActiveMainView('home')} onAddBalance={handleAddBalance} />
+          <WalletView userProfile={userProfile} onBackToChat={() => setActiveMainView('home')} onAddBalance={addBalance} />
         )}
 
         {activeMainView === 'coupons' && (
@@ -811,214 +211,19 @@ export default function App() {
 
         {/* MAIN VIEW: Gemini Chat Workspace + Optional Right Product Rail */}
         {activeMainView === 'chat' && (
-          <div className="flex-1 flex overflow-hidden">
-            
-            {/* Left Column: Gemini Style Chat Experience */}
-            <div className="flex-1 flex flex-col justify-between p-6 overflow-y-auto custom-scrollbar border-r border-border/80 relative">
-              
-              {/* Chat Stream Messages */}
-              <div className="flex-1 flex flex-col gap-6 max-w-3xl w-full mx-auto pb-4">
-                
-                {/* Empty Chat Greeting (Gemini Style) */}
-                {(!activeSession || activeSession.messages.length === 0) && (
-                  <div className="my-auto flex flex-col items-center justify-center text-center gap-4 py-12 animate-in fade-in zoom-in-95">
-                    <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center">
-                      <Sparkles className="w-7 h-7 text-primary" />
-                    </div>
-                    <div>
-                      <h2 className="font-heading font-bold text-2xl text-foreground">
-                        Olá, {userProfile.name.split(' ')[0]}! O que você quer pesquisar e comprar hoje?
-                      </h2>
-                      <p className="text-xs text-muted-foreground mt-2 max-w-md">
-                        O $Agent cruza seu perfil contextual (teto R$ {userProfile.maxBudget || '450'}) com o catálogo da loja.
-                      </p>
-                    </div>
-
-                    {/* Quick Suggestion Pills */}
-                    <div className="flex flex-wrap items-center justify-center gap-2 mt-4 max-w-lg">
-                      {[
-                        'Camisa Oficial Fluminense Tricolor',
-                        'Camisa Seleção Brasileira Amarela',
-                        'Tênis de Corrida Nike Air Zoom',
-                        'Chuteira Society Tiempo Legend Pro'
-                      ].map((sug) => (
-                        <button
-                          key={sug}
-                          onClick={() => {
-                            setCurrentQuery(sug);
-                            handleRunAgent(sug);
-                          }}
-                          className="px-3.5 py-2 rounded-xl bg-card border border-border hover:border-primary/50 hover:text-primary transition text-xs"
-                        >
-                          💡 {sug}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Chat Message History */}
-                {activeSession && activeSession.messages.map((msg) => (
-                  <div key={msg.id} className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    {msg.sender === 'agent' && (
-                      <div className="w-8 h-8 rounded-xl bg-primary/20 border border-primary/40 flex items-center justify-center shrink-0 mt-1">
-                        <Bot className="w-4 h-4 text-primary" />
-                      </div>
-                    )}
-
-                    <div className={`max-w-xl text-xs rounded-2xl p-4 leading-relaxed ${
-                      msg.sender === 'user'
-                        ? 'bg-primary text-primary-foreground font-medium rounded-tr-none'
-                        : 'glass-panel border border-border text-foreground rounded-tl-none'
-                    }`}>
-                      <p className="text-sm">{msg.text}</p>
-
-                      {/* Agent Response Meta & Coupon Calculation */}
-                      {msg.responsePayload && (
-                        <div className="mt-3 pt-3 border-t border-border text-[11px] text-muted-foreground flex flex-col gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono-tech flex-1">{msg.responsePayload.reasoningSummary}</span>
-                            <span className="shrink-0 px-2 py-0.5 rounded-full bg-background border border-border text-muted-foreground font-mono-tech text-[9px]">
-                              via {PROVIDER_LABELS[msg.responsePayload.providerUsed] || msg.responsePayload.providerUsed}
-                            </span>
-                          </div>
-                          {msg.responsePayload.appliedCoupon && (
-                            <div className="flex items-center gap-2 p-2 rounded-xl bg-background/80 border border-primary/20">
-                              <span className="text-amber-400 font-bold flex items-center gap-1">
-                                <Gift className="w-3 h-3" />
-                                Cupom {msg.responsePayload.appliedCoupon.code}
-                              </span>
-                              <span className="text-primary font-bold flex items-center gap-1">
-                                <Coins className="w-3 h-3" />
-                                + R$ {msg.responsePayload.estimatedCashback} Cashback
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Bottom Gemini Input Form */}
-              <div className="max-w-3xl w-full mx-auto relative pt-2">
-                <input
-                  type="text"
-                  placeholder="O que você deseja pesquisar e comprar hoje?..."
-                  value={currentQuery}
-                  onChange={(e) => setCurrentQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleRunAgent(currentQuery)}
-                  className="w-full pl-5 pr-14 py-4 rounded-2xl bg-card border border-border text-foreground placeholder-faint text-sm focus:outline-none focus:border-primary transition shadow-inner"
-                />
-                <button
-                  onClick={() => handleRunAgent(currentQuery)}
-                  disabled={loading}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl bg-primary hover:bg-primary text-primary-foreground font-bold transition disabled:opacity-50"
-                  title="Enviar mensagem"
-                >
-                  {loading ? (
-                    <span className="w-4 h-4 rounded-full border-2 border-background border-t-transparent animate-spin block" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-
-            </div>
-
-            {/* Right Column: Optional Compact Product Rail ("Vitrine da Loja") */}
-            {isRightRailOpen && (
-              <div className="w-80 lg:w-96 bg-card/40 backdrop-blur-xl p-5 overflow-y-auto custom-scrollbar flex flex-col gap-4 shrink-0 animate-in slide-in-from-right duration-200">
-                <div className="flex items-center justify-between pb-3 border-b border-border/80">
-                  <h4 className="font-heading font-bold text-sm text-foreground">Vitrine $Agent Loja</h4>
-                  
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-elevated text-muted-foreground border border-border-strong">
-                      {displayedProducts.length} itens
-                    </span>
-                    <button
-                      onClick={() => setIsRightRailOpen(false)}
-                      className="p-1 text-faint hover:text-foreground transition"
-                      title="Ocultar Vitrine Lateral"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Vertical Stack of Products */}
-                <div className="flex flex-col gap-3">
-                  {displayedProducts.map((product) => {
-                    const isMatch = activeProductIds?.includes(product.id);
-
-                    return (
-                      <div
-                        key={product.id}
-                        className={`glass-card rounded-2xl p-3 flex gap-3 group transition-all duration-300 hover:border-border-strong ${
-                          isMatch ? 'ring-1 ring-primary/60 shadow-lg shadow-primary/5' : ''
-                        }`}
-                      >
-                        {/* Compact Image */}
-                        <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-card shrink-0">
-                          <img
-                            src={product.imageUrl}
-                            alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={handleImageError}
-                          />
-                          {isMatch && (
-                            <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-bold text-[8px]">
-                              Match
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Product Details */}
-                        <div className="flex-1 flex flex-col justify-between text-xs min-w-0">
-                          <div>
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground gap-1">
-                              <span className="truncate">{product.category}</span>
-                              <span className="text-primary font-medium shrink-0">{product.storeName}</span>
-                            </div>
-                            <h5 className="font-heading font-bold text-xs text-foreground truncate mt-0.5 group-hover:text-primary transition" title={product.name}>
-                              {product.name}
-                            </h5>
-                          </div>
-
-                          <div className="flex items-center justify-between pt-2 border-t border-border/60">
-                            <span className="font-heading font-extrabold text-sm text-foreground">
-                              R$ {product.price}
-                            </span>
-
-                            <button 
-                              onClick={() => handleAddToCart(product)}
-                              className="px-2.5 py-1 rounded-lg bg-card border border-border-strong hover:bg-primary hover:border-primary hover:text-primary-foreground font-bold text-[10px] transition"
-                            >
-                              Comprar
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Collapsed Rail Reopen Tab */}
-            {!isRightRailOpen && (
-              <button
-                onClick={() => setIsRightRailOpen(true)}
-                title="Mostrar Vitrine da Loja"
-                className="w-8 shrink-0 bg-card/40 border-l border-border/80 flex flex-col items-center justify-center gap-2 text-faint hover:text-primary hover:bg-card/70 transition"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <ShoppingBag className="w-4 h-4" />
-              </button>
-            )}
-
-          </div>
+          <ChatWorkspace
+            activeSession={activeSession}
+            userProfile={userProfile}
+            currentQuery={currentQuery}
+            onQueryChange={setCurrentQuery}
+            onSubmitQuery={handleRunAgent}
+            loading={loading}
+            displayedProducts={displayedProducts}
+            activeProductIds={activeProductIds}
+            isRightRailOpen={isRightRailOpen}
+            onToggleRail={setIsRightRailOpen}
+            onAddToCart={handleAddToCart}
+          />
         )}
 
       </div>
@@ -1050,7 +255,7 @@ export default function App() {
         onClose={() => setSelectedCheckoutProduct(null)}
         product={selectedCheckoutProduct}
         userProfile={userProfile}
-        onCheckoutComplete={handlePurchaseComplete}
+        onCheckoutComplete={creditCashback}
       />
 
       {/* Full Linear-Style Preferences Modal */}
