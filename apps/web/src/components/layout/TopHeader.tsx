@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Product, getProductSuggestions } from '@cagent/shared';
 import {
   Menu,
   Home,
@@ -11,6 +12,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { MainViewType } from '../../types/chat';
+import { SearchSuggestions } from './SearchSuggestions';
 
 const VIEW_LABELS: Partial<Record<MainViewType, string>> = {
   chat: 'Conversa Agêntica com IA',
@@ -28,7 +30,8 @@ interface TopHeaderProps {
   onNavigateHome: () => void;
   currentQuery: string;
   onQueryChange: (value: string) => void;
-  onSubmitQuery: () => void;
+  onSubmitQuery: (query: string) => void;
+  products: Product[];
   onOpenShareModal: () => void;
   onNavigateFilters: () => void;
   onNavigateStore: () => void;
@@ -47,6 +50,7 @@ export function TopHeader({
   currentQuery,
   onQueryChange,
   onSubmitQuery,
+  products,
   onOpenShareModal,
   onNavigateFilters,
   onNavigateStore,
@@ -56,6 +60,62 @@ export function TopHeader({
   walletBalance,
   onNavigateWallet,
 }: TopHeaderProps) {
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+
+  const suggestions = useMemo(
+    () => getProductSuggestions(currentQuery, products),
+    [currentQuery, products]
+  );
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setIsSuggestionsOpen(false);
+      }
+    }
+    if (isSuggestionsOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isSuggestionsOpen]);
+
+  const handleQueryChange = (value: string) => {
+    onQueryChange(value);
+    setIsSuggestionsOpen(value.trim().length > 0);
+    setHighlightedIndex(-1);
+  };
+
+  const handleSelectSuggestion = (product: Product) => {
+    onQueryChange(product.name);
+    onSubmitQuery(product.name);
+    setIsSuggestionsOpen(false);
+    setHighlightedIndex(-1);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown' && isSuggestionsOpen && suggestions.length > 0) {
+      e.preventDefault();
+      setHighlightedIndex((prev) => (prev + 1) % suggestions.length);
+    } else if (e.key === 'ArrowUp' && isSuggestionsOpen && suggestions.length > 0) {
+      e.preventDefault();
+      setHighlightedIndex((prev) => (prev - 1 + suggestions.length) % suggestions.length);
+    } else if (e.key === 'Enter') {
+      if (isSuggestionsOpen && highlightedIndex >= 0 && suggestions[highlightedIndex]) {
+        handleSelectSuggestion(suggestions[highlightedIndex]);
+      } else {
+        setIsSuggestionsOpen(false);
+        onSubmitQuery(currentQuery);
+      }
+    } else if (e.key === 'Escape') {
+      setIsSuggestionsOpen(false);
+      e.currentTarget.blur();
+    }
+  };
+
   return (
     <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-md border-b border-border/80 h-16 px-6 flex items-center justify-between gap-4 shrink-0">
       <div className="flex items-center gap-4 flex-1 max-w-xl">
@@ -93,19 +153,29 @@ export function TopHeader({
         </div>
 
         {/* Header Search Input Bar (Linear / Raycast Style) */}
-        <div className="relative flex-1 max-w-xs hidden sm:block">
+        <div ref={searchContainerRef} className="relative flex-1 max-w-xs hidden sm:block">
           <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Pesquisar com $Agent..."
             value={currentQuery}
-            onChange={(e) => onQueryChange(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSubmitQuery()}
+            onChange={(e) => handleQueryChange(e.target.value)}
+            onFocus={() => setIsSuggestionsOpen(currentQuery.trim().length > 0)}
+            onKeyDown={handleSearchKeyDown}
             className="w-full pl-8 pr-10 py-1.5 rounded-xl bg-background/60 border border-border text-foreground placeholder:text-faint text-xs focus:outline-none focus:border-primary/50 transition shadow-inner"
           />
           <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono-tech text-faint px-1 rounded bg-card border border-border/80 pointer-events-none">
             ⌘K
           </span>
+
+          {isSuggestionsOpen && (
+            <SearchSuggestions
+              suggestions={suggestions}
+              highlightedIndex={highlightedIndex}
+              onSelect={handleSelectSuggestion}
+              onHover={setHighlightedIndex}
+            />
+          )}
         </div>
       </div>
 

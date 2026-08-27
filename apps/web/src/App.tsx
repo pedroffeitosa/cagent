@@ -145,7 +145,8 @@ export default function App() {
           onNavigateHome={() => setActiveMainView('home')}
           currentQuery={currentQuery}
           onQueryChange={setCurrentQuery}
-          onSubmitQuery={() => handleRunAgent(currentQuery)}
+          onSubmitQuery={handleRunAgent}
+          products={MOCK_STORE_CONTEXT.catalog}
           onOpenShareModal={() => setIsShareModalOpen(true)}
           onNavigateFilters={() => setActiveMainView('filters')}
           onNavigateStore={() => setActiveMainView('store')}

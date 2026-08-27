@@ -1,4 +1,4 @@
-import { AgentRequestPayload, AgentResponsePayload } from './types';
+import { AgentRequestPayload, AgentResponsePayload, Product } from './types';
 
 /**
  * Provider-agnostic prompt builder shared by every LLM adapter (Gemini, Anthropic, OpenAI...).
@@ -111,4 +111,36 @@ export function runLocalRuleEngine(payload: AgentRequestPayload): AgentResponseP
     reasoningSummary: `Agente da Loja: Cupom DECO10 aplicado + ${cashbackPercent}% Cashback calculado no saldo da sua conta.`,
     providerUsed: 'custom',
   };
+}
+
+/**
+ * Autocomplete leve para o campo de busca: casamento local por texto,
+ * sem montar resposta do agente (reasoning/cupom/cashback), pra poder
+ * rodar a cada tecla digitada sem custo.
+ */
+export function getProductSuggestions(query: string, catalog: Product[], limit = 5): Product[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+
+  const scored = catalog
+    .map((product) => {
+      const name = product.name.toLowerCase();
+      let score = 0;
+      if (name.startsWith(q)) {
+        score = 3;
+      } else if (name.includes(q)) {
+        score = 2;
+      } else if (
+        product.category.toLowerCase().includes(q) ||
+        product.description.toLowerCase().includes(q) ||
+        product.tags.some((t) => t.toLowerCase().includes(q))
+      ) {
+        score = 1;
+      }
+      return { product, score };
+    })
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  return scored.slice(0, limit).map((entry) => entry.product);
 }
