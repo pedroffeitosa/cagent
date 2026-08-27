@@ -27,13 +27,21 @@ function buildResponsePayload(
   providerUsed: AIProviderType,
   fallbackReasoning: string
 ): AgentResponsePayload {
-  const defaultCoupon = payload.storeContext.config?.activeCoupons?.[0];
-  const topPrice = payload.storeContext.catalog[0]?.price || 300;
+  // Cashback é calculado sobre o produto que a IA de fato recomendou (primeiro
+  // da lista), não sobre o primeiro item do catálogo inteiro — senão o valor
+  // mostrado ao cliente fica descolado do que ele realmente vai comprar.
+  const recommendedIds = parsed.recommendedProductIds || payload.storeContext.catalog.map((p) => p.id);
+  const topRecommended = payload.storeContext.catalog.find((p) => p.id === recommendedIds[0]);
+  const topPrice = topRecommended?.price ?? payload.storeContext.catalog[0]?.price ?? 300;
+
+  const defaultCoupon =
+    payload.storeContext.config?.activeCoupons?.find((c) => c.code === 'DECO10') ??
+    payload.storeContext.config?.activeCoupons?.[0];
   const estCashback = Math.round((topPrice * ((payload.storeContext.config?.cashbackPercentage || 5) / 100)) * 100) / 100;
 
   return {
     naturalLanguageReply: parsed.naturalLanguageReply || 'Aqui estão as melhores recomendações com descontos e cashback da loja!',
-    recommendedProductIds: parsed.recommendedProductIds || payload.storeContext.catalog.map((p) => p.id),
+    recommendedProductIds: recommendedIds,
     activeFilters: parsed.activeFilters || {},
     appliedCoupon: defaultCoupon,
     estimatedCashback: estCashback,
