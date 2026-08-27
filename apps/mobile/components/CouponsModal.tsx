@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { ThemeColors, useTheme } from '../theme';
 
 interface CouponsModalProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ const COUPONS = [
 ];
 
 export function CouponsModal({ isOpen, onClose }: CouponsModalProps) {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
   const [couponCode, setCouponCode] = useState('');
   const [redeemed, setRedeemed] = useState(false);
 
@@ -49,7 +52,7 @@ export function CouponsModal({ isOpen, onClose }: CouponsModalProps) {
             <TextInput
               style={styles.redeemInput}
               placeholder="Digite o código do cupom..."
-              placeholderTextColor="#64748b"
+              placeholderTextColor={colors.faint}
               value={couponCode}
               onChangeText={(text) => setCouponCode(text.toUpperCase())}
               autoCapitalize="characters"
@@ -89,138 +92,140 @@ export function CouponsModal({ isOpen, onClose }: CouponsModalProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(2, 6, 23, 0.85)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  card: {
-    width: '100%',
-    backgroundColor: '#0f172a',
-    borderRadius: 24,
-    padding: 20,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    gap: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomColor: '#1e293b',
-    borderBottomWidth: 1,
-    paddingBottom: 12,
-  },
-  headerTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  closeButton: {
-    padding: 4,
-  },
-  closeButtonText: {
-    color: '#94a3b8',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  redeemRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  redeemInput: {
-    flex: 1,
-    backgroundColor: '#020617',
-    borderColor: '#1e293b',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    color: '#ffffff',
-    fontSize: 12,
-  },
-  redeemButton: {
-    backgroundColor: '#fbbf24',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  redeemButtonText: {
-    color: '#020617',
-    fontWeight: '800',
-    fontSize: 12,
-  },
-  couponsList: {
-    gap: 10,
-  },
-  couponCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    backgroundColor: '#020617',
-    borderColor: '#1e293b',
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 14,
-    gap: 10,
-  },
-  couponInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  couponHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  couponCode: {
-    color: '#fbbf24',
-    fontWeight: '800',
-    fontSize: 13,
-  },
-  couponBadge: {
-    backgroundColor: 'rgba(251, 191, 36, 0.1)',
-    borderColor: 'rgba(251, 191, 36, 0.2)',
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  couponBadgeText: {
-    color: '#fbbf24',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  couponDescription: {
-    color: '#94a3b8',
-    fontSize: 11,
-    lineHeight: 15,
-  },
-  appliedBadge: {
-    backgroundColor: 'rgba(52, 211, 153, 0.2)',
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  appliedBadgeText: {
-    color: '#6ee7b7',
-    fontSize: 9,
-  },
-  closeCardButton: {
-    backgroundColor: '#0f172a',
-    borderColor: '#1e293b',
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  closeCardButtonText: {
-    color: '#cbd5e1',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-});
+function getStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: `${c.background}d9`,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    card: {
+      width: '100%',
+      backgroundColor: c.card,
+      borderRadius: 24,
+      padding: 20,
+      borderColor: c.border,
+      borderWidth: 1,
+      gap: 16,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderBottomColor: c.border,
+      borderBottomWidth: 1,
+      paddingBottom: 12,
+    },
+    headerTitle: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: c.foreground,
+    },
+    closeButton: {
+      padding: 4,
+    },
+    closeButtonText: {
+      color: c.mutedForeground,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    redeemRow: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    redeemInput: {
+      flex: 1,
+      backgroundColor: c.background,
+      borderColor: c.border,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      color: c.foreground,
+      fontSize: 12,
+    },
+    redeemButton: {
+      backgroundColor: '#fbbf24',
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    redeemButtonText: {
+      color: '#1c1300',
+      fontWeight: '800',
+      fontSize: 12,
+    },
+    couponsList: {
+      gap: 10,
+    },
+    couponCard: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      backgroundColor: c.background,
+      borderColor: c.border,
+      borderWidth: 1,
+      borderRadius: 16,
+      padding: 14,
+      gap: 10,
+    },
+    couponInfo: {
+      flex: 1,
+      gap: 4,
+    },
+    couponHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    couponCode: {
+      color: '#fbbf24',
+      fontWeight: '800',
+      fontSize: 13,
+    },
+    couponBadge: {
+      backgroundColor: 'rgba(251, 191, 36, 0.1)',
+      borderColor: 'rgba(251, 191, 36, 0.2)',
+      borderWidth: 1,
+      borderRadius: 20,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+    },
+    couponBadgeText: {
+      color: '#fbbf24',
+      fontSize: 10,
+      fontWeight: '700',
+    },
+    couponDescription: {
+      color: c.mutedForeground,
+      fontSize: 11,
+      lineHeight: 15,
+    },
+    appliedBadge: {
+      backgroundColor: `${c.primary}33`,
+      borderRadius: 6,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+    },
+    appliedBadgeText: {
+      color: c.primary,
+      fontSize: 9,
+    },
+    closeCardButton: {
+      backgroundColor: c.card,
+      borderColor: c.border,
+      borderWidth: 1,
+      borderRadius: 14,
+      paddingVertical: 12,
+      alignItems: 'center',
+    },
+    closeCardButtonText: {
+      color: c.foreground,
+      fontWeight: '700',
+      fontSize: 12,
+    },
+  });
+}

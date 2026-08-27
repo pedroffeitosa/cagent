@@ -55,21 +55,21 @@ export function UserProfilePopover({
   return (
     <div 
       ref={popoverRef}
-      className="absolute bottom-16 left-3 z-50 w-72 bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-800 shadow-2xl p-2.5 flex flex-col gap-1.5 text-xs animate-in fade-in zoom-in-95 duration-150"
+      className="absolute bottom-16 left-3 z-50 w-72 bg-card/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl p-2.5 flex flex-col gap-1.5 text-xs animate-in fade-in zoom-in-95 duration-150"
     >
       {/* Header User Card (Linear Style) */}
-      <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between gap-3">
+      <div className="p-3 rounded-xl bg-background/60 border border-border/80 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 truncate">
           <img
             src={userProfile.avatarUrl}
             alt={userProfile.name}
-            className="w-10 h-10 rounded-xl object-cover border border-emerald-500/40 shrink-0"
+            className="w-10 h-10 rounded-xl object-cover border border-primary/40 shrink-0"
           />
           <div className="truncate">
-            <span className="font-heading font-bold text-sm text-white block truncate">
+            <span className="font-heading font-bold text-sm text-foreground block truncate">
               {userProfile.name}
             </span>
-            <span className="text-[11px] text-slate-400 block truncate font-mono-tech">
+            <span className="text-[11px] text-muted-foreground block truncate font-mono-tech">
               jppfeitosa@gmail.com
             </span>
           </div>
@@ -77,23 +77,23 @@ export function UserProfilePopover({
 
         <button 
           onClick={handleCopyEmail}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0"
+          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-elevated transition shrink-0"
           title="Copiar e-mail"
         >
-          {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+          {copied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
         </button>
       </div>
 
       {/* Menu Actions (Linear App Style) */}
-      <div className="flex flex-col gap-0.5 py-1 border-t border-b border-slate-800/80 my-1">
+      <div className="flex flex-col gap-0.5 py-1 border-t border-b border-border/80 my-1">
         <button
           onClick={() => {
             onClose();
             onOpenPreferences();
           }}
-          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
+          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-foreground hover:text-foreground hover:bg-elevated/80 transition"
         >
-          <Settings className="w-4 h-4 text-slate-400" />
+          <Settings className="w-4 h-4 text-muted-foreground" />
           <span className="font-medium">Preferências</span>
         </button>
 
@@ -102,25 +102,25 @@ export function UserProfilePopover({
             onClose();
             onOpenThemeModal();
           }}
-          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
+          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-foreground hover:text-foreground hover:bg-elevated/80 transition"
         >
-          <Palette className="w-4 h-4 text-slate-400" />
+          <Palette className="w-4 h-4 text-muted-foreground" />
           <span className="font-medium">Aparência</span>
         </button>
 
         <button
           onClick={onClose}
-          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
+          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-foreground hover:text-foreground hover:bg-elevated/80 transition"
         >
-          <FileText className="w-4 h-4 text-slate-400" />
+          <FileText className="w-4 h-4 text-muted-foreground" />
           <span className="font-medium">Termos de uso</span>
         </button>
 
         <button
           onClick={onClose}
-          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
+          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-foreground hover:text-foreground hover:bg-elevated/80 transition"
         >
-          <ShieldCheck className="w-4 h-4 text-slate-400" />
+          <ShieldCheck className="w-4 h-4 text-muted-foreground" />
           <span className="font-medium">Política de privacidade</span>
         </button>
 
@@ -128,17 +128,17 @@ export function UserProfilePopover({
           href="https://deco.cx"
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
+          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-foreground hover:text-foreground hover:bg-elevated/80 transition"
         >
-          <Globe className="w-4 h-4 text-slate-400" />
+          <Globe className="w-4 h-4 text-muted-foreground" />
           <span className="font-medium">Comunidade $Agent</span>
         </a>
 
         <button
           onClick={onClose}
-          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
+          className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-3 text-foreground hover:text-foreground hover:bg-elevated/80 transition"
         >
-          <Home className="w-4 h-4 text-slate-400" />
+          <Home className="w-4 h-4 text-muted-foreground" />
           <span className="font-medium">Página inicial</span>
         </button>
       </div>
@@ -152,7 +152,7 @@ export function UserProfilePopover({
       </button>
 
       {/* Footer Info */}
-      <div className="pt-2 border-t border-slate-800/80 px-3 pb-0.5 flex items-center justify-between text-[10px] text-slate-500 font-mono-tech">
+      <div className="pt-2 border-t border-border/80 px-3 pb-0.5 flex items-center justify-between text-[10px] text-faint font-mono-tech">
         <span>$Agent Commerce</span>
         <span>v4.193.3</span>
       </div>

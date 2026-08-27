@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useTheme } from '../ThemeProvider';
+import { AmbientBackground } from '../AmbientBackground';
 import { MOCK_USER_PROFILES, MOCK_STORE_PRODUCTS, MOCK_STORE_CONFIG } from '@cagent/shared';
 import { handleImageError } from '../../utils/imageFallback';
 
@@ -48,7 +49,7 @@ const GITHUB_URL = 'https://github.com/pedroffeitosa/cagent';
 const FEATURES = [
   {
     icon: Bot,
-    color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+    color: 'text-primary bg-primary/10 border-primary/30',
     title: 'Busca Contextual por IA',
     description: 'O agente entende a intenção do cliente e reordena a vitrine com base em tamanho, estilo e orçamento — sem filtros manuais.',
   },
@@ -72,7 +73,7 @@ const FEATURES = [
   },
   {
     icon: SlidersHorizontal,
-    color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+    color: 'text-primary bg-primary/10 border-primary/30',
     title: 'Filtros Personalizados',
     description: 'Cada cliente carrega seu próprio perfil de tamanho, cores e restrições entre lojas — sem repetir cadastro.',
   },
@@ -139,44 +140,9 @@ const SWORDS_COMPARISON: SpectrumAttribute[] = [
 ];
 
 const IMPACT_STATS = [
-  { icon: TrendingUp, target: 35, prefix: '+', suffix: '%', label: 'Conversão Search-to-Cart', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
+  { icon: TrendingUp, target: 35, prefix: '+', suffix: '%', label: 'Conversão Search-to-Cart', color: 'text-primary bg-primary/10 border-primary/30' },
   { icon: TrendingDown, target: 60, prefix: '-', suffix: '%', label: 'Custo de atendimento', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
   { icon: ShieldCheck, target: 100, prefix: '', suffix: '%', label: 'Disponibilidade (fallback local)', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
-];
-
-const BACKGROUND_ORBS = [
-  {
-    id: 'emerald',
-    color: 'bg-emerald-500/10',
-    size: 'w-[32rem] h-[32rem]',
-    style: { top: '-10rem', left: '-10rem' },
-    animate: { x: [0, 40, -15, 0], y: [0, -25, 20, 0] },
-    duration: 26,
-  },
-  {
-    id: 'cyan',
-    color: 'bg-cyan-500/10',
-    size: 'w-[30rem] h-[30rem]',
-    style: { top: '8rem', right: '-12rem' },
-    animate: { x: [0, -30, 15, 0], y: [0, 25, -15, 0] },
-    duration: 30,
-  },
-  {
-    id: 'purple',
-    color: 'bg-purple-500/10',
-    size: 'w-[26rem] h-[26rem]',
-    style: { bottom: '-8rem', left: '10%' },
-    animate: { x: [0, 25, -20, 0], y: [0, -15, 10, 0] },
-    duration: 24,
-  },
-  {
-    id: 'amber',
-    color: 'bg-amber-500/10',
-    size: 'w-[22rem] h-[22rem]',
-    style: { bottom: '10%', right: '5%' },
-    animate: { x: [0, -20, 15, 0], y: [0, 15, -10, 0] },
-    duration: 32,
-  },
 ];
 
 const FAQ_ITEMS = [
@@ -222,7 +188,7 @@ const PARTNER_STORES = [
 type SlideColor = 'emerald' | 'amber' | 'cyan' | 'purple' | 'indigo';
 
 const COLOR_MAP: Record<SlideColor, { badge: string; text: string; dot: string }> = {
-  emerald: { badge: 'bg-emerald-500/20 border-emerald-500/40', text: 'text-emerald-400', dot: 'bg-emerald-400' },
+  emerald: { badge: 'bg-primary/20 border-primary/40', text: 'text-primary', dot: 'bg-primary' },
   amber: { badge: 'bg-amber-500/20 border-amber-500/40', text: 'text-amber-400', dot: 'bg-amber-400' },
   cyan: { badge: 'bg-cyan-500/20 border-cyan-500/40', text: 'text-cyan-400', dot: 'bg-cyan-400' },
   purple: { badge: 'bg-purple-500/20 border-purple-500/40', text: 'text-purple-400', dot: 'bg-purple-400' },
@@ -304,7 +270,7 @@ function HeroShowcase() {
 
   return (
     <div className="relative z-10" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
-      <div className="glass-panel rounded-3xl p-5 shadow-2xl shadow-emerald-500/5 min-h-[400px] flex flex-col">
+      <div className="glass-panel rounded-3xl p-5 shadow-2xl shadow-primary/5 min-h-[400px] flex flex-col">
         {/* Header: current feature badge */}
         <div className="flex items-center gap-2 pb-3 border-b border-border/80 shrink-0">
           <motion.div
@@ -326,7 +292,7 @@ function HeroShowcase() {
             {slide.label}
           </motion.span>
           <span className="ml-auto text-[10px] font-mono-tech text-muted-foreground flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             ao vivo
           </span>
         </div>
@@ -342,14 +308,14 @@ function HeroShowcase() {
               {slide.id === 'chat' && (
                 <div>
                   <div className="flex justify-end">
-                    <div className="max-w-[80%] rounded-2xl rounded-tr-none bg-emerald-600 text-slate-950 text-xs font-medium p-3">
+                    <div className="max-w-[80%] rounded-2xl rounded-tr-none bg-primary text-primary-foreground text-xs font-medium p-3">
                       Procuro camisa do Fluminense e chuteira no meu tamanho
                     </div>
                   </div>
 
                   <div className="flex gap-2 pt-3">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 mt-1">
-                      <Bot className="w-3.5 h-3.5 text-emerald-400" />
+                    <div className="w-7 h-7 rounded-lg bg-primary/20 border border-primary/40 flex items-center justify-center shrink-0 mt-1">
+                      <Bot className="w-3.5 h-3.5 text-primary" />
                     </div>
                     <div className="glass-card rounded-2xl rounded-tl-none p-3 text-xs text-foreground flex-1">
                       Encontrei 2 itens no seu perfil ({demoPersona.sizes.clothing} / {demoPersona.sizes.shoes}) com cupom aplicado.
@@ -357,7 +323,7 @@ function HeroShowcase() {
                         <span className="text-amber-400 font-bold flex items-center gap-1 text-[10px]">
                           <Gift className="w-3 h-3" /> Cupom VIPFLUMESH
                         </span>
-                        <span className="text-emerald-400 font-bold flex items-center gap-1 text-[10px]">
+                        <span className="text-primary font-bold flex items-center gap-1 text-[10px]">
                           <Coins className="w-3 h-3" /> +R$ 36,40 cashback
                         </span>
                       </div>
@@ -366,12 +332,12 @@ function HeroShowcase() {
 
                   <div className="grid grid-cols-2 gap-3 pt-4">
                     {demoProducts.map((product) => (
-                      <div key={product.id} className="glass-card rounded-2xl p-3 border border-emerald-500/30">
+                      <div key={product.id} className="glass-card rounded-2xl p-3 border border-primary/30">
                         <div className="aspect-square rounded-xl overflow-hidden bg-muted mb-2">
                           <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" decoding="async" onError={handleImageError} />
                         </div>
                         <p className="text-[11px] font-semibold text-foreground truncate" title={product.name}>{product.name}</p>
-                        <p className="text-xs font-heading font-bold text-emerald-400 mt-0.5">R$ {product.price}</p>
+                        <p className="text-xs font-heading font-bold text-primary mt-0.5">R$ {product.price}</p>
                       </div>
                     ))}
                   </div>
@@ -399,7 +365,7 @@ function HeroShowcase() {
 
                   <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
                     <motion.div
-                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-emerald-400"
+                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-primary"
                       initial={{ width: '0%' }}
                       animate={{ width: '72%' }}
                       transition={{ duration: 1, ease: 'easeOut' }}
@@ -410,7 +376,7 @@ function HeroShowcase() {
                     {(demoPersona.purchaseHistory || []).slice(0, 2).map((tx) => (
                       <motion.div key={tx.id} variants={staggerItem} className="glass-card rounded-xl p-3 flex items-center justify-between text-xs">
                         <span className="text-foreground truncate pr-2">{tx.productName}</span>
-                        <span className="text-emerald-400 font-mono-tech font-bold shrink-0">+ R$ {tx.cashbackEarned.toFixed(2).replace('.', ',')}</span>
+                        <span className="text-primary font-mono-tech font-bold shrink-0">+ R$ {tx.cashbackEarned.toFixed(2).replace('.', ',')}</span>
                       </motion.div>
                     ))}
                   </motion.div>
@@ -430,7 +396,7 @@ function HeroShowcase() {
                           <span className="text-[10px] text-muted-foreground truncate block max-w-[160px]">{coupon.description}</span>
                         </div>
                       </div>
-                      <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold shrink-0 flex items-center gap-1">
+                      <span className="text-[10px] px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold shrink-0 flex items-center gap-1">
                         <Check className="w-2.5 h-2.5" /> Ativo
                       </span>
                     </motion.div>
@@ -461,9 +427,9 @@ function HeroShowcase() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="glass-card rounded-xl p-3 flex items-center gap-2 text-xs text-emerald-300 [.theme-light_&]:text-emerald-700"
+                    className="glass-card rounded-xl p-3 flex items-center gap-2 text-xs text-primary [.theme-light_&]:text-primary"
                   >
-                    <SlidersHorizontal className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <SlidersHorizontal className="w-4 h-4 text-primary shrink-0" />
                     Vitrine reordenada automaticamente com esses filtros — sem recadastro.
                   </motion.div>
                 </div>
@@ -481,11 +447,11 @@ function HeroShowcase() {
                       initial={{ y: 10, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ duration: 0.4 }}
-                      className="w-36 rounded-[1.6rem] border-4 border-slate-800 bg-slate-950 p-1.5 shadow-2xl shadow-indigo-500/10"
+                      className="w-36 rounded-[1.6rem] border-4 border-border bg-background p-1.5 shadow-2xl shadow-indigo-500/10"
                     >
-                      <div className="rounded-xl overflow-hidden bg-slate-900">
-                        <div className="h-7 bg-slate-800 flex items-center justify-center gap-1">
-                          <span className="text-[9px] font-heading font-extrabold text-white tracking-tight">$SuaLoja</span>
+                      <div className="rounded-xl overflow-hidden bg-card">
+                        <div className="h-7 bg-elevated flex items-center justify-center gap-1">
+                          <span className="text-[9px] font-heading font-extrabold text-foreground tracking-tight">$SuaLoja</span>
                         </div>
                         <div className="p-2 flex flex-col gap-1.5">
                           <motion.div
@@ -498,11 +464,11 @@ function HeroShowcase() {
                             <span className="text-[7px] text-indigo-200 leading-tight">Cupom liberado perto de você!</span>
                           </motion.div>
                           <div className="grid grid-cols-2 gap-1">
-                            <div className="h-9 rounded-md bg-slate-800" />
-                            <div className="h-9 rounded-md bg-slate-800" />
+                            <div className="h-9 rounded-md bg-elevated" />
+                            <div className="h-9 rounded-md bg-elevated" />
                           </div>
-                          <div className="h-2 w-3/4 rounded bg-slate-800" />
-                          <div className="h-2 w-1/2 rounded bg-slate-800" />
+                          <div className="h-2 w-3/4 rounded bg-elevated" />
+                          <div className="h-2 w-1/2 rounded bg-elevated" />
                         </div>
                       </div>
                     </motion.div>
@@ -540,7 +506,7 @@ function HeroShowcase() {
                       key={store.name}
                       variants={staggerItem}
                       className={`rounded-xl p-3 flex items-center justify-between border ${
-                        store.current ? 'bg-emerald-950/30 border-emerald-500/40' : 'glass-card border-border'
+                        store.current ? 'bg-primary/8 border-primary/40' : 'glass-card border-border'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
@@ -549,7 +515,7 @@ function HeroShowcase() {
                         </div>
                         <span className="text-xs text-foreground truncate">{store.name}</span>
                       </div>
-                      <span className="text-[10px] font-mono-tech font-bold text-emerald-400 shrink-0">{store.cashback} cashback</span>
+                      <span className="text-[10px] font-mono-tech font-bold text-primary shrink-0">{store.cashback} cashback</span>
                     </motion.div>
                   ))}
                   <motion.span
@@ -581,8 +547,8 @@ function HeroShowcase() {
       </div>
 
       {/* Floating Wallet Chip */}
-      <div className="absolute -bottom-5 -left-5 glass-panel rounded-2xl px-4 py-2.5 flex items-center gap-2 border border-emerald-500/30 shadow-xl hidden sm:flex">
-        <Wallet className="w-4 h-4 text-emerald-400" />
+      <div className="absolute -bottom-5 -left-5 glass-panel rounded-2xl px-4 py-2.5 flex items-center gap-2 border border-primary/30 shadow-xl hidden sm:flex">
+        <Wallet className="w-4 h-4 text-primary" />
         <div className="leading-tight">
           <span className="block text-[9px] text-muted-foreground font-mono-tech">Saldo cashback</span>
           <span className="block text-xs font-bold text-foreground">R$ {(demoPersona.walletBalance || 0).toFixed(2).replace('.', ',')}</span>
@@ -632,7 +598,7 @@ function TypingBrand() {
   return (
     <span className="logo-agent-financial text-2xl tracking-tighter inline-flex items-center">
       {text}
-      <span className="inline-block w-[2px] h-5 bg-emerald-400 ml-0.5 animate-pulse" aria-hidden="true" />
+      <span className="inline-block w-[2px] h-5 bg-primary ml-0.5 animate-pulse" aria-hidden="true" />
     </span>
   );
 }
@@ -652,7 +618,7 @@ function ScrollProgressBar() {
   return (
     <motion.div
       style={{ scaleX }}
-      className="absolute left-0 right-0 bottom-0 h-[2px] origin-left bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 rounded-full"
+      className="absolute left-0 right-0 bottom-0 h-[2px] origin-left bg-gradient-to-r from-primary via-cyan-400 to-purple-400 rounded-full"
     />
   );
 }
@@ -719,7 +685,7 @@ const RATING_SCALE = 5;
 // segments closest to the shared zero-line light up first, so the count of
 // lit segments IS the rating (no need to eyeball a percentage width).
 function SegmentedSide({ rating, color, growFrom }: { rating: number; color: 'emerald' | 'cyan'; growFrom: 'start' | 'end' }) {
-  const fill = color === 'emerald' ? 'bg-emerald-400' : 'bg-cyan-400';
+  const fill = color === 'emerald' ? 'bg-primary' : 'bg-cyan-400';
   return (
     <div className={`flex-1 flex items-center gap-1 ${growFrom === 'end' ? 'flex-row-reverse' : ''}`}>
       {Array.from({ length: RATING_SCALE }).map((_, i) => (
@@ -737,7 +703,7 @@ function SegmentedSide({ rating, color, growFrom }: { rating: number; color: 'em
 }
 
 function AxisLabel({ rating, category, side, isWinner, color }: { rating: number; category: string; side: 'left' | 'right'; isWinner: boolean; color: 'emerald' | 'cyan' }) {
-  const text = color === 'emerald' ? 'text-emerald-400' : 'text-cyan-400';
+  const text = color === 'emerald' ? 'text-primary' : 'text-cyan-400';
   return (
     <span className={`text-[11px] flex items-center gap-1.5 ${side === 'left' ? 'flex-row-reverse text-right' : 'text-left'}`}>
       <span className={`font-mono-tech font-bold ${isWinner ? text : 'text-muted-foreground'}`}>{rating}</span>
@@ -762,8 +728,8 @@ function PerformanceComparison({
           Características de Performance
         </span>
         <div className="flex items-center gap-2.5 text-[11px] font-semibold">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
             {productA.shortLabel}
           </span>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
@@ -811,7 +777,7 @@ function ThemeToggle() {
       onClick={() => setThemePreset(isLight ? 'default' : 'light')}
       title={isLight ? 'Mudar para tema escuro' : 'Mudar para tema claro'}
       aria-label={isLight ? 'Mudar para tema escuro' : 'Mudar para tema claro'}
-      className="relative w-9 h-9 rounded-xl border border-border bg-card/60 flex items-center justify-center overflow-hidden text-muted-foreground hover:text-foreground hover:border-emerald-500/40 transition-colors shrink-0"
+      className="relative w-9 h-9 rounded-xl border border-border bg-card/60 flex items-center justify-center overflow-hidden text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors shrink-0"
     >
       <AnimatePresence mode="wait" initial={false}>
         {isLight ? (
@@ -864,7 +830,7 @@ function ScrollToTopButton() {
           transition={{ duration: 0.2, ease: 'easeOut' }}
           title="Voltar ao topo"
           aria-label="Voltar ao topo"
-          className="fixed bottom-5 right-5 z-40 w-11 h-11 rounded-full border border-border bg-card/80 backdrop-blur-xl shadow-lg shadow-black/10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-emerald-500/40 transition-colors"
+          className="fixed bottom-5 right-5 z-40 w-11 h-11 rounded-full border border-border bg-card/80 backdrop-blur-xl shadow-lg shadow-black/10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
         >
           <ArrowUp className="w-4 h-4" />
         </motion.button>
@@ -976,45 +942,18 @@ export function LandingPage({ onEnter }: LandingPageProps) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="relative min-h-screen bg-background text-foreground">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:rounded-xl focus:bg-emerald-500 focus:text-slate-950 focus:font-bold focus:shadow-lg"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:rounded-xl focus:bg-primary focus:text-primary-foreground focus:font-bold focus:shadow-lg"
         >
           Pular para o conteúdo
         </a>
 
-        {/* Ambient Background: dot grid + grain + drifting color orbs */}
-        <div className="fixed inset-0 pointer-events-none overflow-hidden">
-          <div
-            className="absolute inset-0 opacity-[0.4] [.theme-light_&]:opacity-[0.5]"
-            style={{
-              backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)',
-              backgroundSize: '28px 28px',
-              color: 'hsl(var(--muted-foreground))',
-              maskImage: 'radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 100%)',
-              WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 100%)',
-            }}
-          />
-          <div
-            className="absolute inset-0 opacity-[0.035] mix-blend-overlay"
-            style={{
-              backgroundImage:
-                "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")",
-              backgroundSize: '120px 120px',
-            }}
-          />
-          {BACKGROUND_ORBS.map((orb) => (
-            <motion.div
-              key={orb.id}
-              className={`absolute rounded-full blur-3xl ${orb.color} ${orb.size}`}
-              style={orb.style}
-              animate={orb.animate}
-              transition={{ duration: orb.duration, repeat: Infinity, ease: 'easeInOut' }}
-            />
-          ))}
-        </div>
-  
+        {/* Fundo ambiente: acompanha a altura real da página (não só a primeira
+            dobra) e muda de direção (aurora/grid/grain) conforme o tema ativo. */}
+        <AmbientBackground variant="page" />
+
         <div className="relative">
           {/* ------------------------------------------------------------- */}
           {/* NAVBAR */}
@@ -1045,7 +984,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                       >
                         {link.label}
                         <span
-                          className={`absolute left-3 right-3 -bottom-0.5 h-px bg-emerald-400 transition-transform origin-left ${
+                          className={`absolute left-3 right-3 -bottom-0.5 h-px bg-primary transition-transform origin-left ${
                             isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
                           }`}
                         />
@@ -1061,7 +1000,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                     rel="noopener noreferrer"
                     title="Ver código no GitHub"
                     aria-label="Ver código no GitHub"
-                    className="hidden sm:flex w-9 h-9 rounded-xl border border-border bg-card/60 items-center justify-center text-muted-foreground hover:text-foreground hover:border-emerald-500/40 transition-colors shrink-0"
+                    className="hidden sm:flex w-9 h-9 rounded-xl border border-border bg-card/60 items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors shrink-0"
                   >
                     <Github className="w-4 h-4" />
                   </a>
@@ -1097,7 +1036,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                           {link.label}
                         </a>
                       ))}
-                      <Button onClick={onEnter} size="sm" className="mt-2 gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
+                      <Button onClick={onEnter} size="sm" className="mt-2 gap-1.5 bg-primary hover:bg-primary text-primary-foreground font-bold">
                         <span>Testar como funciona</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </Button>
@@ -1126,13 +1065,13 @@ export function LandingPage({ onEnter }: LandingPageProps) {
             <CursorGlow containerRef={heroRef} />
 
             <div className="relative z-10 flex flex-col gap-6">
-              <span className="inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-full bg-muted border border-emerald-500/30 text-[11px] font-mono-tech text-emerald-400">
+              <span className="inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-full bg-muted border border-primary/30 text-[11px] font-mono-tech text-primary">
                 <Sparkles className="w-3.5 h-3.5" />
                 Hackathon Agents for Commerce · Deco 2026
               </span>
   
               <h1 className="font-heading font-extrabold text-4xl sm:text-5xl leading-[1.1] tracking-tight text-foreground">
-                Um canal de vendas <span className="text-emerald-400">agêntico e personalizado</span>, pronto em minutos
+                Um canal de vendas <span className="text-primary">agêntico e personalizado</span>, pronto em minutos
               </h1>
   
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-lg">
@@ -1140,7 +1079,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               </p>
   
               <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Button onClick={onEnter} size="lg" className="gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
+                <Button onClick={onEnter} size="lg" className="gap-2 bg-primary hover:bg-primary text-primary-foreground font-bold">
                   <span>Testar como funciona</span>
                   <ArrowRight className="w-4 h-4" />
                 </Button>
@@ -1152,9 +1091,9 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               </div>
   
               <div className="flex flex-wrap items-center gap-6 pt-4 text-[11px] text-muted-foreground">
-                <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> Fork &amp; Connect ready</span>
-                <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> Web + Mobile (Expo)</span>
-                <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> BYOK multi-LLM</span>
+                <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-primary" /> Fork &amp; Connect ready</span>
+                <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-primary" /> Web + Mobile (Expo)</span>
+                <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-primary" /> BYOK multi-LLM</span>
               </div>
             </div>
   
@@ -1206,8 +1145,8 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                 O cliente ajusta filtro de tamanho, cor e preço toda vez que entra em uma loja nova. As lojas não compartilham contexto entre si — o resultado é busca genérica, abandono de carrinho e conversão perdida.
               </p>
             </motion.div>
-            <motion.div variants={fadeInUp} className="glass-card rounded-3xl p-7 border border-emerald-500/30 bg-emerald-950/10">
-              <span className="text-[11px] font-mono-tech text-emerald-400 uppercase tracking-wider">A solução $Agent</span>
+            <motion.div variants={fadeInUp} className="glass-card rounded-3xl p-7 border border-primary/30 bg-primary/5">
+              <span className="text-[11px] font-mono-tech text-primary uppercase tracking-wider">A solução $Agent</span>
               <h3 className="font-heading font-bold text-xl text-foreground mt-2">Um canal contextual único, plug &amp; play</h3>
               <p className="text-sm text-foreground mt-3 leading-relaxed">
                 O perfil, histórico e saldo de cashback do cliente atravessam qualquer loja conectada à rede. O lojista instala o canal, conecta o catálogo, e a vitrine já nasce personalizada — <strong className="text-foreground">vende mais e roda por menos</strong>.
@@ -1286,7 +1225,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                         />
                       </div>
                       <h4 className="font-heading font-bold text-sm text-foreground leading-snug" title={product.name}>{product.name}</h4>
-                      <p className="text-sm font-heading font-bold text-emerald-400 mt-1">R$ {product.price}</p>
+                      <p className="text-sm font-heading font-bold text-primary mt-1">R$ {product.price}</p>
                     </div>
                     {i === 0 && (
                       <div className="flex md:flex-col items-center justify-center gap-2 shrink-0">
@@ -1342,7 +1281,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   {index < STEPS.length - 1 && (
                     <div className="hidden md:block absolute top-[2.875rem] left-full w-6 h-px bg-gradient-to-r from-border to-transparent z-10" />
                   )}
-                  <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4 text-emerald-400">
+                  <div className="w-11 h-11 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center mb-4 text-primary">
                     <step.icon className="w-5 h-5" />
                   </div>
                   <h4 className="font-heading font-bold text-base text-foreground">{step.title}</h4>
@@ -1357,7 +1296,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               </p>
               <a href={DOCS_URL} target="_blank" rel="noopener noreferrer">
                 <Button variant="secondary" size="lg" className="gap-2">
-                  <FileText className="w-4 h-4 text-emerald-400" />
+                  <FileText className="w-4 h-4 text-primary" />
                   <span>Ver Documentação</span>
                   <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
                 </Button>
@@ -1384,7 +1323,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                 </span>
                 <h3 className="font-heading font-bold text-2xl text-foreground">Instalação rápida, sem trocar sua stack</h3>
                 <p className="text-sm text-foreground mt-3 leading-relaxed">
-                  Fork do repositório, troque os adaptadores de catálogo em <code className="font-mono-tech text-emerald-400">packages/shared/src/mocks.ts</code> pelos seus dados reais e faça deploy em 1 clique. Sem autenticação nem banco de dados obrigatórios para validar o piloto.
+                  Fork do repositório, troque os adaptadores de catálogo em <code className="font-mono-tech text-primary">packages/shared/src/mocks.ts</code> pelos seus dados reais e faça deploy em 1 clique. Sem autenticação nem banco de dados obrigatórios para validar o piloto.
                 </p>
                 <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
                   Mais que um canal de vendas: cada busca, filtro e compra aproxima você do seu cliente e vira dado de contexto — a base para, quando fizer sentido, escalar para um app mobile próprio e ainda mais robusto.
@@ -1392,19 +1331,19 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               </div>
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-3 text-sm text-foreground">
-                  <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <ShieldCheck className="w-5 h-5 text-primary shrink-0" />
                   <span>Open-source, licença MIT, white-label</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-foreground">
-                  <Zap className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <Zap className="w-5 h-5 text-primary shrink-0" />
                   <span>Deploy em 1 clique (Vercel + Serverless Functions)</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-foreground">
-                  <MessageSquare className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <MessageSquare className="w-5 h-5 text-primary shrink-0" />
                   <span>BYOK: Gemini, OpenAI ou Anthropic — sua escolha</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-foreground">
-                  <Smartphone className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <Smartphone className="w-5 h-5 text-primary shrink-0" />
                   <span>Pronto para virar app nativo iOS &amp; Android — $SuaLoja</span>
                 </div>
               </div>
@@ -1450,7 +1389,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
             <p className="text-sm text-muted-foreground max-w-md">
               Navegue pela demo com o perfil de Pedro França e veja a vitrine, os cupons e o cashback se ajustarem em tempo real.
             </p>
-            <Button onClick={onEnter} size="lg" className="gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
+            <Button onClick={onEnter} size="lg" className="gap-2 bg-primary hover:bg-primary text-primary-foreground font-bold">
               <span>Testar como funciona</span>
               <ArrowRight className="w-4 h-4" />
             </Button>

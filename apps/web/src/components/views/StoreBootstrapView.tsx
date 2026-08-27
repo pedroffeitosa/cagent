@@ -15,7 +15,7 @@ export function StoreBootstrapView({ onBackToChat }: StoreBootstrapViewProps) {
       coupons: ['DECO10', 'AGENT50', 'VIPFLUMESH'],
       status: 'Loja Principal',
       isCurrent: true,
-      logoColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+      logoColor: 'text-primary bg-primary/10 border-primary/30',
     },
     {
       name: 'Nike Brasil Official Partner',
@@ -24,7 +24,7 @@ export function StoreBootstrapView({ onBackToChat }: StoreBootstrapViewProps) {
       coupons: ['NIKE10', 'DECO10'],
       status: 'Parceiro Oficial',
       isCurrent: false,
-      logoColor: 'text-white bg-slate-900 border-slate-700',
+      logoColor: 'text-foreground bg-card border-border-strong',
     },
     {
       name: 'Centauro Esportes Partner',
@@ -50,18 +50,18 @@ export function StoreBootstrapView({ onBackToChat }: StoreBootstrapViewProps) {
     <div className="flex-1 flex flex-col p-8 max-w-5xl mx-auto w-full gap-8 overflow-y-auto custom-scrollbar animate-in fade-in duration-200">
       
       {/* Top Navigation Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div className="flex items-center justify-between border-b border-border pb-4">
         <div className="flex items-center gap-3">
           <button
             onClick={onBackToChat}
-            className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition"
+            className="p-2 rounded-xl bg-card border border-border text-muted-foreground hover:text-foreground hover:border-border-strong transition"
             title="Voltar"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h2 className="font-heading font-bold text-2xl text-white">Rede de Lojas &amp; Parceiros Deco</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Conheça as marcas parceiras oficiais onde seu saldo e cashback são aceitos em 1-clique</p>
+            <h2 className="font-heading font-bold text-2xl text-foreground">Rede de Lojas &amp; Parceiros Deco</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Conheça as marcas parceiras oficiais onde seu saldo e cashback são aceitos em 1-clique</p>
           </div>
         </div>
 
@@ -72,28 +72,28 @@ export function StoreBootstrapView({ onBackToChat }: StoreBootstrapViewProps) {
       </div>
 
       {/* User-Centric Hero Banner */}
-      <div className="glass-panel p-6 rounded-3xl border border-cyan-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950">
+      <div className="glass-panel p-6 rounded-3xl border border-cyan-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 bg-gradient-to-r from-background via-card to-background">
         <div className="flex flex-col gap-2 max-w-xl">
           <div className="flex items-center gap-2">
             <Store className="w-5 h-5 text-cyan-400" />
-            <h3 className="font-heading font-bold text-lg text-white">Ecossistema de Parceiros Integrados</h3>
+            <h3 className="font-heading font-bold text-lg text-foreground">Ecossistema de Parceiros Integrados</h3>
           </div>
-          <p className="text-xs text-slate-300 leading-relaxed">
+          <p className="text-xs text-foreground leading-relaxed">
             Com o $Agent, seu perfil contextual, histórico e saldo de cashback de <strong>Nike, Centauro e Max Titanium</strong> são unificados em uma única experiência de compra.
           </p>
         </div>
 
         <div className="flex flex-col gap-2 shrink-0">
-          <div className="flex items-center gap-2 text-xs text-slate-300">
-            <Check className="w-4 h-4 text-emerald-400" />
+          <div className="flex items-center gap-2 text-xs text-foreground">
+            <Check className="w-4 h-4 text-primary" />
             <span>Cashback Unificado na Carteira</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-300">
-            <Check className="w-4 h-4 text-emerald-400" />
+          <div className="flex items-center gap-2 text-xs text-foreground">
+            <Check className="w-4 h-4 text-primary" />
             <span>Cupons Exclusivos de Grandes Marcas</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-300">
-            <Check className="w-4 h-4 text-emerald-400" />
+          <div className="flex items-center gap-2 text-xs text-foreground">
+            <Check className="w-4 h-4 text-primary" />
             <span>Sincronia Web &amp; App Mobile</span>
           </div>
         </div>
@@ -101,14 +101,14 @@ export function StoreBootstrapView({ onBackToChat }: StoreBootstrapViewProps) {
 
       {/* Connected Stores Network */}
       <div className="flex flex-col gap-4">
-        <h3 className="font-heading font-bold text-lg text-white">Lojas &amp; Marcas Conectadas</h3>
+        <h3 className="font-heading font-bold text-lg text-foreground">Lojas &amp; Marcas Conectadas</h3>
 
         <div className="flex flex-col gap-4">
           {connectedStores.map((s) => (
             <div
               key={s.name}
               className={`p-6 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-6 transition ${
-                s.isCurrent ? 'bg-slate-900/80 border-emerald-500/40 shadow-xl' : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                s.isCurrent ? 'bg-card/80 border-primary/40 shadow-xl' : 'bg-background border-border hover:border-border-strong'
               }`}
             >
               <div className="flex items-start gap-4">
@@ -117,25 +117,25 @@ export function StoreBootstrapView({ onBackToChat }: StoreBootstrapViewProps) {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="font-heading font-bold text-base text-white truncate max-w-[320px]" title={s.name}>{s.name}</h4>
+                    <h4 className="font-heading font-bold text-base text-foreground truncate max-w-[320px]" title={s.name}>{s.name}</h4>
                     <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-mono-tech ${
-                      s.isCurrent ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-slate-900 text-slate-300 border border-slate-800'
+                      s.isCurrent ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-card text-foreground border border-border'
                     }`}>
                       {s.status}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-1">{s.tagline}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{s.tagline}</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-6 shrink-0">
+              <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0 md:pl-6 shrink-0">
                 <div>
-                  <span className="text-[10px] text-slate-500 uppercase block font-mono-tech">Cashback</span>
-                  <span className="font-mono-tech font-bold text-emerald-400 text-sm">{s.cashback}</span>
+                  <span className="text-[10px] text-faint uppercase block font-mono-tech">Cashback</span>
+                  <span className="font-mono-tech font-bold text-primary text-sm">{s.cashback}</span>
                 </div>
 
                 <div>
-                  <span className="text-[10px] text-slate-500 uppercase block font-mono-tech">Cupons Ativos</span>
+                  <span className="text-[10px] text-faint uppercase block font-mono-tech">Cupons Ativos</span>
                   <span className="font-mono-tech font-bold text-amber-400 text-xs">{s.coupons.join(', ')}</span>
                 </div>
               </div>

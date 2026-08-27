@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, Linking, Share, StyleSheet } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { UserProfile, Product } from '@cagent/shared';
+import { ThemeColors, useTheme } from '../theme';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -12,6 +13,8 @@ interface ShareModalProps {
 }
 
 export function ShareModal({ isOpen, onClose, userProfile, queryTitle }: ShareModalProps) {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
   const [copied, setCopied] = useState(false);
 
   const shareUrl = `https://cagent.deco.site/share?user=${encodeURIComponent(userProfile.name)}&q=${encodeURIComponent(queryTitle)}`;
@@ -81,148 +84,151 @@ export function ShareModal({ isOpen, onClose, userProfile, queryTitle }: ShareMo
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(2, 6, 23, 0.85)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  card: {
-    width: '100%',
-    backgroundColor: '#0f172a',
-    borderRadius: 24,
-    padding: 20,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    gap: 14,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomColor: '#1e293b',
-    borderBottomWidth: 1,
-    paddingBottom: 12,
-  },
-  headerTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  closeButton: {
-    padding: 4,
-  },
-  closeButtonText: {
-    color: '#94a3b8',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  previewCard: {
-    backgroundColor: '#020617',
-    borderColor: 'rgba(52, 211, 153, 0.3)',
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 14,
-    gap: 8,
-  },
-  previewHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  previewTitle: {
-    color: '#ffffff',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  previewBadge: {
-    backgroundColor: 'rgba(52, 211, 153, 0.2)',
-    borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  previewBadgeText: {
-    color: '#6ee7b7',
-    fontSize: 10,
-  },
-  previewText: {
-    color: '#e2e8f0',
-    fontSize: 12,
-    lineHeight: 17,
-  },
-  previewFooter: {
-    color: '#94a3b8',
-    fontSize: 10,
-    borderTopColor: '#1e293b',
-    borderTopWidth: 1,
-    paddingTop: 8,
-  },
-  whatsappButton: {
-    backgroundColor: '#059669',
-    borderRadius: 14,
-    paddingVertical: 13,
-    alignItems: 'center',
-  },
-  whatsappButtonText: {
-    color: '#020617',
-    fontWeight: '800',
-    fontSize: 12,
-  },
-  nativeShareButton: {
-    backgroundColor: '#0f172a',
-    borderColor: '#1e293b',
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  nativeShareButtonText: {
-    color: '#cbd5e1',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  linkRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  linkText: {
-    flex: 1,
-    backgroundColor: '#020617',
-    borderColor: '#1e293b',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: '#94a3b8',
-    fontSize: 11,
-  },
-  copyButton: {
-    backgroundColor: '#0f172a',
-    borderColor: '#1e293b',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  copyButtonText: {
-    color: '#34d399',
-    fontWeight: '700',
-    fontSize: 11,
-  },
-  closeCardButton: {
-    backgroundColor: '#0f172a',
-    borderColor: '#1e293b',
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  closeCardButtonText: {
-    color: '#cbd5e1',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-});
+function getStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: `${c.background}d9`,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    card: {
+      width: '100%',
+      backgroundColor: c.card,
+      borderRadius: 24,
+      padding: 20,
+      borderColor: c.border,
+      borderWidth: 1,
+      gap: 14,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderBottomColor: c.border,
+      borderBottomWidth: 1,
+      paddingBottom: 12,
+    },
+    headerTitle: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: c.foreground,
+    },
+    closeButton: {
+      padding: 4,
+    },
+    closeButtonText: {
+      color: c.mutedForeground,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    previewCard: {
+      backgroundColor: c.background,
+      borderColor: `${c.primary}4d`,
+      borderWidth: 1,
+      borderRadius: 16,
+      padding: 14,
+      gap: 8,
+    },
+    previewHeaderRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    previewTitle: {
+      color: c.foreground,
+      fontWeight: '700',
+      fontSize: 12,
+    },
+    previewBadge: {
+      backgroundColor: `${c.primary}33`,
+      borderRadius: 20,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+    },
+    previewBadgeText: {
+      color: c.primary,
+      fontSize: 10,
+    },
+    previewText: {
+      color: c.foreground,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    previewFooter: {
+      color: c.mutedForeground,
+      fontSize: 10,
+      borderTopColor: c.border,
+      borderTopWidth: 1,
+      paddingTop: 8,
+    },
+    // Verde oficial do WhatsApp — cor fixa da marca, não segue o tema.
+    whatsappButton: {
+      backgroundColor: '#059669',
+      borderRadius: 14,
+      paddingVertical: 13,
+      alignItems: 'center',
+    },
+    whatsappButtonText: {
+      color: '#f8fafc',
+      fontWeight: '800',
+      fontSize: 12,
+    },
+    nativeShareButton: {
+      backgroundColor: c.card,
+      borderColor: c.border,
+      borderWidth: 1,
+      borderRadius: 14,
+      paddingVertical: 12,
+      alignItems: 'center',
+    },
+    nativeShareButtonText: {
+      color: c.foreground,
+      fontWeight: '700',
+      fontSize: 12,
+    },
+    linkRow: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    linkText: {
+      flex: 1,
+      backgroundColor: c.background,
+      borderColor: c.border,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      color: c.mutedForeground,
+      fontSize: 11,
+    },
+    copyButton: {
+      backgroundColor: c.card,
+      borderColor: c.border,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    copyButtonText: {
+      color: c.primary,
+      fontWeight: '700',
+      fontSize: 11,
+    },
+    closeCardButton: {
+      backgroundColor: c.card,
+      borderColor: c.border,
+      borderWidth: 1,
+      borderRadius: 14,
+      paddingVertical: 12,
+      alignItems: 'center',
+    },
+    closeCardButtonText: {
+      color: c.foreground,
+      fontWeight: '700',
+      fontSize: 12,
+    },
+  });
+}

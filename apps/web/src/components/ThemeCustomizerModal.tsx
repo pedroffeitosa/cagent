@@ -18,7 +18,7 @@ export function ThemeCustomizerModal({ isOpen, onClose }: ThemeCustomizerModalPr
       id: 'default',
       name: 'Deco Banking Dark (Padrão)',
       description: 'Estética clássica de fintech com fundo escuro profundo e acentos esmeralda.',
-      icon: <ShieldCheck className="w-5 h-5 text-emerald-400" />,
+      icon: <ShieldCheck className="w-5 h-5 text-primary" />,
       isDefault: true,
     },
     {
@@ -42,11 +42,11 @@ export function ThemeCustomizerModal({ isOpen, onClose }: ThemeCustomizerModalPr
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="glass-panel w-full max-w-lg rounded-3xl p-6 border border-slate-800 shadow-2xl flex flex-col gap-6 text-xs animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="glass-panel w-full max-w-lg rounded-3xl p-6 border border-border shadow-2xl flex flex-col gap-6 text-xs animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="flex items-center justify-between border-b border-border pb-3">
           <div className="flex items-center gap-2">
             <Palette className="w-5 h-5 text-primary" />
             <h3 className="font-heading font-bold text-base text-foreground">Selecionar Tema do $Agent</h3>
@@ -67,7 +67,7 @@ export function ThemeCustomizerModal({ isOpen, onClose }: ThemeCustomizerModalPr
                 className={`p-4 rounded-2xl border flex items-start justify-between gap-4 text-left transition ${
                   isActive
                     ? 'border-primary bg-primary/10 text-foreground font-medium shadow-md'
-                    : 'border-border bg-card text-muted-foreground hover:text-foreground hover:border-slate-700'
+                    : 'border-border bg-card text-muted-foreground hover:text-foreground hover:border-border-strong'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -78,7 +78,7 @@ export function ThemeCustomizerModal({ isOpen, onClose }: ThemeCustomizerModalPr
                     <div className="flex items-center gap-2">
                       <span className="font-heading font-bold text-sm text-foreground">{preset.name}</span>
                       {preset.isDefault && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono-tech">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary font-mono-tech">
                           Default
                         </span>
                       )}

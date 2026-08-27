@@ -87,45 +87,45 @@ export function DemoScriptToolbar({
 
   if (isCollapsed) {
     return (
-      <div className="bg-slate-900 border-b border-emerald-500/30 px-4 py-1.5 flex items-center justify-between z-30 shrink-0">
+      <div className="bg-card/90 backdrop-blur-md border-b border-primary/30 px-4 py-1.5 flex items-center justify-between z-30 shrink-0">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span className="text-[11px] font-mono-tech font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="w-2 h-2 rounded-full bg-primary animate-ping" />
+          <span className="text-[11px] font-mono-tech font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
             Pitch Mode (Etapa {currentStep}/5: {activeStepObj.shortLabel})
           </span>
         </div>
 
         <button
           onClick={() => setIsCollapsed(false)}
-          className="text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700 transition"
+          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 bg-elevated/80 px-2.5 py-1 rounded-lg border border-border-strong transition"
         >
           <span>Expandir Tour</span>
-          <ChevronDown className="w-3.5 h-3.5 text-emerald-400" />
+          <ChevronDown className="w-3.5 h-3.5 text-primary" />
         </button>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-900/95 border-b border-emerald-500/30 px-4 py-2 flex flex-col md:flex-row items-center justify-between gap-3 z-30 shrink-0 shadow-lg backdrop-blur-md">
+    <div className="bg-card/95 border-b border-primary/30 px-4 py-2 flex flex-col md:flex-row items-center justify-between gap-3 z-30 shrink-0 shadow-lg backdrop-blur-md">
       
       {/* Left: Pitch Mode Indicator & Active Step Description */}
       <div className="flex items-center gap-3 w-full md:w-auto">
-        <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 shrink-0">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/30 shrink-0">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
           </span>
-          <span className="text-[11px] font-mono-tech font-extrabold text-emerald-400 uppercase tracking-wider">
+          <span className="text-[11px] font-mono-tech font-extrabold text-primary uppercase tracking-wider">
             Demo Script
           </span>
         </div>
 
-        <div className="hidden xl:block text-xs text-slate-300 truncate max-w-sm">
-          <span className="font-semibold text-emerald-300 font-mono-tech">{activeStepObj.timeRange}</span>
-          <span className="mx-1 text-slate-600">•</span>
-          <span className="text-slate-300">{activeStepObj.description}</span>
+        <div className="hidden xl:block text-xs text-foreground truncate max-w-sm">
+          <span className="font-semibold text-primary font-mono-tech">{activeStepObj.timeRange}</span>
+          <span className="mx-1 text-faint">•</span>
+          <span className="text-foreground">{activeStepObj.description}</span>
         </div>
       </div>
 
@@ -142,11 +142,11 @@ export function DemoScriptToolbar({
               title={`${step.label} (${step.timeRange}): ${step.description}`}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition shrink-0 border ${
                 isActive
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/60 shadow-sm shadow-emerald-500/20 scale-[1.02]'
-                  : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:text-slate-200 hover:border-slate-700'
+                  ? 'bg-primary/20 text-primary border-primary/60 shadow-sm shadow-primary/20 scale-[1.02]'
+                  : 'bg-background/60 text-muted-foreground border-border hover:text-foreground hover:border-border-strong'
               }`}
             >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-slate-500'}`} />
+              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-primary' : 'text-faint'}`} />
               <span className="hidden sm:inline font-mono-tech text-[11px]">{step.label}</span>
               <span className="sm:hidden font-mono-tech text-[11px]">{step.shortLabel}</span>
             </button>
@@ -159,7 +159,7 @@ export function DemoScriptToolbar({
         {onResetDemo && (
           <button
             onClick={onResetDemo}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition border border-slate-800"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-elevated transition border border-border"
             title="Reiniciar Tour para Etapa 1"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -168,16 +168,16 @@ export function DemoScriptToolbar({
 
         <button
           onClick={handleNextStep}
-          className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 transition shadow-md shadow-emerald-500/20"
+          className="px-3 py-1.5 rounded-xl bg-primary hover:bg-primary text-primary-foreground font-extrabold text-xs flex items-center gap-1.5 transition shadow-md shadow-primary/20"
           title="Avançar para a próxima etapa do Pitch"
         >
           <span>Avançar ({currentStep}/5)</span>
-          <ChevronRight className="w-4 h-4 text-slate-950 stroke-[3]" />
+          <ChevronRight className="w-4 h-4 text-primary-foreground stroke-[3]" />
         </button>
 
         <button
           onClick={() => setIsCollapsed(true)}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-elevated transition"
           title="Minimizar barra de topo"
         >
           <ChevronUp className="w-4 h-4" />
