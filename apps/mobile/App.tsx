@@ -17,7 +17,8 @@ import {
   UserProfile,
   Product,
   AgentResponsePayload,
-  runLocalRuleEngine
+  runLocalRuleEngine,
+  sortProductsByProfileMatch
 } from '@cagent/shared';
 import { CartDrawerModal, CartItem } from './components/CartDrawerModal';
 import { WalletModal } from './components/WalletModal';
@@ -111,7 +112,7 @@ function AppContent() {
   const activeProductIds = agentResponse?.recommendedProductIds;
   const displayedProducts = activeProductIds
     ? MOCK_STORE_CONTEXT.catalog.filter(p => activeProductIds.includes(p.id))
-    : MOCK_STORE_CONTEXT.catalog;
+    : sortProductsByProfileMatch(MOCK_STORE_CONTEXT.catalog, userProfile);
 
   const handleSearch = (query: string) => {
     if (!query.trim()) return;
