@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  Image, 
-  ScrollView, 
-  TouchableOpacity, 
-  TextInput, 
-  SafeAreaView, 
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  SafeAreaView,
   StatusBar,
   Modal,
-  Alert
 } from 'react-native';
 import {
   MOCK_USER_PROFILES,
@@ -25,9 +24,21 @@ import { WalletModal } from './components/WalletModal';
 import { CouponsModal } from './components/CouponsModal';
 import { ShareModal } from './components/ShareModal';
 import { CompareProductsScreen } from './screens/CompareProductsScreen';
+import { ThemeProvider, ThemeColors, THEME_LABELS, useTheme } from './theme';
 
 export default function App() {
-  const [userProfile] = useState<UserProfile>(MOCK_USER_PROFILES[0]);
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+}
+
+function AppContent() {
+  const { colors, themePreset, cycleTheme } = useTheme();
+  const styles = getStyles(colors);
+
+  const [userProfile, setUserProfile] = useState<UserProfile>(MOCK_USER_PROFILES[0]);
   const [searchQuery, setSearchQuery] = useState('');
   const [agentResponse, setAgentResponse] = useState<AgentResponsePayload | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -67,8 +78,38 @@ export default function App() {
     setCartItems(prev => prev.filter(i => i.product.id !== productId));
   };
 
+  // Fecha o loop do cashback: credita o saldo real e registra a movimentação no extrato.
+  const handlePurchaseComplete = (payload: { productName: string; amount: number; cashbackEarned: number }) => {
+    setUserProfile(prev => ({
+      ...prev,
+      walletBalance: Math.round(((prev.walletBalance || 0) + payload.cashbackEarned) * 100) / 100,
+      purchaseHistory: [
+        {
+          id: `order-${Date.now()}`,
+          productName: payload.productName,
+          date: 'Agora',
+          amount: payload.amount,
+          cashbackEarned: payload.cashbackEarned,
+        },
+        ...(prev.purchaseHistory || []),
+      ],
+    }));
+  };
+
+  const handleCartCheckoutComplete = (payload: { productName: string; amount: number; cashbackEarned: number }) => {
+    handlePurchaseComplete(payload);
+    setCartItems([]);
+  };
+
+  const handleAddBalance = (amount: number) => {
+    setUserProfile(prev => ({
+      ...prev,
+      walletBalance: Math.round(((prev.walletBalance || 0) + amount) * 100) / 100,
+    }));
+  };
+
   const activeProductIds = agentResponse?.recommendedProductIds;
-  const displayedProducts = activeProductIds 
+  const displayedProducts = activeProductIds
     ? MOCK_STORE_CONTEXT.catalog.filter(p => activeProductIds.includes(p.id))
     : MOCK_STORE_CONTEXT.catalog;
 
@@ -83,6 +124,12 @@ export default function App() {
   };
 
   const handleCheckout = () => {
+    if (selectedProduct) {
+      const discountAmount = Math.round(selectedProduct.price * 0.1);
+      const finalPrice = selectedProduct.price - discountAmount;
+      const cashbackBonus = selectedProduct.cashbackReward || Math.round(finalPrice * 0.05);
+      handlePurchaseComplete({ productName: selectedProduct.name, amount: finalPrice, cashbackEarned: cashbackBonus });
+    }
     setIsPurchased(true);
     setTimeout(() => {
       setIsPurchased(false);
@@ -90,10 +137,12 @@ export default function App() {
     }, 2000);
   };
 
+  const statusBarStyle = themePreset === 'light' ? 'dark-content' : 'light-content';
+
   if (screen === 'compare') {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#020617" />
+        <StatusBar barStyle={statusBarStyle} backgroundColor={colors.background} />
         <CompareProductsScreen
           products={cartItems.map(i => i.product)}
           userProfile={userProfile}
@@ -112,7 +161,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#020617" />
+      <StatusBar barStyle={statusBarStyle} backgroundColor={colors.background} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
 
         {/* Top Navbar Header with $Agent Logo + Feature Chips */}
@@ -120,6 +169,15 @@ export default function App() {
           <Text style={styles.logoText}>$Agent</Text>
 
           <View style={styles.headerChipsRow}>
+            {/* Theme Chip: cicla entre os 4 presets (Dark, Light, Midnight, Royal) */}
+            <TouchableOpacity
+              style={styles.themeChip}
+              onPress={cycleTheme}
+              accessibilityLabel={`Tema atual: ${THEME_LABELS[themePreset]}. Toque para trocar.`}
+            >
+              <Text style={styles.themeChipText}>🎨</Text>
+            </TouchableOpacity>
+
             {/* Share Button */}
             <TouchableOpacity style={styles.shareChip} onPress={() => setIsShareModalOpen(true)}>
               <Text style={styles.shareChipText}>📤</Text>
@@ -148,9 +206,9 @@ export default function App() {
         <View style={styles.profileCard}>
           <Text style={styles.profileCardHeader}>MEU PERFIL CONTEXTUAL</Text>
           <View style={styles.profileRow}>
-            <Image 
-              source={require('./assets/user-pedro.jpg')} 
-              style={styles.avatar} 
+            <Image
+              source={require('./assets/user-pedro.jpg')}
+              style={styles.avatar}
             />
             <View style={styles.profileInfo}>
               <Text style={styles.userName}>{userProfile.name}</Text>
@@ -169,12 +227,12 @@ export default function App() {
           <TextInput
             style={styles.searchInput}
             placeholder="O que você quer pesquisar e comprar hoje?..."
-            placeholderTextColor="#64748b"
+            placeholderTextColor={colors.faint}
             value={searchQuery}
             onChangeText={setSearchQuery}
             onSubmitEditing={() => handleSearch(searchQuery)}
           />
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.searchButton}
             onPress={() => handleSearch(searchQuery)}
           >
@@ -190,8 +248,8 @@ export default function App() {
             'Tênis de Corrida Nike Air Zoom',
             'Chuteira Society Tiempo Legend Pro'
           ].map((sug) => (
-            <TouchableOpacity 
-              key={sug} 
+            <TouchableOpacity
+              key={sug}
               style={styles.sugPill}
               onPress={() => {
                 setSearchQuery(sug);
@@ -231,7 +289,7 @@ export default function App() {
                   {isMatch && <Text style={styles.matchTag}>✨ Match</Text>}
                 </View>
                 <Text style={styles.productName}>{product.name}</Text>
-                
+
                 <View style={styles.productPriceRow}>
                   <Text style={styles.productPrice}>R$ {product.price}</Text>
                   <TouchableOpacity
@@ -297,12 +355,14 @@ export default function App() {
         onRemoveItem={handleRemoveCartItem}
         userProfile={userProfile}
         onOpenComparePage={() => setScreen('compare')}
+        onCheckoutComplete={handleCartCheckoutComplete}
       />
 
       <WalletModal
         isOpen={isWalletModalOpen}
         onClose={() => setIsWalletModalOpen(false)}
         userProfile={userProfile}
+        onAddBalance={handleAddBalance}
       />
 
       <CouponsModal
@@ -322,365 +382,382 @@ export default function App() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#020617',
-  },
-  scrollContent: {
-    padding: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    paddingVertical: 4,
-  },
-  logoText: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#34d399',
-    letterSpacing: -1,
-  },
-  headerChipsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  shareChip: {
-    backgroundColor: '#0f172a',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  shareChipText: {
-    fontSize: 12,
-  },
-  couponChip: {
-    backgroundColor: '#0f172a',
-    borderColor: 'rgba(251, 191, 36, 0.3)',
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  couponChipText: {
-    color: '#fbbf24',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  cartChip: {
-    backgroundColor: '#0f172a',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  cartChipText: {
-    color: '#e2e8f0',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  walletChip: {
-    backgroundColor: '#0f172a',
-    borderColor: 'rgba(52, 211, 153, 0.4)',
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  walletChipText: {
-    color: '#34d399',
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  profileCard: {
-    backgroundColor: '#0f172a',
-    padding: 14,
-    borderRadius: 20,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  profileCardHeader: {
-    fontSize: 9,
-    color: '#64748b',
-    fontWeight: '800',
-    letterSpacing: 1,
-    marginBottom: 8,
-  },
-  profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(52, 211, 153, 0.4)',
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  userName: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  userBadge: {
-    fontSize: 11,
-    color: '#34d399',
-    marginTop: 2,
-    fontWeight: '600',
-  },
-  userPreferences: {
-    fontSize: 10,
-    color: '#94a3b8',
-    marginTop: 2,
-  },
-  searchSection: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
-  },
-  searchInput: {
-    flex: 1,
-    backgroundColor: '#0f172a',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    color: '#ffffff',
-    fontSize: 12,
-  },
-  searchButton: {
-    backgroundColor: '#34d399',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchButtonText: {
-    color: '#020617',
-    fontWeight: '800',
-    fontSize: 12,
-  },
-  suggestionsContainer: {
-    marginBottom: 16,
-  },
-  sugPill: {
-    backgroundColor: '#0f172a',
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    marginRight: 8,
-  },
-  sugPillText: {
-    color: '#cbd5e1',
-    fontSize: 11,
-  },
-  agentBanner: {
-    backgroundColor: 'rgba(6, 78, 59, 0.4)',
-    borderColor: 'rgba(52, 211, 153, 0.3)',
-    borderWidth: 1,
-    padding: 14,
-    borderRadius: 16,
-    marginBottom: 16,
-  },
-  agentBannerTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#34d399',
-    marginBottom: 4,
-  },
-  agentBannerText: {
-    fontSize: 11,
-    color: '#e2e8f0',
-    lineHeight: 16,
-  },
-  agentReasoning: {
-    fontSize: 10,
-    color: '#94a3b8',
-    marginTop: 6,
-  },
-  resetButton: {
-    marginTop: 8,
-    alignSelf: 'flex-end',
-  },
-  resetButtonText: {
-    fontSize: 10,
-    color: '#94a3b8',
-    textDecorationLine: 'underline',
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
-    marginBottom: 12,
-  },
-  productCard: {
-    backgroundColor: '#0f172a',
-    borderRadius: 18,
-    overflow: 'hidden',
-    marginBottom: 14,
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.07)',
-  },
-  productCardMatched: {
-    borderColor: '#34d399',
-    borderWidth: 1.5,
-  },
-  productImage: {
-    width: 90,
-    height: 90,
-  },
-  productDetails: {
-    padding: 12,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  productHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  productCategory: {
-    fontSize: 10,
-    color: '#64748b',
-  },
-  matchTag: {
-    fontSize: 9,
-    color: '#020617',
-    backgroundColor: '#34d399',
-    fontWeight: '800',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  productName: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  productPriceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  productPrice: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  buyButton: {
-    backgroundColor: '#34d399',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-  },
-  buyButtonText: {
-    color: '#020617',
-    fontWeight: '800',
-    fontSize: 11,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(2, 6, 23, 0.85)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContainer: {
-    backgroundColor: '#0f172a',
-    borderRadius: 24,
-    padding: 20,
-    width: '100%',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  modalTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  closeModalText: {
-    color: '#94a3b8',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  modalProductName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  modalProductPrice: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#34d399',
-    marginTop: 4,
-  },
-  diagnosticBox: {
-    backgroundColor: '#020617',
-    padding: 12,
-    borderRadius: 14,
-    marginVertical: 14,
-    borderColor: 'rgba(52, 211, 153, 0.3)',
-    borderWidth: 1,
-  },
-  diagnosticTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#34d399',
-    marginBottom: 6,
-  },
-  diagnosticText: {
-    fontSize: 11,
-    color: '#cbd5e1',
-    marginVertical: 2,
-  },
-  confirmCheckoutButton: {
-    backgroundColor: '#34d399',
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  confirmCheckoutButtonText: {
-    color: '#020617',
-    fontWeight: '800',
-    fontSize: 13,
-  },
-  purchasedSuccessBox: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  successTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#34d399',
-    marginBottom: 8,
-  },
-  successText: {
-    fontSize: 12,
-    color: '#e2e8f0',
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-});
+// Cores fixas (não seguem o tema): âmbar é a cor semântica de cupom/promoção
+// em todas as 4 combinações, igual à decisão tomada no web.
+const COUPON_AMBER = '#fbbf24';
+
+function getStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+    },
+    scrollContent: {
+      padding: 16,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 16,
+      paddingVertical: 4,
+    },
+    logoText: {
+      fontSize: 24,
+      fontWeight: '800',
+      color: c.primary,
+      letterSpacing: -1,
+    },
+    headerChipsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    themeChip: {
+      backgroundColor: c.card,
+      borderColor: c.border,
+      borderWidth: 1,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 10,
+    },
+    themeChipText: {
+      fontSize: 12,
+    },
+    shareChip: {
+      backgroundColor: c.card,
+      borderColor: c.border,
+      borderWidth: 1,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 10,
+    },
+    shareChipText: {
+      fontSize: 12,
+    },
+    couponChip: {
+      backgroundColor: c.card,
+      borderColor: `${COUPON_AMBER}4d`,
+      borderWidth: 1,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 10,
+    },
+    couponChipText: {
+      color: COUPON_AMBER,
+      fontSize: 10,
+      fontWeight: '700',
+    },
+    cartChip: {
+      backgroundColor: c.card,
+      borderColor: c.border,
+      borderWidth: 1,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 10,
+    },
+    cartChipText: {
+      color: c.foreground,
+      fontSize: 10,
+      fontWeight: '700',
+    },
+    walletChip: {
+      backgroundColor: c.card,
+      borderColor: `${c.primary}66`,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 10,
+    },
+    walletChipText: {
+      color: c.primary,
+      fontSize: 11,
+      fontWeight: '800',
+    },
+    profileCard: {
+      backgroundColor: c.card,
+      padding: 14,
+      borderRadius: 20,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    profileCardHeader: {
+      fontSize: 9,
+      color: c.faint,
+      fontWeight: '800',
+      letterSpacing: 1,
+      marginBottom: 8,
+    },
+    profileRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    avatar: {
+      width: 44,
+      height: 44,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: `${c.primary}66`,
+    },
+    profileInfo: {
+      flex: 1,
+    },
+    userName: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: c.foreground,
+    },
+    userBadge: {
+      fontSize: 11,
+      color: c.primary,
+      marginTop: 2,
+      fontWeight: '600',
+    },
+    userPreferences: {
+      fontSize: 10,
+      color: c.mutedForeground,
+      marginTop: 2,
+    },
+    searchSection: {
+      flexDirection: 'row',
+      gap: 8,
+      marginBottom: 12,
+    },
+    searchInput: {
+      flex: 1,
+      backgroundColor: c.card,
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: 14,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      color: c.foreground,
+      fontSize: 12,
+    },
+    searchButton: {
+      backgroundColor: c.primary,
+      borderRadius: 14,
+      paddingHorizontal: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    searchButtonText: {
+      color: c.primaryForeground,
+      fontWeight: '800',
+      fontSize: 12,
+    },
+    suggestionsContainer: {
+      marginBottom: 16,
+    },
+    sugPill: {
+      backgroundColor: c.card,
+      borderColor: c.border,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 12,
+      marginRight: 8,
+    },
+    sugPillText: {
+      color: c.foreground,
+      fontSize: 11,
+    },
+    agentBanner: {
+      backgroundColor: `${c.primary}22`,
+      borderColor: `${c.primary}4d`,
+      borderWidth: 1,
+      padding: 14,
+      borderRadius: 16,
+      marginBottom: 16,
+    },
+    agentBannerTitle: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: c.primary,
+      marginBottom: 4,
+    },
+    agentBannerText: {
+      fontSize: 11,
+      color: c.foreground,
+      lineHeight: 16,
+    },
+    agentReasoning: {
+      fontSize: 10,
+      color: c.mutedForeground,
+      marginTop: 6,
+    },
+    resetButton: {
+      marginTop: 8,
+      alignSelf: 'flex-end',
+    },
+    resetButtonText: {
+      fontSize: 10,
+      color: c.mutedForeground,
+      textDecorationLine: 'underline',
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: c.foreground,
+      marginBottom: 12,
+    },
+    productCard: {
+      backgroundColor: c.card,
+      borderRadius: 18,
+      overflow: 'hidden',
+      marginBottom: 14,
+      flexDirection: 'row',
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    productCardMatched: {
+      borderColor: c.primary,
+      borderWidth: 1.5,
+    },
+    productImage: {
+      width: 90,
+      height: 90,
+    },
+    productDetails: {
+      padding: 12,
+      flex: 1,
+      justifyContent: 'center',
+    },
+    productHeaderRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 2,
+    },
+    productCategory: {
+      fontSize: 10,
+      color: c.faint,
+    },
+    matchTag: {
+      fontSize: 9,
+      color: c.primaryForeground,
+      backgroundColor: c.primary,
+      fontWeight: '800',
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 8,
+    },
+    productName: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: c.foreground,
+    },
+    productPriceRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 6,
+    },
+    productPrice: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: c.foreground,
+    },
+    buyButton: {
+      backgroundColor: c.primary,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 10,
+    },
+    buyButtonText: {
+      color: c.primaryForeground,
+      fontWeight: '800',
+      fontSize: 11,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: `${c.background}d9`,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    modalContainer: {
+      backgroundColor: c.card,
+      borderRadius: 24,
+      padding: 20,
+      width: '100%',
+      borderColor: c.border,
+      borderWidth: 1,
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    modalTitle: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: c.foreground,
+    },
+    closeModalText: {
+      color: c.mutedForeground,
+      fontSize: 18,
+      fontWeight: '700',
+    },
+    modalProductName: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: c.foreground,
+    },
+    modalProductPrice: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: c.primary,
+      marginTop: 4,
+    },
+    diagnosticBox: {
+      backgroundColor: c.background,
+      padding: 12,
+      borderRadius: 14,
+      marginVertical: 14,
+      borderColor: `${c.primary}4d`,
+      borderWidth: 1,
+    },
+    diagnosticTitle: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: c.primary,
+      marginBottom: 6,
+    },
+    diagnosticText: {
+      fontSize: 11,
+      color: c.foreground,
+      marginVertical: 2,
+    },
+    confirmCheckoutButton: {
+      backgroundColor: c.primary,
+      borderRadius: 14,
+      paddingVertical: 14,
+      alignItems: 'center',
+    },
+    confirmCheckoutButtonText: {
+      color: c.primaryForeground,
+      fontWeight: '800',
+      fontSize: 13,
+    },
+    purchasedSuccessBox: {
+      padding: 20,
+      alignItems: 'center',
+    },
+    successTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: c.primary,
+      marginBottom: 8,
+    },
+    successText: {
+      fontSize: 12,
+      color: c.foreground,
+      textAlign: 'center',
+      lineHeight: 18,
+    },
+  });
+}

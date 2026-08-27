@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, Image, StyleSheet } from 'react-native';
 import { Product, UserProfile } from '@cagent/shared';
+import { ThemeColors, useTheme } from '../theme';
 
 export interface CartItem {
   product: Product;
@@ -15,6 +16,7 @@ interface CartDrawerModalProps {
   onRemoveItem: (productId: string) => void;
   userProfile: UserProfile;
   onOpenComparePage: () => void;
+  onCheckoutComplete: (payload: { productName: string; amount: number; cashbackEarned: number }) => void;
 }
 
 export function CartDrawerModal({
@@ -25,8 +27,15 @@ export function CartDrawerModal({
   onRemoveItem,
   userProfile,
   onOpenComparePage,
+  onCheckoutComplete,
 }: CartDrawerModalProps) {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
   const [isPurchased, setIsPurchased] = useState(false);
+  // Congela o cashback exibido na tela de sucesso: o carrinho é esvaziado
+  // pelo pai assim que a compra é confirmada, então não dá para seguir
+  // derivando esse número de `cartItems` (viraria 0 antes do modal fechar).
+  const [purchasedCashback, setPurchasedCashback] = useState(0);
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
   const discount = Math.round(subtotal * 0.1);
@@ -40,6 +49,11 @@ export function CartDrawerModal({
 
   const handleCheckout = () => {
     setIsPurchased(true);
+    setPurchasedCashback(cashbackEstimated);
+    const productName = cartItems.length === 1
+      ? cartItems[0].product.name
+      : `${cartItems[0].product.name} + ${cartItems.length - 1} ${cartItems.length - 1 === 1 ? 'item' : 'itens'}`;
+    onCheckoutComplete({ productName, amount: finalTotal, cashbackEarned: cashbackEstimated });
     setTimeout(() => {
       setIsPurchased(false);
       onClose();
@@ -74,7 +88,7 @@ export function CartDrawerModal({
             <View style={styles.centerBox}>
               <Text style={styles.successTitle}>✅ Compra Concluída!</Text>
               <Text style={styles.successText}>
-                Seu pedido foi processado. 💰 R$ {cashbackEstimated},00 de cashback foram adicionados à sua carteira!
+                Seu pedido foi processado. 💰 R$ {purchasedCashback},00 de cashback foram adicionados à sua carteira!
               </Text>
             </View>
           ) : cartItems.length === 0 ? (
@@ -148,231 +162,233 @@ export function CartDrawerModal({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(2, 6, 23, 0.85)',
-    justifyContent: 'flex-end',
-  },
-  drawer: {
-    backgroundColor: '#0f172a',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    maxHeight: '85%',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomColor: '#1e293b',
-    borderBottomWidth: 1,
-    paddingBottom: 14,
-    marginBottom: 12,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  compareButton: {
-    backgroundColor: '#0f172a',
-    borderColor: 'rgba(52, 211, 153, 0.4)',
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
-  },
-  compareButtonText: {
-    color: '#34d399',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  closeButton: {
-    padding: 4,
-  },
-  closeButtonText: {
-    color: '#94a3b8',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  centerBox: {
-    paddingVertical: 40,
-    alignItems: 'center',
-    gap: 8,
-  },
-  successTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#34d399',
-  },
-  successText: {
-    fontSize: 12,
-    color: '#e2e8f0',
-    textAlign: 'center',
-    lineHeight: 18,
-    paddingHorizontal: 12,
-  },
-  emptyTitle: {
-    fontSize: 13,
-    color: '#cbd5e1',
-    fontWeight: '600',
-  },
-  emptyText: {
-    fontSize: 11,
-    color: '#64748b',
-    textAlign: 'center',
-    paddingHorizontal: 20,
-  },
-  itemsList: {
-    maxHeight: 320,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#020617',
-    borderColor: '#1e293b',
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 10,
-    marginBottom: 10,
-    gap: 10,
-  },
-  itemImage: {
-    width: 52,
-    height: 52,
-    borderRadius: 12,
-  },
-  itemInfo: {
-    flex: 1,
-  },
-  itemName: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  itemPrice: {
-    fontSize: 10,
-    color: '#94a3b8',
-    marginTop: 2,
-  },
-  itemControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  qtyButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 8,
-    backgroundColor: '#0f172a',
-    borderColor: '#1e293b',
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  qtyButtonText: {
-    color: '#e2e8f0',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  qtyText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
-    width: 18,
-    textAlign: 'center',
-  },
-  removeButton: {
-    marginLeft: 4,
-    padding: 4,
-  },
-  removeButtonText: {
-    fontSize: 13,
-  },
-  footer: {
-    borderTopColor: '#1e293b',
-    borderTopWidth: 1,
-    paddingTop: 14,
-    marginTop: 12,
-    gap: 8,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  summaryLabel: {
-    color: '#94a3b8',
-    fontSize: 12,
-  },
-  summaryValue: {
-    color: '#e2e8f0',
-    fontSize: 12,
-  },
-  discountLabel: {
-    color: '#fbbf24',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  discountValue: {
-    color: '#fbbf24',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  cashbackBox: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'rgba(6, 78, 59, 0.4)',
-    borderColor: 'rgba(52, 211, 153, 0.3)',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-  },
-  cashbackLabel: {
-    color: '#34d399',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  cashbackValue: {
-    color: '#34d399',
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  totalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 2,
-  },
-  totalLabel: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  totalValue: {
-    color: '#34d399',
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  checkoutButton: {
-    backgroundColor: '#34d399',
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  checkoutButtonText: {
-    color: '#020617',
-    fontWeight: '800',
-    fontSize: 13,
-  },
-});
+function getStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: `${c.background}d9`,
+      justifyContent: 'flex-end',
+    },
+    drawer: {
+      backgroundColor: c.card,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      padding: 20,
+      maxHeight: '85%',
+      borderColor: c.border,
+      borderWidth: 1,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderBottomColor: c.border,
+      borderBottomWidth: 1,
+      paddingBottom: 14,
+      marginBottom: 12,
+    },
+    headerTitle: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: c.foreground,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    compareButton: {
+      backgroundColor: c.card,
+      borderColor: `${c.primary}66`,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 10,
+    },
+    compareButtonText: {
+      color: c.primary,
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    closeButton: {
+      padding: 4,
+    },
+    closeButtonText: {
+      color: c.mutedForeground,
+      fontSize: 18,
+      fontWeight: '700',
+    },
+    centerBox: {
+      paddingVertical: 40,
+      alignItems: 'center',
+      gap: 8,
+    },
+    successTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: c.primary,
+    },
+    successText: {
+      fontSize: 12,
+      color: c.foreground,
+      textAlign: 'center',
+      lineHeight: 18,
+      paddingHorizontal: 12,
+    },
+    emptyTitle: {
+      fontSize: 13,
+      color: c.foreground,
+      fontWeight: '600',
+    },
+    emptyText: {
+      fontSize: 11,
+      color: c.faint,
+      textAlign: 'center',
+      paddingHorizontal: 20,
+    },
+    itemsList: {
+      maxHeight: 320,
+    },
+    itemRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: c.background,
+      borderColor: c.border,
+      borderWidth: 1,
+      borderRadius: 16,
+      padding: 10,
+      marginBottom: 10,
+      gap: 10,
+    },
+    itemImage: {
+      width: 52,
+      height: 52,
+      borderRadius: 12,
+    },
+    itemInfo: {
+      flex: 1,
+    },
+    itemName: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: c.foreground,
+    },
+    itemPrice: {
+      fontSize: 10,
+      color: c.mutedForeground,
+      marginTop: 2,
+    },
+    itemControls: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    qtyButton: {
+      width: 24,
+      height: 24,
+      borderRadius: 8,
+      backgroundColor: c.card,
+      borderColor: c.border,
+      borderWidth: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    qtyButtonText: {
+      color: c.foreground,
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    qtyText: {
+      color: c.foreground,
+      fontSize: 12,
+      fontWeight: '700',
+      width: 18,
+      textAlign: 'center',
+    },
+    removeButton: {
+      marginLeft: 4,
+      padding: 4,
+    },
+    removeButtonText: {
+      fontSize: 13,
+    },
+    footer: {
+      borderTopColor: c.border,
+      borderTopWidth: 1,
+      paddingTop: 14,
+      marginTop: 12,
+      gap: 8,
+    },
+    summaryRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    summaryLabel: {
+      color: c.mutedForeground,
+      fontSize: 12,
+    },
+    summaryValue: {
+      color: c.foreground,
+      fontSize: 12,
+    },
+    discountLabel: {
+      color: '#fbbf24',
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    discountValue: {
+      color: '#fbbf24',
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    cashbackBox: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: `${c.primary}22`,
+      borderColor: `${c.primary}4d`,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+    },
+    cashbackLabel: {
+      color: c.primary,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    cashbackValue: {
+      color: c.primary,
+      fontSize: 13,
+      fontWeight: '800',
+    },
+    totalRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingTop: 2,
+    },
+    totalLabel: {
+      color: c.foreground,
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    totalValue: {
+      color: c.primary,
+      fontSize: 18,
+      fontWeight: '800',
+    },
+    checkoutButton: {
+      backgroundColor: c.primary,
+      borderRadius: 14,
+      paddingVertical: 14,
+      alignItems: 'center',
+      marginTop: 4,
+    },
+    checkoutButtonText: {
+      color: c.primaryForeground,
+      fontWeight: '800',
+      fontSize: 13,
+    },
+  });
+}

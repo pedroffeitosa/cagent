@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image, StyleSheet } from 'react-native';
 import { Product, UserProfile } from '@cagent/shared';
+import { ThemeColors, useTheme } from '../theme';
 
 interface CompareProductsScreenProps {
   products: Product[];
@@ -9,12 +10,34 @@ interface CompareProductsScreenProps {
   onSelectProductToBuy: (product: Product) => void;
 }
 
+// Raio-X de compatibilidade: pondera tamanho, orçamento, estilo e cor contra
+// o perfil real do cliente, em vez de um "Match 100%" fixo (mesma lógica do web).
+function computeMatchScore(product: Product, userProfile: UserProfile): number {
+  let score = 0;
+  if (product.availableSizes.includes(userProfile.sizes.clothing) || product.availableSizes.includes(userProfile.sizes.shoes)) {
+    score += 35;
+  }
+  if (!userProfile.maxBudget || product.price <= userProfile.maxBudget) {
+    score += 30;
+  }
+  if (product.tags.some((t) => userProfile.stylePreferences.includes(t))) {
+    score += 20;
+  }
+  if (product.colors.some((c) => userProfile.favoriteColors.includes(c))) {
+    score += 15;
+  }
+  return score;
+}
+
 export function CompareProductsScreen({
   products,
   userProfile,
   onBackToCart,
   onSelectProductToBuy,
 }: CompareProductsScreenProps) {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
+
   if (products.length === 0) {
     return (
       <View style={styles.emptyContainer}>
@@ -29,6 +52,10 @@ export function CompareProductsScreen({
       </View>
     );
   }
+
+  const bestMatch = products.reduce((best, p) =>
+    computeMatchScore(p, userProfile) > computeMatchScore(best, userProfile) ? p : best
+  , products[0]);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -45,13 +72,14 @@ export function CompareProductsScreen({
       <View style={styles.verdictBox}>
         <Text style={styles.verdictTitle}>✨ Veredito do $Agent para {userProfile.name}</Text>
         <Text style={styles.verdictText}>
-          Ambos os produtos estão dentro do seu orçamento máximo (teto R$ {userProfile.maxBudget || 450})
-          e atendem ao seu tamanho {userProfile.sizes.clothing}. Para melhor performance esportiva, o{' '}
-          {products[0].name} oferece excelente absorção de suor e conforto térmico.
+          Comparando os atributos com seu perfil (tamanho {userProfile.sizes.clothing}, teto R$ {userProfile.maxBudget || 450}),
+          o {bestMatch.name} é o que melhor combina com você.
         </Text>
       </View>
 
-      {products.map((product) => (
+      {products.map((product) => {
+        const matchScore = computeMatchScore(product, userProfile);
+        return (
         <View key={product.id} style={styles.card}>
           <View style={styles.imageWrapper}>
             <Image source={{ uri: product.imageUrl }} style={styles.image} />
@@ -80,7 +108,9 @@ export function CompareProductsScreen({
             </View>
             <View style={styles.specRow}>
               <Text style={styles.specLabel}>Compatibilidade Perfil:</Text>
-              <Text style={styles.specValueGreen}>✓ Match 100%</Text>
+              <Text style={matchScore >= 40 ? styles.specValueGreen : styles.specValueWarn}>
+                {matchScore >= 40 ? '✓' : '✕'} Match {matchScore}%
+              </Text>
             </View>
 
             {product.technicalSpecs?.material && (
@@ -113,185 +143,193 @@ export function CompareProductsScreen({
             <Text style={styles.chooseButtonText}>🛍️ Escolher Este Produto</Text>
           </TouchableOpacity>
         </View>
-      ))}
+        );
+      })}
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#020617',
-  },
-  content: {
-    padding: 16,
-    gap: 16,
-  },
-  emptyContainer: {
-    flex: 1,
-    backgroundColor: '#020617',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-    gap: 12,
-  },
-  emptyIcon: {
-    fontSize: 40,
-  },
-  emptyTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  emptyText: {
-    color: '#94a3b8',
-    fontSize: 12,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-  backButton: {
-    backgroundColor: '#0f172a',
-    borderColor: '#1e293b',
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    marginTop: 8,
-  },
-  backButtonText: {
-    color: '#cbd5e1',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  header: {
-    gap: 4,
-    borderBottomColor: '#1e293b',
-    borderBottomWidth: 1,
-    paddingBottom: 14,
-  },
-  backIconButton: {
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  backIconText: {
-    color: '#94a3b8',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  headerTitle: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  headerSubtitle: {
-    color: '#94a3b8',
-    fontSize: 11,
-  },
-  verdictBox: {
-    backgroundColor: '#0f172a',
-    borderColor: 'rgba(52, 211, 153, 0.3)',
-    borderWidth: 1,
-    borderRadius: 18,
-    padding: 14,
-    gap: 6,
-  },
-  verdictTitle: {
-    color: '#6ee7b7',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  verdictText: {
-    color: '#e2e8f0',
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  card: {
-    backgroundColor: '#0f172a',
-    borderColor: '#1e293b',
-    borderWidth: 1,
-    borderRadius: 22,
-    padding: 16,
-    gap: 12,
-  },
-  imageWrapper: {
-    aspectRatio: 4 / 3,
-    borderRadius: 16,
-    overflow: 'hidden',
-    backgroundColor: '#1e293b',
-    position: 'relative',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  storeTag: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: 'rgba(2, 6, 23, 0.8)',
-    borderColor: '#1e293b',
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  storeTagText: {
-    color: '#cbd5e1',
-    fontSize: 10,
-  },
-  category: {
-    color: '#94a3b8',
-    fontSize: 10,
-    textTransform: 'uppercase',
-  },
-  name: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '700',
-    marginTop: -6,
-  },
-  specsBox: {
-    borderTopColor: '#1e293b',
-    borderTopWidth: 1,
-    borderBottomColor: '#1e293b',
-    borderBottomWidth: 1,
-    paddingVertical: 12,
-    gap: 10,
-  },
-  specRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  specLabel: {
-    color: '#94a3b8',
-    fontSize: 11,
-  },
-  specValue: {
-    color: '#e2e8f0',
-    fontSize: 11,
-    flexShrink: 1,
-    textAlign: 'right',
-  },
-  specValueStrong: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  specValueGreen: {
-    color: '#34d399',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  chooseButton: {
-    backgroundColor: '#34d399',
-    borderRadius: 14,
-    paddingVertical: 13,
-    alignItems: 'center',
-  },
-  chooseButtonText: {
-    color: '#020617',
-    fontWeight: '800',
-    fontSize: 12,
-  },
-});
+function getStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+    },
+    content: {
+      padding: 16,
+      gap: 16,
+    },
+    emptyContainer: {
+      flex: 1,
+      backgroundColor: c.background,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 32,
+      gap: 12,
+    },
+    emptyIcon: {
+      fontSize: 40,
+    },
+    emptyTitle: {
+      color: c.foreground,
+      fontSize: 18,
+      fontWeight: '800',
+    },
+    emptyText: {
+      color: c.mutedForeground,
+      fontSize: 12,
+      textAlign: 'center',
+      lineHeight: 18,
+    },
+    backButton: {
+      backgroundColor: c.card,
+      borderColor: c.border,
+      borderWidth: 1,
+      borderRadius: 14,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      marginTop: 8,
+    },
+    backButtonText: {
+      color: c.foreground,
+      fontWeight: '700',
+      fontSize: 12,
+    },
+    header: {
+      gap: 4,
+      borderBottomColor: c.border,
+      borderBottomWidth: 1,
+      paddingBottom: 14,
+    },
+    backIconButton: {
+      alignSelf: 'flex-start',
+      marginBottom: 8,
+    },
+    backIconText: {
+      color: c.mutedForeground,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    headerTitle: {
+      color: c.foreground,
+      fontSize: 20,
+      fontWeight: '800',
+    },
+    headerSubtitle: {
+      color: c.mutedForeground,
+      fontSize: 11,
+    },
+    verdictBox: {
+      backgroundColor: c.card,
+      borderColor: `${c.primary}4d`,
+      borderWidth: 1,
+      borderRadius: 18,
+      padding: 14,
+      gap: 6,
+    },
+    verdictTitle: {
+      color: c.primary,
+      fontWeight: '700',
+      fontSize: 13,
+    },
+    verdictText: {
+      color: c.foreground,
+      fontSize: 12,
+      lineHeight: 18,
+    },
+    card: {
+      backgroundColor: c.card,
+      borderColor: c.border,
+      borderWidth: 1,
+      borderRadius: 22,
+      padding: 16,
+      gap: 12,
+    },
+    imageWrapper: {
+      aspectRatio: 4 / 3,
+      borderRadius: 16,
+      overflow: 'hidden',
+      backgroundColor: c.elevated,
+      position: 'relative',
+    },
+    image: {
+      width: '100%',
+      height: '100%',
+    },
+    storeTag: {
+      position: 'absolute',
+      top: 10,
+      left: 10,
+      backgroundColor: `${c.background}cc`,
+      borderColor: c.border,
+      borderWidth: 1,
+      borderRadius: 20,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    storeTagText: {
+      color: c.foreground,
+      fontSize: 10,
+    },
+    category: {
+      color: c.mutedForeground,
+      fontSize: 10,
+      textTransform: 'uppercase',
+    },
+    name: {
+      color: c.foreground,
+      fontSize: 15,
+      fontWeight: '700',
+      marginTop: -6,
+    },
+    specsBox: {
+      borderTopColor: c.border,
+      borderTopWidth: 1,
+      borderBottomColor: c.border,
+      borderBottomWidth: 1,
+      paddingVertical: 12,
+      gap: 10,
+    },
+    specRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    specLabel: {
+      color: c.mutedForeground,
+      fontSize: 11,
+    },
+    specValue: {
+      color: c.foreground,
+      fontSize: 11,
+      flexShrink: 1,
+      textAlign: 'right',
+    },
+    specValueStrong: {
+      color: c.foreground,
+      fontSize: 13,
+      fontWeight: '800',
+    },
+    specValueGreen: {
+      color: c.primary,
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    specValueWarn: {
+      color: '#f87171',
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    chooseButton: {
+      backgroundColor: c.primary,
+      borderRadius: 14,
+      paddingVertical: 13,
+      alignItems: 'center',
+    },
+    chooseButtonText: {
+      color: c.primaryForeground,
+      fontWeight: '800',
+      fontSize: 12,
+    },
+  });
+}
