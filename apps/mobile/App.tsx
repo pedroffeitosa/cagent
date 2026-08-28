@@ -18,7 +18,8 @@ import {
   Product,
   AgentResponsePayload,
   runLocalRuleEngine,
-  sortProductsByProfileMatch
+  sortProductsByProfileMatch,
+  computeProductMatchDetails
 } from '@cagent/shared';
 import { CartDrawerModal, CartItem } from './components/CartDrawerModal';
 import { WalletModal } from './components/WalletModal';
@@ -113,6 +114,8 @@ function AppContent() {
   const displayedProducts = activeProductIds
     ? MOCK_STORE_CONTEXT.catalog.filter(p => activeProductIds.includes(p.id))
     : sortProductsByProfileMatch(MOCK_STORE_CONTEXT.catalog, userProfile);
+
+  const selectedProductMatch = selectedProduct ? computeProductMatchDetails(selectedProduct, userProfile) : null;
 
   const handleSearch = (query: string) => {
     if (!query.trim()) return;
@@ -333,8 +336,16 @@ function AppContent() {
                   {/* Match Diagnostic Box */}
                   <View style={styles.diagnosticBox}>
                     <Text style={styles.diagnosticTitle}>🛡️ Raio-X de Match do Perfil</Text>
-                    <Text style={styles.diagnosticText}>• Tamanho M em estoque na loja</Text>
-                    <Text style={styles.diagnosticText}>• R$ {selectedProduct.price} dentro do teto R$ {userProfile.maxBudget || '450'}</Text>
+                    <Text style={styles.diagnosticText}>
+                      {selectedProductMatch?.sizeMatch ? '✅' : '⚠️'} {selectedProductMatch?.sizeMatch
+                        ? `Tamanho ${userProfile.sizes.clothing} em estoque na loja`
+                        : `Disponível em ${selectedProduct.availableSizes.join(', ')} — não bate com o seu ${userProfile.sizes.clothing}/${userProfile.sizes.shoes}`}
+                    </Text>
+                    <Text style={styles.diagnosticText}>
+                      {selectedProductMatch?.budgetMatch ? '✅' : '⚠️'} {selectedProductMatch?.budgetMatch
+                        ? `R$ ${selectedProduct.price} dentro do teto R$ ${userProfile.maxBudget || '450'}`
+                        : `R$ ${selectedProduct.price} acima do teto R$ ${userProfile.maxBudget}`}
+                    </Text>
                     <Text style={styles.diagnosticText}>• Cupom DECO10 (-10% OFF) aplicado</Text>
                   </View>
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Product, UserProfile } from '@cagent/shared';
+import { Product, UserProfile, computeProductMatchDetails } from '@cagent/shared';
 import { Swords, ArrowLeft, Sparkles, Check, X, ShieldCheck, Coins, ShoppingBag } from 'lucide-react';
 import { Button } from '../ui/button';
 import { handleImageError } from '../../utils/imageFallback';
@@ -9,27 +9,6 @@ interface CompareProductsViewProps {
   userProfile: UserProfile;
   onBackToCart: () => void;
   onSelectProductToBuy: (product: Product) => void;
-}
-
-// Raio-X de compatibilidade: pondera tamanho, orçamento, estilo e cor
-// contra o perfil real do cliente, em vez de um "Match 100%" fixo.
-function computeMatchScore(product: Product, userProfile: UserProfile): number {
-  let score = 0;
-
-  if (product.availableSizes.includes(userProfile.sizes.clothing) || product.availableSizes.includes(userProfile.sizes.shoes)) {
-    score += 35;
-  }
-  if (!userProfile.maxBudget || product.price <= userProfile.maxBudget) {
-    score += 30;
-  }
-  if (product.tags.some((t) => userProfile.stylePreferences.includes(t))) {
-    score += 20;
-  }
-  if (product.colors.some((c) => userProfile.favoriteColors.includes(c))) {
-    score += 15;
-  }
-
-  return score;
 }
 
 export function CompareProductsView({
@@ -50,7 +29,7 @@ export function CompareProductsView({
   }
 
   const bestMatch = products.reduce((best, p) =>
-    computeMatchScore(p, userProfile) > computeMatchScore(best, userProfile) ? p : best
+    computeProductMatchDetails(p, userProfile).score > computeProductMatchDetails(best, userProfile).score ? p : best
   , products[0]);
 
   return (
@@ -97,7 +76,7 @@ export function CompareProductsView({
       {/* Side-by-Side Comparison Grid */}
       <div className={`grid gap-6 ${products.length === 1 ? 'grid-cols-1 max-w-md mx-auto' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
         {products.map((product) => {
-          const matchScore = computeMatchScore(product, userProfile);
+          const matchScore = computeProductMatchDetails(product, userProfile).score;
           return (
           <div key={product.id} className="glass-card rounded-3xl p-6 border border-border flex flex-col justify-between gap-6 group hover:border-border-strong transition">
             

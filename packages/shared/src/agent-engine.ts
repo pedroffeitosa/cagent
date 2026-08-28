@@ -169,3 +169,29 @@ export function sortProductsByProfileMatch(products: Product[], userProfile: Use
     .sort((a, b) => b.score - a.score || a.index - b.index)
     .map((entry) => entry.product);
 }
+
+export interface ProductMatchDetails {
+  sizeMatch: boolean;
+  budgetMatch: boolean;
+  styleMatch: boolean;
+  colorMatch: boolean;
+  score: number;
+}
+
+/**
+ * Raio-X de compatibilidade real (Compare + Checkout): pondera tamanho,
+ * orçamento, estilo e cor contra o perfil do cliente, em vez de um
+ * "Match 100%" fixo. Fonte única usada por Compare (web + mobile) e pelo
+ * checkout 1-clique (web + mobile) — antes cada tela tinha sua própria
+ * cópia (ou, no caso do checkout, nenhuma checagem real).
+ */
+export function computeProductMatchDetails(product: Product, userProfile: UserProfile): ProductMatchDetails {
+  const sizeMatch = product.availableSizes.includes(userProfile.sizes.clothing) || product.availableSizes.includes(userProfile.sizes.shoes);
+  const budgetMatch = !userProfile.maxBudget || product.price <= userProfile.maxBudget;
+  const styleMatch = product.tags.some((t) => userProfile.stylePreferences.includes(t));
+  const colorMatch = product.colors.some((c) => userProfile.favoriteColors.includes(c));
+
+  const score = (sizeMatch ? 35 : 0) + (budgetMatch ? 30 : 0) + (styleMatch ? 20 : 0) + (colorMatch ? 15 : 0);
+
+  return { sizeMatch, budgetMatch, styleMatch, colorMatch, score };
+}

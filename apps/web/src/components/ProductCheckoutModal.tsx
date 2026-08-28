@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { Product, UserProfile } from '@cagent/shared';
-import { 
-  X, 
-  Check, 
-  Sparkles, 
-  Coins, 
-  Gift, 
-  ShieldCheck, 
-  ArrowRight, 
-  ShoppingBag, 
-  CheckCircle2 
+import { Product, UserProfile, computeProductMatchDetails } from '@cagent/shared';
+import {
+  X,
+  Check,
+  Sparkles,
+  Coins,
+  Gift,
+  ShieldCheck,
+  ArrowRight,
+  ShoppingBag,
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { handleImageError } from '../utils/imageFallback';
@@ -37,6 +38,7 @@ export function ProductCheckoutModal({
   const discountAmount = Math.round(product.price * 0.1);
   const finalPrice = product.price - discountAmount;
   const cashbackBonus = product.cashbackReward || Math.round(finalPrice * 0.05);
+  const match = computeProductMatchDetails(product, userProfile);
 
   const handleCheckout = () => {
     setIsPurchased(true);
@@ -87,8 +89,10 @@ export function ProductCheckoutModal({
                   className="w-full h-full object-cover"
                   onError={handleImageError}
                 />
-                <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-primary text-primary-foreground font-bold text-[10px] tracking-wide uppercase">
-                  ✨ Match 100% $Agent
+                <span className={`absolute top-3 left-3 px-3 py-1 rounded-full font-bold text-[10px] tracking-wide uppercase ${
+                  match.score >= 70 ? 'bg-primary text-primary-foreground' : match.score >= 40 ? 'bg-amber-400 text-primary-foreground' : 'bg-red-400 text-primary-foreground'
+                }`}>
+                  ✨ Match {match.score}% $Agent
                 </span>
               </div>
 
@@ -119,16 +123,43 @@ export function ProductCheckoutModal({
 
                 <div className="flex flex-col gap-2 text-[11px]">
                   <div className="flex items-center gap-2 text-foreground">
-                    <Check className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <span><strong>Tamanho:</strong> {userProfile.sizes.clothing} em estoque confirmado.</span>
+                    {match.sizeMatch ? (
+                      <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                    ) : (
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    )}
+                    <span>
+                      <strong>Tamanho:</strong>{' '}
+                      {match.sizeMatch
+                        ? `${userProfile.sizes.clothing} em estoque confirmado.`
+                        : `disponível em ${product.availableSizes.join(', ')} — não bate com o seu ${userProfile.sizes.clothing}/${userProfile.sizes.shoes}.`}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
-                    <Check className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <span><strong>Orçamento:</strong> R$ {finalPrice} dentro do seu limite de R$ {userProfile.maxBudget || '450'}.</span>
+                    {match.budgetMatch ? (
+                      <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                    ) : (
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    )}
+                    <span>
+                      <strong>Orçamento:</strong>{' '}
+                      {match.budgetMatch
+                        ? `R$ ${finalPrice} dentro do seu limite de R$ ${userProfile.maxBudget || '450'}.`
+                        : `R$ ${product.price} acima do seu limite de R$ ${userProfile.maxBudget}.`}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
-                    <Check className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <span><strong>Estilo:</strong> Atende suas preferências de {userProfile.stylePreferences[0]}.</span>
+                    {match.styleMatch ? (
+                      <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                    ) : (
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    )}
+                    <span>
+                      <strong>Estilo:</strong>{' '}
+                      {match.styleMatch
+                        ? `Atende suas preferências de ${userProfile.stylePreferences[0]}.`
+                        : `Fora do seu estilo habitual (${userProfile.stylePreferences[0] || 'sem preferência definida'}).`}
+                    </span>
                   </div>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image, StyleSheet } from 'react-native';
-import { Product, UserProfile } from '@cagent/shared';
+import { Product, UserProfile, computeProductMatchDetails } from '@cagent/shared';
 import { ThemeColors, useTheme } from '../theme';
 
 interface CompareProductsScreenProps {
@@ -8,25 +8,6 @@ interface CompareProductsScreenProps {
   userProfile: UserProfile;
   onBackToCart: () => void;
   onSelectProductToBuy: (product: Product) => void;
-}
-
-// Raio-X de compatibilidade: pondera tamanho, orçamento, estilo e cor contra
-// o perfil real do cliente, em vez de um "Match 100%" fixo (mesma lógica do web).
-function computeMatchScore(product: Product, userProfile: UserProfile): number {
-  let score = 0;
-  if (product.availableSizes.includes(userProfile.sizes.clothing) || product.availableSizes.includes(userProfile.sizes.shoes)) {
-    score += 35;
-  }
-  if (!userProfile.maxBudget || product.price <= userProfile.maxBudget) {
-    score += 30;
-  }
-  if (product.tags.some((t) => userProfile.stylePreferences.includes(t))) {
-    score += 20;
-  }
-  if (product.colors.some((c) => userProfile.favoriteColors.includes(c))) {
-    score += 15;
-  }
-  return score;
 }
 
 export function CompareProductsScreen({
@@ -54,7 +35,7 @@ export function CompareProductsScreen({
   }
 
   const bestMatch = products.reduce((best, p) =>
-    computeMatchScore(p, userProfile) > computeMatchScore(best, userProfile) ? p : best
+    computeProductMatchDetails(p, userProfile).score > computeProductMatchDetails(best, userProfile).score ? p : best
   , products[0]);
 
   return (
@@ -78,7 +59,7 @@ export function CompareProductsScreen({
       </View>
 
       {products.map((product) => {
-        const matchScore = computeMatchScore(product, userProfile);
+        const matchScore = computeProductMatchDetails(product, userProfile).score;
         return (
         <View key={product.id} style={styles.card}>
           <View style={styles.imageWrapper}>
