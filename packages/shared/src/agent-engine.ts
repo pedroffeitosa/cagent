@@ -83,9 +83,12 @@ export function runLocalRuleEngine(payload: AgentRequestPayload): AgentResponseP
 
   const recommendedIds = matchingProducts.map((p) => p.id);
 
-  // Apply default store coupon DECO10 (10% OFF)
-  const appliedCoupon = storeContext.config?.activeCoupons?.find(c => c.code === 'DECO10');
-  
+  // Cupom padrão DECO10 quando a loja tem; senão cai no primeiro cupom ativo
+  // da própria loja — parceiros da rede (Nike, Centauro, Max Titanium) não
+  // necessariamente têm DECO10 no catálogo de cupons.
+  const appliedCoupon = storeContext.config?.activeCoupons?.find(c => c.code === 'DECO10')
+    ?? storeContext.config?.activeCoupons?.[0];
+
   // Calculate estimated cashback (5%)
   const topPrice = matchingProducts[0]?.price || 300;
   const cashbackPercent = storeContext.config?.cashbackPercentage || 5;
@@ -108,7 +111,9 @@ export function runLocalRuleEngine(payload: AgentRequestPayload): AgentResponseP
     },
     appliedCoupon,
     estimatedCashback,
-    reasoningSummary: `Agente da Loja: Cupom DECO10 aplicado + ${cashbackPercent}% Cashback calculado no saldo da sua conta.`,
+    reasoningSummary: appliedCoupon
+      ? `Agente da Loja: Cupom ${appliedCoupon.code} aplicado + ${cashbackPercent}% Cashback calculado no saldo da sua conta.`
+      : `Agente da Loja: ${cashbackPercent}% Cashback calculado no saldo da sua conta.`,
     providerUsed: 'custom',
   };
 }

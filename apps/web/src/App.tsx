@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MOCK_STORE_CONTEXT, Product, AIProviderType, sortProductsByProfileMatch } from '@cagent/shared';
+import { MOCK_STORE_CONTEXT, MOCK_ALL_STORES, Product, AIProviderType, sortProductsByProfileMatch } from '@cagent/shared';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
 import { AmbientBackground } from './components/AmbientBackground';
 import { DemoScriptToolbar } from './components/DemoScriptToolbar';
@@ -41,6 +41,11 @@ export default function App() {
   const [aiProvider, setAiProvider] = useState<AIProviderType>('gemini');
   const [customApiKey, setCustomApiKey] = useState('');
 
+  // Rede de Lojas Parceiras (Deco Interoperable Mesh): loja ativa no momento —
+  // troca de verdade o catálogo, cashback% e cupons usados em toda a app.
+  const [activeStoreId, setActiveStoreId] = useState(MOCK_STORE_CONTEXT.storeId);
+  const activeStoreContext = MOCK_ALL_STORES.find(s => s.storeId === activeStoreId) ?? MOCK_STORE_CONTEXT;
+
   // Collapsible Past Chats Toggle
   const [showPastChats, setShowPastChats] = useState(false);
 
@@ -68,7 +73,7 @@ export default function App() {
     activeProductIds,
     handleRunAgent,
     handleNewChat,
-  } = useChatSessions({ userProfile, aiProvider, customApiKey, onNavigate: setActiveMainView });
+  } = useChatSessions({ userProfile, storeContext: activeStoreContext, aiProvider, customApiKey, onNavigate: setActiveMainView });
 
   // Sidebar States
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -146,7 +151,7 @@ export default function App() {
           currentQuery={currentQuery}
           onQueryChange={setCurrentQuery}
           onSubmitQuery={handleRunAgent}
-          products={MOCK_STORE_CONTEXT.catalog}
+          products={activeStoreContext.catalog}
           onOpenShareModal={() => setIsShareModalOpen(true)}
           onNavigateFilters={() => setActiveMainView('filters')}
           onNavigateStore={() => setActiveMainView('store')}
@@ -161,7 +166,7 @@ export default function App() {
         {activeMainView === 'home' && (
           <HomeStorefrontView
             userProfile={userProfile}
-            products={sortProductsByProfileMatch(MOCK_STORE_CONTEXT.catalog, userProfile)}
+            products={sortProductsByProfileMatch(activeStoreContext.catalog, userProfile)}
             onOpenChat={(initialQuery) => {
               if (initialQuery) {
                 handleRunAgent(initialQuery);
@@ -182,7 +187,15 @@ export default function App() {
         )}
 
         {activeMainView === 'store' && (
-          <StoreBootstrapView onBackToChat={() => setActiveMainView('home')} />
+          <StoreBootstrapView
+            stores={MOCK_ALL_STORES}
+            activeStoreId={activeStoreId}
+            onSelectStore={(storeId) => {
+              setActiveStoreId(storeId);
+              setActiveMainView('home');
+            }}
+            onBackToChat={() => setActiveMainView('home')}
+          />
         )}
 
         {activeMainView === 'filters' && (

@@ -1,54 +1,29 @@
 import React from 'react';
-import { Store, Building2, Globe, ArrowLeft, ShieldCheck, Check, Sparkles, ShoppingBag } from 'lucide-react';
+import { StoreContext } from '@cagent/shared';
+import { Store, Building2, Globe, ArrowLeft, ShieldCheck, Check, Sparkles, ShoppingBag, ArrowRightLeft } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface StoreBootstrapViewProps {
+  stores: StoreContext[];
+  activeStoreId: string;
+  onSelectStore: (storeId: string) => void;
   onBackToChat: () => void;
 }
 
-export function StoreBootstrapView({ onBackToChat }: StoreBootstrapViewProps) {
-  const connectedStores = [
-    {
-      name: 'Deco Sports & Performance',
-      tagline: 'Sua loja principal de artigos esportivos, futebol & corrida',
-      cashback: '5% de Cashback',
-      coupons: ['DECO10', 'AGENT50', 'VIPFLUMESH'],
-      status: 'Loja Principal',
-      isCurrent: true,
-      logoColor: 'text-primary bg-primary/10 border-primary/30',
-    },
-    {
-      name: 'Nike Brasil Official Partner',
-      tagline: 'Moda Esportiva, Tênis Pegasus Corrida & Chuteiras Tiempo/Mercurial',
-      cashback: '5% de Cashback',
-      coupons: ['NIKE10', 'DECO10'],
-      status: 'Parceiro Oficial',
-      isCurrent: false,
-      logoColor: 'text-foreground bg-card border-border-strong',
-    },
-    {
-      name: 'Centauro Esportes Partner',
-      tagline: 'Artigos Esportivos, Camisas Oficiais de Time (Fluminense FC) & Bolas',
-      cashback: '5% de Cashback',
-      coupons: ['CENTAURO15', 'AGENT50'],
-      status: 'Parceiro Oficial',
-      isCurrent: false,
-      logoColor: 'text-red-400 bg-red-500/10 border-red-500/30',
-    },
-    {
-      name: 'Max Titanium Supplements',
-      tagline: 'Suplementação Esportiva, Whey Protein, Creatina & Pré-Treino Fit',
-      cashback: '7% de Cashback',
-      coupons: ['MAXFIT20', 'VIPFLUMESH'],
-      status: 'Parceiro de Performance',
-      isCurrent: false,
-      logoColor: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
-    },
-  ];
+// Metadados só de exibição (selo + cor do logo) por loja — o resto (nome,
+// tagline, cashback, cupons, catálogo) vem do StoreContext real, então a
+// troca de loja reflete de verdade em toda a app.
+const STORE_DISPLAY_META: Record<string, { status: string; logoColor: string }> = {
+  'deco-sports-store': { status: 'Loja Principal', logoColor: 'text-primary bg-primary/10 border-primary/30' },
+  'nike-brasil-partner': { status: 'Parceiro Oficial', logoColor: 'text-foreground bg-card border-border-strong' },
+  'centauro-esportes-partner': { status: 'Parceiro Oficial', logoColor: 'text-red-400 bg-red-500/10 border-red-500/30' },
+  'max-titanium-supplements': { status: 'Parceiro de Performance', logoColor: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
+};
 
+export function StoreBootstrapView({ stores, activeStoreId, onSelectStore, onBackToChat }: StoreBootstrapViewProps) {
   return (
     <div className="flex-1 flex flex-col p-8 max-w-5xl mx-auto w-full gap-8 overflow-y-auto custom-scrollbar animate-in fade-in duration-200">
-      
+
       {/* Top Navigation Header */}
       <div className="flex items-center justify-between border-b border-border pb-4">
         <div className="flex items-center gap-3">
@@ -61,7 +36,7 @@ export function StoreBootstrapView({ onBackToChat }: StoreBootstrapViewProps) {
           </button>
           <div>
             <h2 className="font-heading font-bold text-2xl text-foreground">Rede de Lojas &amp; Parceiros Deco</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Conheça as marcas parceiras oficiais onde seu saldo e cashback são aceitos em 1-clique</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Troque de loja ativa e veja o catálogo, cupons e cashback do parceiro em tempo real</p>
           </div>
         </div>
 
@@ -104,43 +79,63 @@ export function StoreBootstrapView({ onBackToChat }: StoreBootstrapViewProps) {
         <h3 className="font-heading font-bold text-lg text-foreground">Lojas &amp; Marcas Conectadas</h3>
 
         <div className="flex flex-col gap-4">
-          {connectedStores.map((s) => (
-            <div
-              key={s.name}
-              className={`p-6 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-6 transition ${
-                s.isCurrent ? 'bg-card/80 border-primary/40 shadow-xl' : 'bg-background border-border hover:border-border-strong'
-              }`}
-            >
-              <div className="flex items-start gap-4">
-                <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 ${s.logoColor}`}>
-                  <Building2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-heading font-bold text-base text-foreground truncate max-w-[320px]" title={s.name}>{s.name}</h4>
-                    <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-mono-tech ${
-                      s.isCurrent ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-card text-foreground border border-border'
-                    }`}>
-                      {s.status}
-                    </span>
+          {stores.map((store) => {
+            const isCurrent = store.storeId === activeStoreId;
+            const meta = STORE_DISPLAY_META[store.storeId] ?? { status: 'Parceiro', logoColor: 'text-foreground bg-card border-border-strong' };
+
+            return (
+              <div
+                key={store.storeId}
+                role={isCurrent ? undefined : 'button'}
+                onClick={isCurrent ? undefined : () => onSelectStore(store.storeId)}
+                className={`p-6 rounded-3xl border flex flex-col md:flex-row md:items-center justify-between gap-6 transition ${
+                  isCurrent
+                    ? 'bg-card/80 border-primary/40 shadow-xl'
+                    : 'bg-background border-border hover:border-border-strong cursor-pointer'
+                }`}
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 ${meta.logoColor}`}>
+                    <Building2 className="w-6 h-6" />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">{s.tagline}</p>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-heading font-bold text-base text-foreground truncate max-w-[320px]" title={store.config.storeName}>{store.config.storeName}</h4>
+                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-mono-tech ${
+                        isCurrent ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-card text-foreground border border-border'
+                      }`}>
+                        {isCurrent ? 'Loja Ativa' : meta.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{store.config.tagline}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0 md:pl-6 shrink-0">
+                  <div>
+                    <span className="text-[10px] text-faint uppercase block font-mono-tech">Cashback</span>
+                    <span className="font-mono-tech font-bold text-primary text-sm">{store.config.cashbackPercentage}% de Cashback</span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] text-faint uppercase block font-mono-tech">Cupons Ativos</span>
+                    <span className="font-mono-tech font-bold text-amber-400 text-xs">{store.config.activeCoupons.map(c => c.code).join(', ')}</span>
+                  </div>
+
+                  {!isCurrent && (
+                    <Button
+                      onClick={(e) => { e.stopPropagation(); onSelectStore(store.storeId); }}
+                      className="gap-1.5 shrink-0"
+                      size="sm"
+                    >
+                      <ArrowRightLeft className="w-3.5 h-3.5" />
+                      Trocar para esta loja
+                    </Button>
+                  )}
                 </div>
               </div>
-
-              <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0 md:pl-6 shrink-0">
-                <div>
-                  <span className="text-[10px] text-faint uppercase block font-mono-tech">Cashback</span>
-                  <span className="font-mono-tech font-bold text-primary text-sm">{s.cashback}</span>
-                </div>
-
-                <div>
-                  <span className="text-[10px] text-faint uppercase block font-mono-tech">Cupons Ativos</span>
-                  <span className="font-mono-tech font-bold text-amber-400 text-xs">{s.coupons.join(', ')}</span>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

@@ -299,3 +299,116 @@ export const MOCK_STORE_CONTEXT: StoreContext = {
   catalog: MOCK_STORE_PRODUCTS,
   config: MOCK_STORE_CONFIG,
 };
+
+// Produtos exclusivos da Max Titanium — os outros parceiros reaproveitam o
+// catálogo principal (filtrado por marca/categoria), mas Max Titanium é uma
+// loja de suplementos, então precisa de itens próprios pra rede parecer real.
+const MAX_TITANIUM_PRODUCTS: Product[] = [
+  {
+    id: 'prod-maxt-10',
+    name: 'Whey Protein 3W Max Titanium 900g',
+    description: 'Whey concentrado + isolado de rápida absorção, ideal para recuperação pós-treino de academia e corrida.',
+    price: 189,
+    originalPrice: 229,
+    category: 'Suplementos',
+    availableSizes: ['900g'],
+    colors: ['Preto'],
+    imageUrl: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?w=600&auto=format&fit=crop&q=80',
+    tags: ['Academia & Fit', 'Suplemento', 'Whey Protein'],
+    inStock: true,
+    storeName: 'Max Titanium Supplements',
+    cashbackReward: 13.23,
+    technicalSpecs: {
+      material: 'Blend de whey concentrado e isolado',
+    },
+  },
+  {
+    id: 'prod-maxt-11',
+    name: 'Creatina Max Titanium 300g',
+    description: 'Creatina monohidratada pura para ganho de força e performance em treinos de alta intensidade.',
+    price: 89,
+    category: 'Suplementos',
+    availableSizes: ['300g'],
+    colors: ['Branco'],
+    imageUrl: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=600&auto=format&fit=crop&q=80',
+    tags: ['Academia & Fit', 'Suplemento', 'Creatina'],
+    inStock: true,
+    storeName: 'Max Titanium Supplements',
+    cashbackReward: 6.23,
+  },
+];
+
+/**
+ * Rede de lojas parceiras (Deco Interoperable Mesh): cada parceiro é um
+ * StoreContext real e independente — catálogo, cashback% e cupons próprios —
+ * usado por `StoreBootstrapView` pra trocar de loja ativa de verdade em vez
+ * de só listar cards decorativos.
+ */
+export const MOCK_PARTNER_STORES: StoreContext[] = [
+  {
+    storeId: 'nike-brasil-partner',
+    storeName: 'Nike Brasil Official Partner',
+    currency: 'BRL',
+    catalog: MOCK_STORE_PRODUCTS
+      .filter((p) => p.name.includes('Nike'))
+      .map((p) => ({ ...p, storeName: 'Nike Brasil Official Partner' })),
+    config: {
+      storeId: 'nike-brasil-partner',
+      storeName: 'Nike Brasil Official Partner',
+      tagline: 'Moda Esportiva, Tênis Pegasus Corrida & Chuteiras Tiempo/Mercurial',
+      currency: 'BRL',
+      cashbackPercentage: 5,
+      activeCoupons: [
+        { code: 'NIKE10', discountType: 'percentage', discountValue: 10, description: '10% OFF em produtos Nike selecionados' },
+        { code: 'DECO10', discountType: 'percentage', discountValue: 10, description: '10% OFF exclusivo no Canal Agêntico $Agent' },
+      ],
+      databaseDriver: 'mock',
+      serverEndpoint: 'https://api.nike-brasil-partner.com.br',
+    },
+  },
+  {
+    storeId: 'centauro-esportes-partner',
+    storeName: 'Centauro Esportes Partner',
+    currency: 'BRL',
+    catalog: MOCK_STORE_PRODUCTS
+      .filter((p) => ['prod-flu-01', 'prod-ball-09', 'prod-fld-05'].includes(p.id))
+      .map((p) => ({ ...p, storeName: 'Centauro Esportes Partner' })),
+    config: {
+      storeId: 'centauro-esportes-partner',
+      storeName: 'Centauro Esportes Partner',
+      tagline: 'Artigos Esportivos, Camisas Oficiais de Time (Fluminense FC) & Bolas',
+      currency: 'BRL',
+      cashbackPercentage: 5,
+      activeCoupons: [
+        { code: 'CENTAURO15', discountType: 'percentage', discountValue: 15, description: '15% OFF em artigos esportivos Centauro' },
+        { code: 'AGENT50', discountType: 'fixed', discountValue: 50, description: 'R$ 50 OFF de bônus de primeira compra agêntica' },
+      ],
+      databaseDriver: 'mock',
+      serverEndpoint: 'https://api.centauro-esportes-partner.com.br',
+    },
+  },
+  {
+    storeId: 'max-titanium-supplements',
+    storeName: 'Max Titanium Supplements',
+    currency: 'BRL',
+    catalog: MAX_TITANIUM_PRODUCTS,
+    config: {
+      storeId: 'max-titanium-supplements',
+      storeName: 'Max Titanium Supplements',
+      tagline: 'Suplementação Esportiva, Whey Protein, Creatina & Pré-Treino Fit',
+      currency: 'BRL',
+      cashbackPercentage: 7,
+      activeCoupons: [
+        { code: 'MAXFIT20', discountType: 'percentage', discountValue: 20, description: '20% OFF em suplementos Max Titanium' },
+        { code: 'VIPFLUMESH', discountType: 'percentage', discountValue: 15, description: '15% OFF de bônus exclusivo para torcedor Tricolor' },
+      ],
+      databaseDriver: 'mock',
+      serverEndpoint: 'https://api.max-titanium-partner.com.br',
+    },
+  },
+];
+
+// Rede completa: loja principal + parceiros — fonte única usada pela troca
+// de loja ativa (StoreBootstrapView) e por qualquer tela que precise listar
+// todos os canais do "Deco Interoperable Mesh".
+export const MOCK_ALL_STORES: StoreContext[] = [MOCK_STORE_CONTEXT, ...MOCK_PARTNER_STORES];

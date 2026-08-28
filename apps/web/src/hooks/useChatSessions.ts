@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   MOCK_USER_PROFILES,
   MOCK_STORE_CONTEXT,
+  StoreContext,
   UserProfile,
   AgentResponsePayload,
   AIProviderType,
@@ -53,12 +54,13 @@ const INITIAL_SESSIONS: ChatSession[] = [
 
 interface UseChatSessionsArgs {
   userProfile: UserProfile;
+  storeContext: StoreContext;
   aiProvider: AIProviderType;
   customApiKey: string;
   onNavigate: (view: MainViewType) => void;
 }
 
-export function useChatSessions({ userProfile, aiProvider, customApiKey, onNavigate }: UseChatSessionsArgs) {
+export function useChatSessions({ userProfile, storeContext, aiProvider, customApiKey, onNavigate }: UseChatSessionsArgs) {
   const [chatSessions, setChatSessions] = useState<ChatSession[]>(INITIAL_SESSIONS);
   const [activeChatId, setActiveChatId] = useState<string>('chat-1');
   const [currentQuery, setCurrentQuery] = useState('');
@@ -74,8 +76,8 @@ export function useChatSessions({ userProfile, aiProvider, customApiKey, onNavig
 
   const activeProductIds = latestAgentResponse?.recommendedProductIds;
   const displayedProducts = activeProductIds
-    ? MOCK_STORE_CONTEXT.catalog.filter(p => activeProductIds.includes(p.id))
-    : sortProductsByProfileMatch(MOCK_STORE_CONTEXT.catalog, userProfile);
+    ? storeContext.catalog.filter(p => activeProductIds.includes(p.id))
+    : sortProductsByProfileMatch(storeContext.catalog, userProfile);
 
   const handleRunAgent = async (queryText: string) => {
     if (!queryText.trim()) return;
@@ -116,7 +118,7 @@ export function useChatSessions({ userProfile, aiProvider, customApiKey, onNavig
         data = runLocalRuleEngine({
           userQuery: queryText,
           userProfile: userProfile,
-          storeContext: MOCK_STORE_CONTEXT,
+          storeContext: storeContext,
         });
       } else {
         const response = await fetch(endpoint, {
@@ -125,7 +127,7 @@ export function useChatSessions({ userProfile, aiProvider, customApiKey, onNavig
           body: JSON.stringify({
             userQuery: queryText,
             userProfile: userProfile,
-            storeContext: MOCK_STORE_CONTEXT,
+            storeContext: storeContext,
             provider: aiProvider,
             customApiKey: customApiKey || undefined,
           }),
@@ -137,7 +139,7 @@ export function useChatSessions({ userProfile, aiProvider, customApiKey, onNavig
           data = runLocalRuleEngine({
             userQuery: queryText,
             userProfile: userProfile,
-            storeContext: MOCK_STORE_CONTEXT,
+            storeContext: storeContext,
           });
         }
       }
@@ -155,7 +157,7 @@ export function useChatSessions({ userProfile, aiProvider, customApiKey, onNavig
       const fallback = runLocalRuleEngine({
         userQuery: queryText,
         userProfile: userProfile,
-        storeContext: MOCK_STORE_CONTEXT,
+        storeContext: storeContext,
       });
       const agentMsg: ChatMessage = {
         id: `msg-${Date.now()}-agent`,
