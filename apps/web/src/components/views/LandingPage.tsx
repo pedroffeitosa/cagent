@@ -39,6 +39,8 @@ import { AmbientBackground } from '../AmbientBackground';
 import { MOCK_USER_PROFILES, MOCK_STORE_PRODUCTS, MOCK_STORE_CONFIG } from '@cagent/shared';
 import { handleImageError } from '../../utils/imageFallback';
 
+const MotionButton = motion(Button);
+
 interface LandingPageProps {
   onEnter: () => void;
 }
@@ -222,6 +224,19 @@ const fadeInUp: Variants = {
 const revealStagger: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
+};
+
+// Entrada da coluna de texto do Hero: dispara no mount (é o primeiro
+// conteúdo visível), não no scroll — por isso usa animate direto, sem
+// whileInView.
+const heroStagger: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
+};
+
+const heroItem: Variants = {
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
 };
 
 function usePrefersReducedMotion() {
@@ -546,14 +561,18 @@ function HeroShowcase() {
         </div>
       </div>
 
-      {/* Floating Wallet Chip */}
-      <div className="absolute -bottom-5 -left-5 glass-panel rounded-2xl px-4 py-2.5 flex items-center gap-2 border border-primary/30 shadow-xl hidden sm:flex">
+      {/* Floating Wallet Chip: flutua de verdade — leve oscilação vertical contínua */}
+      <motion.div
+        animate={{ y: [0, -6, 0] }}
+        transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute -bottom-5 -left-5 glass-panel rounded-2xl px-4 py-2.5 items-center gap-2 border border-primary/30 shadow-xl hidden sm:flex"
+      >
         <Wallet className="w-4 h-4 text-primary" />
         <div className="leading-tight">
           <span className="block text-[9px] text-muted-foreground font-mono-tech">Saldo cashback</span>
           <span className="block text-xs font-bold text-foreground">R$ {(demoPersona.walletBalance || 0).toFixed(2).replace('.', ',')}</span>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -856,7 +875,7 @@ function FAQAccordion() {
               onClick={() => setOpenIndex(isOpen ? null : index)}
               aria-expanded={isOpen}
               aria-controls={panelId}
-              className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
+              className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-muted/40 transition-colors"
             >
               <span className="text-sm font-semibold text-foreground">{item.question}</span>
               <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }} className="shrink-0 text-muted-foreground">
@@ -1064,41 +1083,96 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           <section ref={heroRef} className="relative overflow-hidden max-w-6xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
             <CursorGlow containerRef={heroRef} />
 
-            <div className="relative z-10 flex flex-col gap-6">
-              <span className="inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-full bg-muted border border-primary/30 text-[11px] font-mono-tech text-primary">
-                <Sparkles className="w-3.5 h-3.5" />
+            <motion.div
+              initial="hidden"
+              animate="show"
+              variants={heroStagger}
+              className="relative z-10 flex flex-col gap-6"
+            >
+              <motion.span
+                variants={heroItem}
+                className="inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-full bg-muted border border-primary/30 text-[11px] font-mono-tech text-primary"
+              >
+                <motion.span
+                  animate={{ rotate: [0, 15, -10, 0] }}
+                  transition={{ duration: 3.5, repeat: Infinity, repeatDelay: 1.5, ease: 'easeInOut' }}
+                  className="inline-flex"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                </motion.span>
                 Hackathon Agents for Commerce · Deco 2026
-              </span>
-  
-              <h1 className="font-heading font-extrabold text-4xl sm:text-5xl leading-[1.1] tracking-tight text-foreground">
+              </motion.span>
+
+              <motion.h1
+                variants={heroItem}
+                className="font-heading font-extrabold text-4xl sm:text-5xl leading-[1.1] tracking-tight text-foreground"
+              >
                 Um canal de vendas <span className="text-primary">agêntico e personalizado</span>, pronto em minutos
-              </h1>
-  
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-lg">
+              </motion.h1>
+
+              <motion.p variants={heroItem} className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-lg">
                 O <strong className="text-foreground">$Agent</strong> é um canal turnkey que qualquer lojista instala em minutos: vitrine reordenada por IA, cupons, cashback e filtros personalizados para cada cliente — sem cadastro repetido, sem infraestrutura complexa.
-              </p>
-  
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Button onClick={onEnter} size="lg" className="gap-2 bg-primary hover:bg-primary text-primary-foreground font-bold">
+              </motion.p>
+
+              <motion.div variants={heroItem} className="flex flex-wrap items-center gap-3 pt-2">
+                <MotionButton
+                  onClick={onEnter}
+                  size="lg"
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+                  className="gap-2 bg-primary hover:bg-primary text-primary-foreground font-bold"
+                >
                   <span>Testar como funciona</span>
                   <ArrowRight className="w-4 h-4" />
-                </Button>
+                </MotionButton>
                 <a href="#como-funciona">
-                  <Button variant="secondary" size="lg" className="gap-2">
+                  <MotionButton
+                    variant="secondary"
+                    size="lg"
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+                    className="gap-2"
+                  >
                     <span>Ver como funciona</span>
-                  </Button>
+                  </MotionButton>
                 </a>
-              </div>
-  
-              <div className="flex flex-wrap items-center gap-6 pt-4 text-[11px] text-muted-foreground">
+              </motion.div>
+
+              <motion.div variants={heroItem} className="flex flex-wrap items-center gap-6 pt-4 text-[11px] text-muted-foreground">
                 <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-primary" /> Fork &amp; Connect ready</span>
                 <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-primary" /> Web + Mobile (Expo)</span>
                 <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-primary" /> BYOK multi-LLM</span>
-              </div>
-            </div>
-  
+              </motion.div>
+            </motion.div>
+
             {/* Hero Visual: vitrine animada ciclando pelas funcionalidades */}
-            <HeroShowcase />
+            <motion.div
+              initial={{ opacity: 0, y: 26, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
+            >
+              <HeroShowcase />
+            </motion.div>
+
+            {/* Convite sutil para rolar até a próxima seção */}
+            <motion.a
+              href="#recursos"
+              aria-label="Rolar para ver os recursos"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1, duration: 0.6 }}
+              className="hidden lg:flex absolute left-1/2 -translate-x-1/2 bottom-2 flex-col items-center gap-1 text-muted-foreground hover:text-foreground transition-colors z-10"
+            >
+              <span className="text-[10px] font-mono-tech uppercase tracking-wider">Ver mais</span>
+              <motion.span
+                animate={{ y: [0, 5, 0] }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </motion.span>
+            </motion.a>
           </section>
   
           {/* ------------------------------------------------------------- */}
@@ -1113,8 +1187,14 @@ export function LandingPage({ onEnter }: LandingPageProps) {
           >
             <div className="glass-panel rounded-3xl border border-border grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border/80">
               {IMPACT_STATS.map((stat) => (
-                <motion.div key={stat.label} variants={fadeInUp} className="p-6 flex items-center gap-4">
-                  <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center shrink-0 ${stat.color}`}>
+                <motion.div
+                  key={stat.label}
+                  variants={fadeInUp}
+                  whileHover={{ y: -4 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="group p-6 flex items-center gap-4"
+                >
+                  <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 ${stat.color}`}>
                     <stat.icon className="w-5 h-5" />
                   </div>
                   <div>
@@ -1138,14 +1218,24 @@ export function LandingPage({ onEnter }: LandingPageProps) {
             variants={revealStagger}
             className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 gap-6"
           >
-            <motion.div variants={fadeInUp} className="glass-card rounded-3xl p-7 border border-border">
+            <motion.div
+              variants={fadeInUp}
+              whileHover={{ y: -4 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="glass-card rounded-3xl p-7 border border-border"
+            >
               <span className="text-[11px] font-mono-tech text-red-400 uppercase tracking-wider">O problema</span>
               <h3 className="font-heading font-bold text-xl text-foreground mt-2">Personalização passiva e fragmentada</h3>
               <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
                 O cliente ajusta filtro de tamanho, cor e preço toda vez que entra em uma loja nova. As lojas não compartilham contexto entre si — o resultado é busca genérica, abandono de carrinho e conversão perdida.
               </p>
             </motion.div>
-            <motion.div variants={fadeInUp} className="glass-card rounded-3xl p-7 border border-primary/30 bg-primary/5">
+            <motion.div
+              variants={fadeInUp}
+              whileHover={{ y: -4 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="glass-card rounded-3xl p-7 border border-primary/30 bg-primary/5"
+            >
               <span className="text-[11px] font-mono-tech text-primary uppercase tracking-wider">A solução $Agent</span>
               <h3 className="font-heading font-bold text-xl text-foreground mt-2">Um canal contextual único, plug &amp; play</h3>
               <p className="text-sm text-foreground mt-3 leading-relaxed">
@@ -1175,11 +1265,12 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   key={feature.title}
                   variants={fadeInUp}
                   whileHover={{ y: -4 }}
-                  className={`glass-card rounded-3xl p-6 border border-border hover:border-primary/40 transition-colors ${
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className={`group glass-card rounded-3xl p-6 border border-border hover:border-primary/40 transition-colors ${
                     index === FEATURES.length - 1 ? 'sm:col-span-2 lg:col-span-1 lg:col-start-2' : ''
                   }`}
                 >
-                  <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center mb-4 ${feature.color}`}>
+                  <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${feature.color}`}>
                     <feature.icon className="w-5 h-5" />
                   </div>
                   <h4 className="font-heading font-bold text-base text-foreground">{feature.title}</h4>
@@ -1213,7 +1304,11 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center">
                 {[swordsProductA, swordsProductB].map((product, i) => (
                   <React.Fragment key={product.id}>
-                    <div className="glass-card rounded-2xl p-4 border border-border flex flex-col">
+                    <motion.div
+                      whileHover={{ y: -4 }}
+                      transition={{ duration: 0.25, ease: 'easeOut' }}
+                      className="glass-card rounded-2xl p-4 border border-border hover:border-purple-500/40 flex flex-col"
+                    >
                       <div className="aspect-[4/3] rounded-xl overflow-hidden bg-muted mb-3">
                         <img
                           src={product.imageUrl}
@@ -1226,12 +1321,16 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                       </div>
                       <h4 className="font-heading font-bold text-sm text-foreground leading-snug" title={product.name}>{product.name}</h4>
                       <p className="text-sm font-heading font-bold text-primary mt-1">R$ {product.price}</p>
-                    </div>
+                    </motion.div>
                     {i === 0 && (
                       <div className="flex md:flex-col items-center justify-center gap-2 shrink-0">
-                        <div className="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/40 flex items-center justify-center">
+                        <motion.div
+                          animate={{ rotate: [0, -12, 12, 0] }}
+                          transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 2, ease: 'easeInOut' }}
+                          className="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/40 flex items-center justify-center"
+                        >
                           <Swords className="w-4 h-4 text-purple-400" />
-                        </div>
+                        </motion.div>
                         <span className="font-heading font-extrabold text-xs text-purple-400 [.theme-light_&]:text-purple-700">VS</span>
                       </div>
                     )}
@@ -1277,11 +1376,24 @@ export function LandingPage({ onEnter }: LandingPageProps) {
   
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {STEPS.map((step, index) => (
-                <motion.div key={step.number} variants={fadeInUp} className="glass-card rounded-3xl p-6 border border-border relative">
+                <motion.div
+                  key={step.number}
+                  variants={fadeInUp}
+                  whileHover={{ y: -4 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="group glass-card rounded-3xl p-6 border border-border hover:border-primary/40 relative"
+                >
                   {index < STEPS.length - 1 && (
-                    <div className="hidden md:block absolute top-[2.875rem] left-full w-6 h-px bg-gradient-to-r from-border to-transparent z-10" />
+                    <motion.div
+                      initial={{ scaleX: 0 }}
+                      whileInView={{ scaleX: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: 0.3 + index * 0.15, ease: 'easeOut' }}
+                      style={{ transformOrigin: 'left' }}
+                      className="hidden md:block absolute top-[2.875rem] left-full w-6 h-px bg-gradient-to-r from-border to-transparent z-10"
+                    />
                   )}
-                  <div className="w-11 h-11 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center mb-4 text-primary">
+                  <div className="w-11 h-11 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center mb-4 text-primary transition-transform duration-300 group-hover:scale-110">
                     <step.icon className="w-5 h-5" />
                   </div>
                   <h4 className="font-heading font-bold text-base text-foreground">{step.title}</h4>
@@ -1289,17 +1401,24 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                 </motion.div>
               ))}
             </div>
-  
+
             <motion.div variants={fadeInUp} className="flex flex-col items-center gap-3 pt-10 text-center">
               <p className="text-xs text-muted-foreground max-w-sm">
                 Quer o passo a passo completo, a arquitetura e os endpoints da API? Confira a documentação.
               </p>
               <a href={DOCS_URL} target="_blank" rel="noopener noreferrer">
-                <Button variant="secondary" size="lg" className="gap-2">
+                <MotionButton
+                  variant="secondary"
+                  size="lg"
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+                  className="gap-2"
+                >
                   <FileText className="w-4 h-4 text-primary" />
                   <span>Ver Documentação</span>
                   <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-                </Button>
+                </MotionButton>
               </a>
             </motion.div>
           </motion.section>
@@ -1329,24 +1448,25 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   Mais que um canal de vendas: cada busca, filtro e compra aproxima você do seu cliente e vira dado de contexto — a base para, quando fizer sentido, escalar para um app mobile próprio e ainda mais robusto.
                 </p>
               </div>
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-3 text-sm text-foreground">
-                  <ShieldCheck className="w-5 h-5 text-primary shrink-0" />
-                  <span>Open-source, licença MIT, white-label</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-foreground">
-                  <Zap className="w-5 h-5 text-primary shrink-0" />
-                  <span>Deploy em 1 clique (Vercel + Serverless Functions)</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-foreground">
-                  <MessageSquare className="w-5 h-5 text-primary shrink-0" />
-                  <span>BYOK: Gemini, OpenAI ou Anthropic — sua escolha</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-foreground">
-                  <Smartphone className="w-5 h-5 text-primary shrink-0" />
-                  <span>Pronto para virar app nativo iOS &amp; Android — $SuaLoja</span>
-                </div>
-              </div>
+              <motion.div
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.4 }}
+                variants={revealStagger}
+                className="flex flex-col gap-3"
+              >
+                {[
+                  { icon: ShieldCheck, label: 'Open-source, licença MIT, white-label' },
+                  { icon: Zap, label: 'Deploy em 1 clique (Vercel + Serverless Functions)' },
+                  { icon: MessageSquare, label: 'BYOK: Gemini, OpenAI ou Anthropic — sua escolha' },
+                  { icon: Smartphone, label: 'Pronto para virar app nativo iOS & Android — $SuaLoja' },
+                ].map((item) => (
+                  <motion.div key={item.label} variants={staggerItem} whileHover={{ x: 4 }} className="group flex items-center gap-3 text-sm text-foreground">
+                    <item.icon className="w-5 h-5 text-primary shrink-0 transition-transform duration-300 group-hover:scale-110" />
+                    <span>{item.label}</span>
+                  </motion.div>
+                ))}
+              </motion.div>
             </div>
           </motion.section>
   
@@ -1389,10 +1509,17 @@ export function LandingPage({ onEnter }: LandingPageProps) {
             <p className="text-sm text-muted-foreground max-w-md">
               Navegue pela demo com o perfil de Pedro França e veja a vitrine, os cupons e o cashback se ajustarem em tempo real.
             </p>
-            <Button onClick={onEnter} size="lg" className="gap-2 bg-primary hover:bg-primary text-primary-foreground font-bold">
+            <MotionButton
+              onClick={onEnter}
+              size="lg"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+              className="gap-2 bg-primary hover:bg-primary text-primary-foreground font-bold"
+            >
               <span>Testar como funciona</span>
               <ArrowRight className="w-4 h-4" />
-            </Button>
+            </MotionButton>
           </motion.section>
           </main>
 
