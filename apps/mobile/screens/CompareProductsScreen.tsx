@@ -6,6 +6,7 @@ import { ThemeColors, useTheme } from '../theme';
 interface CompareProductsScreenProps {
   products: Product[];
   userProfile: UserProfile;
+  cashbackPercentage: number;
   onBackToCart: () => void;
   onSelectProductToBuy: (product: Product) => void;
 }
@@ -13,6 +14,7 @@ interface CompareProductsScreenProps {
 export function CompareProductsScreen({
   products,
   userProfile,
+  cashbackPercentage,
   onBackToCart,
   onSelectProductToBuy,
 }: CompareProductsScreenProps) {
@@ -80,7 +82,7 @@ export function CompareProductsScreen({
             <View style={styles.specRow}>
               <Text style={styles.specLabel}>Cashback Ganho:</Text>
               <Text style={styles.specValueGreen}>
-                + R$ {product.cashbackReward || Math.round(product.price * 0.05)}
+                + R$ {product.cashbackReward || Math.round(product.price * (cashbackPercentage / 100))}
               </Text>
             </View>
             <View style={styles.specRow}>

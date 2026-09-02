@@ -1,4 +1,16 @@
-import { AgentRequestPayload, AgentResponsePayload, Product, UserProfile } from './types';
+import { AgentRequestPayload, AgentResponsePayload, Coupon, Product, StoreConfig, UserProfile } from './types';
+
+/**
+ * Fonte única de resolução do cupom ativo: usada pelo chat/motor de regras
+ * (runLocalRuleEngine) e pelas telas web/mobile, para que o cupom exibido
+ * nunca divirja do cupom realmente aplicado no checkout.
+ */
+export function resolveActiveCoupon(config: StoreConfig | undefined, redeemedCouponCode?: string | null): Coupon | null {
+  return config?.activeCoupons.find((c) => c.code === redeemedCouponCode)
+    ?? config?.activeCoupons.find((c) => c.code === 'DECO10')
+    ?? config?.activeCoupons[0]
+    ?? null;
+}
 
 /**
  * Provider-agnostic prompt builder shared by every LLM adapter (Gemini, Anthropic, OpenAI...).
@@ -83,11 +95,10 @@ export function runLocalRuleEngine(payload: AgentRequestPayload): AgentResponseP
 
   const recommendedIds = matchingProducts.map((p) => p.id);
 
-  // Cupom padrão DECO10 quando a loja tem; senão cai no primeiro cupom ativo
-  // da própria loja — parceiros da rede (Nike, Centauro, Max Titanium) não
-  // necessariamente têm DECO10 no catálogo de cupons.
-  const appliedCoupon = storeContext.config?.activeCoupons?.find(c => c.code === 'DECO10')
-    ?? storeContext.config?.activeCoupons?.[0];
+  // Mesmo cupom resolvido pela UI (resolveActiveCoupon): resgatado pelo
+  // cliente > DECO10 padrão da loja > primeiro cupom ativo dela — evita que
+  // o chat anuncie um cupom diferente do que o checkout de fato aplica.
+  const appliedCoupon = resolveActiveCoupon(storeContext.config, payload.redeemedCouponCode) ?? undefined;
 
   // Calculate estimated cashback (5%)
   const topPrice = matchingProducts[0]?.price || 300;

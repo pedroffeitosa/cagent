@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MOCK_STORE_CONTEXT, MOCK_ALL_STORES, Product, AIProviderType, sortProductsByProfileMatch } from '@cagent/shared';
+import { MOCK_STORE_CONTEXT, MOCK_ALL_STORES, Product, AIProviderType, sortProductsByProfileMatch, resolveActiveCoupon } from '@cagent/shared';
 import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
 import { AmbientBackground } from './components/AmbientBackground';
 import { DemoScriptToolbar } from './components/DemoScriptToolbar';
@@ -50,10 +50,7 @@ export default function App() {
   // seus próprios cupons, então o resgate reseta ao trocar de loja e cai no
   // cupom padrão dela (DECO10 se existir, senão o primeiro da lista).
   const [redeemedCouponCode, setRedeemedCouponCode] = useState<string | null>(null);
-  const activeCoupon = activeStoreContext.config.activeCoupons.find(c => c.code === redeemedCouponCode)
-    ?? activeStoreContext.config.activeCoupons.find(c => c.code === 'DECO10')
-    ?? activeStoreContext.config.activeCoupons[0]
-    ?? null;
+  const activeCoupon = resolveActiveCoupon(activeStoreContext.config, redeemedCouponCode);
 
   // Filtro temático ativo (Central de Filtros Personalizados): persiste entre
   // telas e reordena de verdade a vitrine da Home por cor, em vez de só
@@ -87,7 +84,7 @@ export default function App() {
     activeProductIds,
     handleRunAgent,
     handleNewChat,
-  } = useChatSessions({ userProfile, storeContext: activeStoreContext, aiProvider, customApiKey, onNavigate: setActiveMainView });
+  } = useChatSessions({ userProfile, storeContext: activeStoreContext, aiProvider, customApiKey, redeemedCouponCode, onNavigate: setActiveMainView });
 
   // Sidebar States
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -235,6 +232,7 @@ export default function App() {
           <CompareProductsView
             products={cartItems.map(i => i.product)}
             userProfile={userProfile}
+            cashbackPercentage={activeStoreContext.config.cashbackPercentage}
             onBackToCart={() => {
               setActiveMainView('chat');
               setIsCartDrawerOpen(true);
@@ -272,6 +270,7 @@ export default function App() {
         userProfile={userProfile}
         queryTitle={activeSession?.title || 'Busca Contextual'}
         recommendedProducts={displayedProducts}
+        activeCoupon={activeCoupon}
       />
 
       {/* Cart Drawer Modal */}

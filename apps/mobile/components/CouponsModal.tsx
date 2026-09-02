@@ -16,6 +16,7 @@ export function CouponsModal({ isOpen, onClose, coupons, activeCouponCode, onRed
   const styles = getStyles(colors);
   const [couponCode, setCouponCode] = useState('');
   const [redeemed, setRedeemed] = useState(false);
+  const [invalid, setInvalid] = useState(false);
 
   const displayCoupons = coupons.map((c) => ({
     code: c.code,
@@ -31,11 +32,14 @@ export function CouponsModal({ isOpen, onClose, coupons, activeCouponCode, onRed
     if (match) {
       onRedeemCoupon(match.code);
       setRedeemed(true);
+      setTimeout(() => {
+        setRedeemed(false);
+        setCouponCode('');
+      }, 2000);
+    } else {
+      setInvalid(true);
+      setTimeout(() => setInvalid(false), 2000);
     }
-    setTimeout(() => {
-      setRedeemed(false);
-      setCouponCode('');
-    }, 2000);
   };
 
   return (
@@ -51,17 +55,21 @@ export function CouponsModal({ isOpen, onClose, coupons, activeCouponCode, onRed
 
           <View style={styles.redeemRow}>
             <TextInput
-              style={styles.redeemInput}
+              style={[styles.redeemInput, invalid && styles.redeemInputError]}
               placeholder="Digite o código do cupom..."
               placeholderTextColor={colors.faint}
               value={couponCode}
-              onChangeText={(text) => setCouponCode(text.toUpperCase())}
+              onChangeText={(text) => {
+                setCouponCode(text.toUpperCase());
+                setInvalid(false);
+              }}
               autoCapitalize="characters"
             />
             <TouchableOpacity style={styles.redeemButton} onPress={handleRedeem}>
               <Text style={styles.redeemButtonText}>{redeemed ? '✓' : 'Resgatar'}</Text>
             </TouchableOpacity>
           </View>
+          {invalid && <Text style={styles.errorText}>Cupom inválido. Confira o código e tente de novo.</Text>}
 
           <View style={styles.couponsList}>
             {displayCoupons.map((c) => (
@@ -163,6 +171,14 @@ function getStyles(c: ThemeColors) {
       color: '#1c1300',
       fontWeight: '800',
       fontSize: 12,
+    },
+    redeemInputError: {
+      borderColor: '#f87171',
+    },
+    errorText: {
+      color: '#f87171',
+      fontSize: 11,
+      marginTop: -6,
     },
     couponsList: {
       gap: 10,

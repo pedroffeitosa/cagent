@@ -82,6 +82,7 @@ export interface AgentRequestPayload {
   storeContext: StoreContext;
   provider?: AIProviderType;
   customApiKey?: string;
+  redeemedCouponCode?: string | null;
 }
 
 export interface AgentResponsePayload {

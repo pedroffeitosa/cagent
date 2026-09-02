@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, Linking, Share, StyleSheet } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { UserProfile, Product } from '@cagent/shared';
+import { UserProfile, Product, Coupon } from '@cagent/shared';
 import { ThemeColors, useTheme } from '../theme';
 
 interface ShareModalProps {
@@ -10,15 +10,19 @@ interface ShareModalProps {
   userProfile: UserProfile;
   queryTitle: string;
   recommendedProducts: Product[];
+  activeCoupon: Coupon | null;
 }
 
-export function ShareModal({ isOpen, onClose, userProfile, queryTitle }: ShareModalProps) {
+export function ShareModal({ isOpen, onClose, userProfile, queryTitle, activeCoupon }: ShareModalProps) {
   const { colors } = useTheme();
   const styles = getStyles(colors);
   const [copied, setCopied] = useState(false);
 
+  const couponLabel = activeCoupon
+    ? `${activeCoupon.code} (${activeCoupon.discountType === 'percentage' ? `${activeCoupon.discountValue}% OFF` : `R$ ${activeCoupon.discountValue.toFixed(2).replace('.', ',')} OFF`})`
+    : null;
   const shareUrl = `https://cagent.deco.site/share?user=${encodeURIComponent(userProfile.name)}&q=${encodeURIComponent(queryTitle)}`;
-  const whatsappMessage = `*Recomendação do $Agent Commerce* 🛍️✨\n\nConfira as sugestões de *${queryTitle}* recomendadas para *${userProfile.name}* no canal agêntico!\n\n🎟️ Cupom Ativo: *DECO10* (10% OFF)\n🔗 Acesse aqui: ${shareUrl}`;
+  const whatsappMessage = `*Recomendação do $Agent Commerce* 🛍️✨\n\nConfira as sugestões de *${queryTitle}* recomendadas para *${userProfile.name}* no canal agêntico!\n\n${couponLabel ? `🎟️ Cupom Ativo: *${couponLabel}*\n` : ''}🔗 Acesse aqui: ${shareUrl}`;
 
   const handleCopyLink = async () => {
     await Clipboard.setStringAsync(shareUrl);
@@ -48,9 +52,11 @@ export function ShareModal({ isOpen, onClose, userProfile, queryTitle }: ShareMo
           <View style={styles.previewCard}>
             <View style={styles.previewHeaderRow}>
               <Text style={styles.previewTitle}>✨ $Agent Context Card</Text>
-              <View style={styles.previewBadge}>
-                <Text style={styles.previewBadgeText}>DECO10 • 10% OFF</Text>
-              </View>
+              {couponLabel && (
+                <View style={styles.previewBadge}>
+                  <Text style={styles.previewBadgeText}>{couponLabel}</Text>
+                </View>
+              )}
             </View>
             <Text style={styles.previewText}>
               Recomendações de "{queryTitle}" criadas para {userProfile.name}.

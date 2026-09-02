@@ -7,6 +7,7 @@ import { handleImageError } from '../../utils/imageFallback';
 interface CompareProductsViewProps {
   products: Product[];
   userProfile: UserProfile;
+  cashbackPercentage: number;
   onBackToCart: () => void;
   onSelectProductToBuy: (product: Product) => void;
 }
@@ -14,6 +15,7 @@ interface CompareProductsViewProps {
 export function CompareProductsView({
   products,
   userProfile,
+  cashbackPercentage,
   onBackToCart,
   onSelectProductToBuy,
 }: CompareProductsViewProps) {
@@ -111,7 +113,7 @@ export function CompareProductsView({
 
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Cashback Ganho:</span>
-                <span className="font-mono-tech font-bold text-primary">+ R$ {product.cashbackReward || Math.round(product.price * 0.05)}</span>
+                <span className="font-mono-tech font-bold text-primary">+ R$ {product.cashbackReward || Math.round(product.price * (cashbackPercentage / 100))}</span>
               </div>
 
               <div className="flex justify-between items-center">

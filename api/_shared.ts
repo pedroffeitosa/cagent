@@ -4,6 +4,7 @@ import {
   AgentResponsePayload,
   AIProviderType,
   buildAgentPrompt,
+  resolveActiveCoupon,
   runLocalRuleEngine,
 } from '@cagent/shared';
 
@@ -34,16 +35,14 @@ function buildResponsePayload(
   const topRecommended = payload.storeContext.catalog.find((p) => p.id === recommendedIds[0]);
   const topPrice = topRecommended?.price ?? payload.storeContext.catalog[0]?.price ?? 300;
 
-  const defaultCoupon =
-    payload.storeContext.config?.activeCoupons?.find((c) => c.code === 'DECO10') ??
-    payload.storeContext.config?.activeCoupons?.[0];
+  const activeCoupon = resolveActiveCoupon(payload.storeContext.config, payload.redeemedCouponCode) ?? undefined;
   const estCashback = Math.round((topPrice * ((payload.storeContext.config?.cashbackPercentage || 5) / 100)) * 100) / 100;
 
   return {
     naturalLanguageReply: parsed.naturalLanguageReply || 'Aqui estão as melhores recomendações com descontos e cashback da loja!',
     recommendedProductIds: recommendedIds,
     activeFilters: parsed.activeFilters || {},
-    appliedCoupon: defaultCoupon,
+    appliedCoupon: activeCoupon,
     estimatedCashback: estCashback,
     reasoningSummary: parsed.reasoningSummary || fallbackReasoning,
     providerUsed,

@@ -20,7 +20,8 @@ import {
   AgentResponsePayload,
   runLocalRuleEngine,
   sortProductsByProfileMatch,
-  computeProductMatchDetails
+  computeProductMatchDetails,
+  resolveActiveCoupon
 } from '@cagent/shared';
 import { CartDrawerModal, CartItem } from './components/CartDrawerModal';
 import { WalletModal } from './components/WalletModal';
@@ -57,10 +58,7 @@ function AppContent() {
   // Cupom resgatado pelo cliente na Central de Cupons: passa a definir de
   // verdade o desconto aplicado no checkout, em vez do DECO10/10% fixo.
   const [redeemedCouponCode, setRedeemedCouponCode] = useState<string | null>(null);
-  const activeCoupon: Coupon | null = MOCK_STORE_CONTEXT.config.activeCoupons.find(c => c.code === redeemedCouponCode)
-    ?? MOCK_STORE_CONTEXT.config.activeCoupons.find(c => c.code === 'DECO10')
-    ?? MOCK_STORE_CONTEXT.config.activeCoupons[0]
-    ?? null;
+  const activeCoupon: Coupon | null = resolveActiveCoupon(MOCK_STORE_CONTEXT.config, redeemedCouponCode);
   const cashbackPercentage = MOCK_STORE_CONTEXT.config.cashbackPercentage;
 
   const cartQuantityTotal = cartItems.reduce((acc, i) => acc + i.quantity, 0);
@@ -133,6 +131,7 @@ function AppContent() {
       userQuery: query,
       userProfile: userProfile,
       storeContext: MOCK_STORE_CONTEXT,
+      redeemedCouponCode,
     });
     setAgentResponse(result);
   };
@@ -164,6 +163,7 @@ function AppContent() {
         <CompareProductsScreen
           products={cartItems.map(i => i.product)}
           userProfile={userProfile}
+          cashbackPercentage={cashbackPercentage}
           onBackToCart={() => {
             setScreen('home');
             setIsCartDrawerOpen(true);
@@ -411,6 +411,7 @@ function AppContent() {
         userProfile={userProfile}
         queryTitle={searchQuery || 'Busca Contextual'}
         recommendedProducts={displayedProducts}
+        activeCoupon={activeCoupon}
       />
 
     </SafeAreaView>

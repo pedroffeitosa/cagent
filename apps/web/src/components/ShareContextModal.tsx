@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserProfile, Product } from '@cagent/shared';
+import { UserProfile, Product, Coupon } from '@cagent/shared';
 import { Share2, Copy, Check, MessageCircle, QrCode, X, Sparkles, Gift } from 'lucide-react';
 import { Button } from './ui/button';
 
@@ -9,6 +9,7 @@ interface ShareContextModalProps {
   userProfile: UserProfile;
   queryTitle: string;
   recommendedProducts: Product[];
+  activeCoupon: Coupon | null;
 }
 
 export function ShareContextModal({
@@ -17,13 +18,17 @@ export function ShareContextModal({
   userProfile,
   queryTitle,
   recommendedProducts,
+  activeCoupon,
 }: ShareContextModalProps) {
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
 
+  const couponLabel = activeCoupon
+    ? `${activeCoupon.code} (${activeCoupon.discountType === 'percentage' ? `${activeCoupon.discountValue}% OFF` : `R$ ${activeCoupon.discountValue.toFixed(2).replace('.', ',')} OFF`})`
+    : null;
   const shareUrl = `https://cagent.deco.site/share?user=${encodeURIComponent(userProfile.name)}&q=${encodeURIComponent(queryTitle)}`;
-  const whatsappMessage = `*Recomendação do $Agent Commerce* 🛍️✨\n\nConfira as sugestões de *${queryTitle}* recomendadas para *${userProfile.name}* no canal agêntico!\n\n🎟️ Cupom Ativo: *DECO10* (10% OFF)\n🔗 Acesse aqui: ${shareUrl}`;
+  const whatsappMessage = `*Recomendação do $Agent Commerce* 🛍️✨\n\nConfira as sugestões de *${queryTitle}* recomendadas para *${userProfile.name}* no canal agêntico!\n\n${couponLabel ? `🎟️ Cupom Ativo: *${couponLabel}*\n` : ''}🔗 Acesse aqui: ${shareUrl}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -57,9 +62,11 @@ export function ShareContextModal({
               <Sparkles className="w-4 h-4 text-primary" />
               <span className="font-bold text-foreground text-xs">$Agent Context Card</span>
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary font-mono-tech">
-              DECO10 • 10% OFF
-            </span>
+            {couponLabel && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary font-mono-tech">
+                {couponLabel}
+              </span>
+            )}
           </div>
 
           <p className="text-foreground text-xs leading-relaxed">

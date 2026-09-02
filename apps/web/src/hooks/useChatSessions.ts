@@ -57,10 +57,11 @@ interface UseChatSessionsArgs {
   storeContext: StoreContext;
   aiProvider: AIProviderType;
   customApiKey: string;
+  redeemedCouponCode: string | null;
   onNavigate: (view: MainViewType) => void;
 }
 
-export function useChatSessions({ userProfile, storeContext, aiProvider, customApiKey, onNavigate }: UseChatSessionsArgs) {
+export function useChatSessions({ userProfile, storeContext, aiProvider, customApiKey, redeemedCouponCode, onNavigate }: UseChatSessionsArgs) {
   const [chatSessions, setChatSessions] = useState<ChatSession[]>(INITIAL_SESSIONS);
   const [activeChatId, setActiveChatId] = useState<string>('chat-1');
   const [currentQuery, setCurrentQuery] = useState('');
@@ -119,6 +120,7 @@ export function useChatSessions({ userProfile, storeContext, aiProvider, customA
           userQuery: queryText,
           userProfile: userProfile,
           storeContext: storeContext,
+          redeemedCouponCode,
         });
       } else {
         const response = await fetch(endpoint, {
@@ -130,6 +132,7 @@ export function useChatSessions({ userProfile, storeContext, aiProvider, customA
             storeContext: storeContext,
             provider: aiProvider,
             customApiKey: customApiKey || undefined,
+            redeemedCouponCode,
           }),
         });
 
@@ -140,6 +143,7 @@ export function useChatSessions({ userProfile, storeContext, aiProvider, customA
             userQuery: queryText,
             userProfile: userProfile,
             storeContext: storeContext,
+            redeemedCouponCode,
           });
         }
       }
@@ -158,6 +162,7 @@ export function useChatSessions({ userProfile, storeContext, aiProvider, customA
         userQuery: queryText,
         userProfile: userProfile,
         storeContext: storeContext,
+        redeemedCouponCode,
       });
       const agentMsg: ChatMessage = {
         id: `msg-${Date.now()}-agent`,
