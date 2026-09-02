@@ -1,36 +1,37 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { Coupon } from '@cagent/shared';
 import { ThemeColors, useTheme } from '../theme';
 
 interface CouponsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  coupons: Coupon[];
+  activeCouponCode: string | null;
+  onRedeemCoupon: (code: string) => void;
 }
 
-const COUPONS = [
-  {
-    code: 'DECO10',
-    discount: '10% OFF',
-    description: 'Desconto exclusivo no canal agêntico $Agent em todas as compras.',
-    isApplied: true,
-  },
-  {
-    code: 'AGENT50',
-    discount: 'R$ 50,00 OFF',
-    description: 'Bônus especial no primeiro pedido utilizando o assistente $Agent.',
-    isApplied: false,
-  },
-];
-
-export function CouponsModal({ isOpen, onClose }: CouponsModalProps) {
+export function CouponsModal({ isOpen, onClose, coupons, activeCouponCode, onRedeemCoupon }: CouponsModalProps) {
   const { colors } = useTheme();
   const styles = getStyles(colors);
   const [couponCode, setCouponCode] = useState('');
   const [redeemed, setRedeemed] = useState(false);
 
+  const displayCoupons = coupons.map((c) => ({
+    code: c.code,
+    discount: c.discountType === 'percentage' ? `${c.discountValue}% OFF` : `R$ ${c.discountValue.toFixed(2).replace('.', ',')} OFF`,
+    description: c.description,
+    isApplied: c.code === activeCouponCode,
+  }));
+
   const handleRedeem = () => {
-    if (!couponCode.trim()) return;
-    setRedeemed(true);
+    const trimmed = couponCode.trim().toUpperCase();
+    if (!trimmed) return;
+    const match = coupons.find((c) => c.code === trimmed);
+    if (match) {
+      onRedeemCoupon(match.code);
+      setRedeemed(true);
+    }
     setTimeout(() => {
       setRedeemed(false);
       setCouponCode('');
@@ -63,8 +64,13 @@ export function CouponsModal({ isOpen, onClose }: CouponsModalProps) {
           </View>
 
           <View style={styles.couponsList}>
-            {COUPONS.map((c) => (
-              <View key={c.code} style={styles.couponCard}>
+            {displayCoupons.map((c) => (
+              <TouchableOpacity
+                key={c.code}
+                style={styles.couponCard}
+                disabled={c.isApplied}
+                onPress={() => onRedeemCoupon(c.code)}
+              >
                 <View style={styles.couponInfo}>
                   <View style={styles.couponHeaderRow}>
                     <Text style={styles.couponCode}>{c.code}</Text>
@@ -79,7 +85,7 @@ export function CouponsModal({ isOpen, onClose }: CouponsModalProps) {
                     <Text style={styles.appliedBadgeText}>Ativo</Text>
                   </View>
                 )}
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
 

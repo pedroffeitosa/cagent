@@ -1,32 +1,35 @@
 import React, { useState } from 'react';
 import { Ticket, Gift, Check, ArrowLeft, Sparkles, Copy } from 'lucide-react';
-import { MOCK_STORE_CONFIG } from '@cagent/shared';
+import { Coupon } from '@cagent/shared';
 import { Button } from '../ui/button';
 
 interface CouponsViewProps {
+  coupons: Coupon[];
+  activeCouponCode: string | null;
+  onRedeemCoupon: (code: string) => void;
   onBackToChat: () => void;
 }
 
-// Metadados de exibição por código — os dados de desconto vêm sempre do mock (fonte única).
-const COUPON_META: Record<string, { badge: string; isApplied: boolean; category: string }> = {
-  DECO10: { badge: 'Ativo Automaticamente', isApplied: true, category: 'Geral' },
-  AGENT50: { badge: 'Primeira Compra', isApplied: false, category: 'Boas-vindas' },
-  VIPFLUMESH: { badge: 'Exclusivo VIP', isApplied: false, category: 'Temático' },
-  CORRIDA20: { badge: 'Performance', isApplied: false, category: 'Corrida & Maratona' },
+// Metadados de exibição só de rótulo (categoria) — sem impacto no desconto real,
+// que vem sempre do cupom da loja ativa. Cupons sem entrada aqui caem em "Oferta Especial".
+const COUPON_CATEGORY: Record<string, string> = {
+  DECO10: 'Geral',
+  AGENT50: 'Boas-vindas',
+  VIPFLUMESH: 'Temático',
+  CORRIDA20: 'Corrida & Maratona',
 };
 
-export function CouponsView({ onBackToChat }: CouponsViewProps) {
+export function CouponsView({ coupons: storeCoupons, activeCouponCode, onRedeemCoupon, onBackToChat }: CouponsViewProps) {
   const [couponCode, setCouponCode] = useState('');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [redeemFeedback, setRedeemFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  const coupons = MOCK_STORE_CONFIG.activeCoupons.map((c) => ({
+  const coupons = storeCoupons.map((c) => ({
     code: c.code,
     discount: c.discountType === 'percentage' ? `${c.discountValue}% OFF` : `R$ ${c.discountValue.toFixed(2).replace('.', ',')} OFF`,
     description: c.description,
-    badge: COUPON_META[c.code]?.badge ?? 'Oferta Especial',
-    isApplied: COUPON_META[c.code]?.isApplied ?? false,
-    category: COUPON_META[c.code]?.category ?? 'Geral',
+    isApplied: c.code === activeCouponCode,
+    category: COUPON_CATEGORY[c.code] ?? 'Oferta Especial',
   }));
 
   const handleCopy = (code: string) => {
@@ -40,12 +43,15 @@ export function CouponsView({ onBackToChat }: CouponsViewProps) {
     if (!trimmed) return;
 
     const match = coupons.find((c) => c.code === trimmed);
+    if (match) {
+      onRedeemCoupon(match.code);
+      setCouponCode('');
+    }
     setRedeemFeedback(
       match
         ? { type: 'success', message: `Cupom ${match.code} (${match.discount}) ativado no seu perfil!` }
         : { type: 'error', message: `Código "${trimmed}" não encontrado. Confira os cupons ativos abaixo.` }
     );
-    if (match) setCouponCode('');
     setTimeout(() => setRedeemFeedback(null), 3000);
   };
 
@@ -112,7 +118,9 @@ export function CouponsView({ onBackToChat }: CouponsViewProps) {
         {coupons.map((c) => (
           <div
             key={c.code}
-            className="glass-card rounded-3xl p-6 border border-border flex flex-col justify-between gap-4 group hover:border-border-strong transition"
+            className={`glass-card rounded-3xl p-6 border flex flex-col justify-between gap-4 group transition ${
+              c.isApplied ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-border-strong'
+            }`}
           >
             <div className="flex items-start justify-between">
               <div>
@@ -127,10 +135,20 @@ export function CouponsView({ onBackToChat }: CouponsViewProps) {
 
             <p className="text-xs text-foreground leading-relaxed">{c.description}</p>
 
-            <div className="pt-4 border-t border-border/80 flex items-center justify-between">
-              <span className="text-[10px] px-2.5 py-1 rounded-full bg-background text-muted-foreground font-mono-tech border border-border">
-                {c.badge}
-              </span>
+            <div className="pt-4 border-t border-border/80 flex items-center justify-between gap-2">
+              {c.isApplied ? (
+                <span className="text-[10px] px-2.5 py-1 rounded-full bg-primary/10 text-primary font-mono-tech border border-primary/30 flex items-center gap-1">
+                  <Check className="w-3 h-3" />
+                  Aplicado no Checkout
+                </span>
+              ) : (
+                <button
+                  onClick={() => onRedeemCoupon(c.code)}
+                  className="text-[10px] px-2.5 py-1 rounded-full bg-background text-muted-foreground hover:text-primary hover:border-primary/40 font-mono-tech border border-border transition"
+                >
+                  Aplicar no Checkout
+                </button>
+              )}
 
               <button
                 onClick={() => handleCopy(c.code)}

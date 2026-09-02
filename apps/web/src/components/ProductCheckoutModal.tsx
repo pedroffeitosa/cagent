@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Product, UserProfile, computeProductMatchDetails } from '@cagent/shared';
+import { Coupon, Product, UserProfile, computeProductMatchDetails } from '@cagent/shared';
 import {
   X,
   Check,
@@ -21,6 +21,8 @@ interface ProductCheckoutModalProps {
   product: Product | null;
   userProfile: UserProfile;
   onCheckoutComplete: (payload: { productName: string; amount: number; cashbackEarned: number }) => void;
+  activeCoupon: Coupon | null;
+  cashbackPercentage: number;
 }
 
 export function ProductCheckoutModal({
@@ -29,15 +31,21 @@ export function ProductCheckoutModal({
   product,
   userProfile,
   onCheckoutComplete,
+  activeCoupon,
+  cashbackPercentage,
 }: ProductCheckoutModalProps) {
   const [isPurchased, setIsPurchased] = useState(false);
 
   if (!isOpen || !product) return null;
 
   const originalPrice = product.originalPrice || Math.round(product.price * 1.25);
-  const discountAmount = Math.round(product.price * 0.1);
+  const discountAmount = !activeCoupon
+    ? 0
+    : activeCoupon.discountType === 'percentage'
+      ? Math.round(product.price * (activeCoupon.discountValue / 100))
+      : Math.min(activeCoupon.discountValue, product.price);
   const finalPrice = product.price - discountAmount;
-  const cashbackBonus = product.cashbackReward || Math.round(finalPrice * 0.05);
+  const cashbackBonus = product.cashbackReward || Math.round(finalPrice * (cashbackPercentage / 100));
   const match = computeProductMatchDetails(product, userProfile);
 
   const handleCheckout = () => {
@@ -171,13 +179,15 @@ export function ProductCheckoutModal({
                   <span className="line-through font-mono-tech">R$ {originalPrice}</span>
                 </div>
 
-                <div className="flex items-center justify-between text-amber-400 font-semibold">
-                  <span className="flex items-center gap-1">
-                    <Gift className="w-3.5 h-3.5" />
-                    Cupom DECO10 (10% OFF):
-                  </span>
-                  <span className="font-mono-tech">- R$ {discountAmount}</span>
-                </div>
+                {activeCoupon && (
+                  <div className="flex items-center justify-between text-amber-400 font-semibold">
+                    <span className="flex items-center gap-1">
+                      <Gift className="w-3.5 h-3.5" />
+                      Cupom {activeCoupon.code} ({activeCoupon.discountType === 'percentage' ? `${activeCoupon.discountValue}% OFF` : `R$ ${activeCoupon.discountValue} OFF`}):
+                    </span>
+                    <span className="font-mono-tech">- R$ {discountAmount}</span>
+                  </div>
+                )}
 
                 <div className="pt-2 border-t border-border flex items-center justify-between text-foreground">
                   <span className="font-bold text-sm">Preço Final Agêntico:</span>

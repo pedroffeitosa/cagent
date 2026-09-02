@@ -16,6 +16,7 @@ import {
   MOCK_STORE_CONTEXT,
   UserProfile,
   Product,
+  Coupon,
   AgentResponsePayload,
   runLocalRuleEngine,
   sortProductsByProfileMatch,
@@ -52,6 +53,15 @@ function AppContent() {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isCouponsModalOpen, setIsCouponsModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  // Cupom resgatado pelo cliente na Central de Cupons: passa a definir de
+  // verdade o desconto aplicado no checkout, em vez do DECO10/10% fixo.
+  const [redeemedCouponCode, setRedeemedCouponCode] = useState<string | null>(null);
+  const activeCoupon: Coupon | null = MOCK_STORE_CONTEXT.config.activeCoupons.find(c => c.code === redeemedCouponCode)
+    ?? MOCK_STORE_CONTEXT.config.activeCoupons.find(c => c.code === 'DECO10')
+    ?? MOCK_STORE_CONTEXT.config.activeCoupons[0]
+    ?? null;
+  const cashbackPercentage = MOCK_STORE_CONTEXT.config.cashbackPercentage;
 
   const cartQuantityTotal = cartItems.reduce((acc, i) => acc + i.quantity, 0);
 
@@ -129,9 +139,13 @@ function AppContent() {
 
   const handleCheckout = () => {
     if (selectedProduct) {
-      const discountAmount = Math.round(selectedProduct.price * 0.1);
+      const discountAmount = !activeCoupon
+        ? 0
+        : activeCoupon.discountType === 'percentage'
+          ? Math.round(selectedProduct.price * (activeCoupon.discountValue / 100))
+          : Math.min(activeCoupon.discountValue, selectedProduct.price);
       const finalPrice = selectedProduct.price - discountAmount;
-      const cashbackBonus = selectedProduct.cashbackReward || Math.round(finalPrice * 0.05);
+      const cashbackBonus = selectedProduct.cashbackReward || Math.round(finalPrice * (cashbackPercentage / 100));
       handlePurchaseComplete({ productName: selectedProduct.name, amount: finalPrice, cashbackEarned: cashbackBonus });
     }
     setIsPurchased(true);
@@ -189,7 +203,7 @@ function AppContent() {
 
             {/* Coupon Chip */}
             <TouchableOpacity style={styles.couponChip} onPress={() => setIsCouponsModalOpen(true)}>
-              <Text style={styles.couponChipText}>🎟️ DECO10</Text>
+              <Text style={styles.couponChipText}>🎟️ {activeCoupon?.code ?? 'Cupons'}</Text>
             </TouchableOpacity>
 
             {/* Cart Chip */}
@@ -346,7 +360,11 @@ function AppContent() {
                         ? `R$ ${selectedProduct.price} dentro do teto R$ ${userProfile.maxBudget || '450'}`
                         : `R$ ${selectedProduct.price} acima do teto R$ ${userProfile.maxBudget}`}
                     </Text>
-                    <Text style={styles.diagnosticText}>• Cupom DECO10 (-10% OFF) aplicado</Text>
+                    {activeCoupon && (
+                      <Text style={styles.diagnosticText}>
+                        • Cupom {activeCoupon.code} (-{activeCoupon.discountType === 'percentage' ? `${activeCoupon.discountValue}%` : `R$ ${activeCoupon.discountValue}`} OFF) aplicado
+                      </Text>
+                    )}
                   </View>
 
                   <TouchableOpacity style={styles.confirmCheckoutButton} onPress={handleCheckout}>
@@ -368,6 +386,8 @@ function AppContent() {
         userProfile={userProfile}
         onOpenComparePage={() => setScreen('compare')}
         onCheckoutComplete={handleCartCheckoutComplete}
+        activeCoupon={activeCoupon}
+        cashbackPercentage={cashbackPercentage}
       />
 
       <WalletModal
@@ -380,6 +400,9 @@ function AppContent() {
       <CouponsModal
         isOpen={isCouponsModalOpen}
         onClose={() => setIsCouponsModalOpen(false)}
+        coupons={MOCK_STORE_CONTEXT.config.activeCoupons}
+        activeCouponCode={activeCoupon?.code ?? null}
+        onRedeemCoupon={setRedeemedCouponCode}
       />
 
       <ShareModal

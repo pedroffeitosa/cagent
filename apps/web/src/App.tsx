@@ -21,7 +21,7 @@ import { useUserProfile } from './hooks/useUserProfile';
 import { useCart } from './hooks/useCart';
 import { useChatSessions } from './hooks/useChatSessions';
 import { useDemoTour } from './hooks/useDemoTour';
-import { MainViewType } from './types/chat';
+import { MainViewType, ThemeFilter } from './types/chat';
 
 export default function App() {
   // Landing Page Gate: shown before the client enters the storefront demo
@@ -45,6 +45,20 @@ export default function App() {
   // troca de verdade o catálogo, cashback% e cupons usados em toda a app.
   const [activeStoreId, setActiveStoreId] = useState(MOCK_STORE_CONTEXT.storeId);
   const activeStoreContext = MOCK_ALL_STORES.find(s => s.storeId === activeStoreId) ?? MOCK_STORE_CONTEXT;
+
+  // Cupom resgatado pelo cliente na Central de Cupons: cada loja parceira tem
+  // seus próprios cupons, então o resgate reseta ao trocar de loja e cai no
+  // cupom padrão dela (DECO10 se existir, senão o primeiro da lista).
+  const [redeemedCouponCode, setRedeemedCouponCode] = useState<string | null>(null);
+  const activeCoupon = activeStoreContext.config.activeCoupons.find(c => c.code === redeemedCouponCode)
+    ?? activeStoreContext.config.activeCoupons.find(c => c.code === 'DECO10')
+    ?? activeStoreContext.config.activeCoupons[0]
+    ?? null;
+
+  // Filtro temático ativo (Central de Filtros Personalizados): persiste entre
+  // telas e reordena de verdade a vitrine da Home por cor, em vez de só
+  // disparar uma mensagem de chat avulsa que o motor de busca ignorava.
+  const [activeThemeFilter, setActiveThemeFilter] = useState<ThemeFilter | null>(null);
 
   // Collapsible Past Chats Toggle
   const [showPastChats, setShowPastChats] = useState(false);
@@ -166,7 +180,9 @@ export default function App() {
         {activeMainView === 'home' && (
           <HomeStorefrontView
             userProfile={userProfile}
-            products={sortProductsByProfileMatch(activeStoreContext.catalog, userProfile)}
+            products={sortProductsByProfileMatch(activeStoreContext.catalog, userProfile, activeThemeFilter?.colors)}
+            activeThemeFilter={activeThemeFilter}
+            cashbackPercentage={activeStoreContext.config.cashbackPercentage}
             onOpenChat={(initialQuery) => {
               if (initialQuery) {
                 handleRunAgent(initialQuery);
@@ -175,6 +191,8 @@ export default function App() {
               }
             }}
             onSelectProductToBuy={(product) => setSelectedCheckoutProduct(product)}
+            onClearThemeFilter={() => setActiveThemeFilter(null)}
+            onNavigateFilters={() => setActiveMainView('filters')}
           />
         )}
 
@@ -183,7 +201,12 @@ export default function App() {
         )}
 
         {activeMainView === 'coupons' && (
-          <CouponsView onBackToChat={() => setActiveMainView('home')} />
+          <CouponsView
+            coupons={activeStoreContext.config.activeCoupons}
+            activeCouponCode={activeCoupon?.code ?? null}
+            onRedeemCoupon={setRedeemedCouponCode}
+            onBackToChat={() => setActiveMainView('home')}
+          />
         )}
 
         {activeMainView === 'store' && (
@@ -201,10 +224,10 @@ export default function App() {
         {activeMainView === 'filters' && (
           <CustomFiltersView
             userProfile={userProfile}
+            activeFilter={activeThemeFilter}
             onBackToChat={() => setActiveMainView('home')}
-            onApplyPresetFilter={(name, colors) => {
-              handleRunAgent(`Filtrar por ${name} nas cores ${colors.join(', ')}`);
-            }}
+            onApplyPresetFilter={setActiveThemeFilter}
+            onClearPresetFilter={() => setActiveThemeFilter(null)}
           />
         )}
 
@@ -261,6 +284,8 @@ export default function App() {
         userProfile={userProfile}
         onOpenComparePage={() => setActiveMainView('compare')}
         onCheckoutComplete={handleCartCheckoutComplete}
+        activeCoupon={activeCoupon}
+        cashbackPercentage={activeStoreContext.config.cashbackPercentage}
       />
 
       {/* Product Checkout Modal */}
@@ -270,6 +295,8 @@ export default function App() {
         product={selectedCheckoutProduct}
         userProfile={userProfile}
         onCheckoutComplete={creditCashback}
+        activeCoupon={activeCoupon}
+        cashbackPercentage={activeStoreContext.config.cashbackPercentage}
       />
 
       {/* Full Linear-Style Preferences Modal */}

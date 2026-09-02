@@ -16,3 +16,9 @@ export interface ChatSession {
 }
 
 export type MainViewType = 'home' | 'chat' | 'wallet' | 'coupons' | 'store' | 'filters' | 'compare';
+
+export interface ThemeFilter {
+  id: string;
+  name: string;
+  colors: string[];
+}

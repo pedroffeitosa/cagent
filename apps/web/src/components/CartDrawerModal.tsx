@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Product, UserProfile } from '@cagent/shared';
+import { Coupon, Product, UserProfile } from '@cagent/shared';
 import { ShoppingCart, X, Plus, Minus, Trash2, ArrowRight, Gift, Coins, CheckCircle2, Swords } from 'lucide-react';
 import { Button } from './ui/button';
 import { handleImageError } from '../utils/imageFallback';
@@ -18,6 +18,8 @@ interface CartDrawerModalProps {
   userProfile: UserProfile;
   onOpenComparePage: () => void;
   onCheckoutComplete: (payload: { productName: string; amount: number; cashbackEarned: number }) => void;
+  activeCoupon: Coupon | null;
+  cashbackPercentage: number;
 }
 
 export function CartDrawerModal({
@@ -29,6 +31,8 @@ export function CartDrawerModal({
   userProfile,
   onOpenComparePage,
   onCheckoutComplete,
+  activeCoupon,
+  cashbackPercentage,
 }: CartDrawerModalProps) {
   const [isPurchased, setIsPurchased] = useState(false);
   // Congela o valor do cashback exibido na tela de sucesso: o carrinho é
@@ -39,9 +43,13 @@ export function CartDrawerModal({
   if (!isOpen) return null;
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
-  const discount = Math.round(subtotal * 0.1); // 10% OFF DECO10 coupon
+  const discount = !activeCoupon
+    ? 0
+    : activeCoupon.discountType === 'percentage'
+      ? Math.round(subtotal * (activeCoupon.discountValue / 100))
+      : Math.min(activeCoupon.discountValue, subtotal);
   const finalTotal = Math.max(0, subtotal - discount);
-  const cashbackEstimated = Math.round(finalTotal * 0.05);
+  const cashbackEstimated = Math.round(finalTotal * (cashbackPercentage / 100));
 
   const handleCheckout = () => {
     setIsPurchased(true);
@@ -163,13 +171,15 @@ export function CartDrawerModal({
               <span className="font-mono-tech">R$ {subtotal}</span>
             </div>
 
-            <div className="flex items-center justify-between text-amber-400 text-xs font-semibold">
-              <span className="flex items-center gap-1">
-                <Gift className="w-3.5 h-3.5" />
-                Cupom DECO10 (10% OFF):
-              </span>
-              <span className="font-mono-tech">- R$ {discount}</span>
-            </div>
+            {activeCoupon && (
+              <div className="flex items-center justify-between text-amber-400 text-xs font-semibold">
+                <span className="flex items-center gap-1">
+                  <Gift className="w-3.5 h-3.5" />
+                  Cupom {activeCoupon.code} ({activeCoupon.discountType === 'percentage' ? `${activeCoupon.discountValue}% OFF` : `R$ ${activeCoupon.discountValue} OFF`}):
+                </span>
+                <span className="font-mono-tech">- R$ {discount}</span>
+              </div>
+            )}
 
             <div className="flex items-center justify-between text-primary text-xs font-semibold p-2.5 rounded-xl bg-primary/10 border border-primary/30">
               <span className="flex items-center gap-1.5">

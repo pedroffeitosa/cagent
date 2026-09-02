@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { UserProfile } from '@cagent/shared';
-import { SlidersHorizontal, Filter, ArrowLeft, Check, Sparkles, Plus, Trophy } from 'lucide-react';
+import { SlidersHorizontal, Filter, ArrowLeft, Check, Sparkles, Plus, Trophy, X } from 'lucide-react';
 import { Button } from '../ui/button';
+import { ThemeFilter } from '../../types/chat';
 
 interface CustomFiltersViewProps {
   userProfile: UserProfile;
+  activeFilter: ThemeFilter | null;
   onBackToChat: () => void;
-  onApplyPresetFilter: (filterName: string, colors: string[]) => void;
+  onApplyPresetFilter: (filter: ThemeFilter) => void;
+  onClearPresetFilter: () => void;
 }
 
-export function CustomFiltersView({ userProfile, onBackToChat, onApplyPresetFilter }: CustomFiltersViewProps) {
-  const [activeFilterId, setActiveFilterId] = useState<string>('fluminense');
+export function CustomFiltersView({ userProfile, activeFilter, onBackToChat, onApplyPresetFilter, onClearPresetFilter }: CustomFiltersViewProps) {
+  const activeFilterId = activeFilter?.id ?? null;
 
   const presetFilters = [
     {
@@ -34,14 +37,9 @@ export function CustomFiltersView({ userProfile, onBackToChat, onApplyPresetFilt
     },
   ];
 
-  const handleSelectFilter = (id: string, name: string, colors: string[]) => {
-    setActiveFilterId(id);
-    onApplyPresetFilter(name, colors);
-  };
-
   return (
     <div className="flex-1 flex flex-col p-8 max-w-5xl mx-auto w-full gap-8 overflow-y-auto custom-scrollbar animate-in fade-in duration-200">
-      
+
       {/* Top Navigation Header */}
       <div className="flex items-center justify-between border-b border-border pb-4">
         <div className="flex items-center gap-3">
@@ -58,10 +56,25 @@ export function CustomFiltersView({ userProfile, onBackToChat, onApplyPresetFilt
           </div>
         </div>
 
-        <span className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/30 font-mono-tech font-bold flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5" />
-          Filtro Ativo: {presetFilters.find(f => f.id === activeFilterId)?.name}
-        </span>
+        {activeFilter ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/30 font-mono-tech font-bold flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              Filtro Ativo: {activeFilter.name}
+            </span>
+            <button
+              onClick={onClearPresetFilter}
+              className="p-1.5 rounded-full bg-card border border-border text-muted-foreground hover:text-foreground hover:border-border-strong transition"
+              title="Remover filtro ativo"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <span className="text-xs px-3 py-1 rounded-full bg-card text-muted-foreground border border-border font-mono-tech">
+            Nenhum filtro temático ativo
+          </span>
+        )}
       </div>
 
       {/* Preset Filters Grid */}
@@ -71,7 +84,9 @@ export function CustomFiltersView({ userProfile, onBackToChat, onApplyPresetFilt
           return (
             <div
               key={filter.id}
-              onClick={() => handleSelectFilter(filter.id, filter.name, filter.colors)}
+              onClick={() => isActive
+                ? onClearPresetFilter()
+                : onApplyPresetFilter({ id: filter.id, name: filter.name, colors: filter.colors })}
               className={`glass-card rounded-3xl p-6 border flex flex-col justify-between gap-4 cursor-pointer transition ${
                 isActive
                   ? 'bg-card/90 border-primary ring-2 ring-primary/30 shadow-xl'

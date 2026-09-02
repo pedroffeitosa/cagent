@@ -1,42 +1,78 @@
 import React from 'react';
 import { Product, UserProfile } from '@cagent/shared';
-import { 
-  Flame, 
-  Target, 
-  Compass, 
-  TrendingUp, 
-  Bot, 
-  ArrowRight, 
-  ShoppingBag
+import {
+  Flame,
+  Target,
+  Compass,
+  TrendingUp,
+  Bot,
+  ArrowRight,
+  ShoppingBag,
+  Sparkles,
+  X,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { handleImageError } from '../../utils/imageFallback';
+import { ThemeFilter } from '../../types/chat';
 
 interface HomeStorefrontViewProps {
   userProfile: UserProfile;
   products: Product[];
+  activeThemeFilter: ThemeFilter | null;
+  cashbackPercentage: number;
   onOpenChat: (initialQuery?: string) => void;
   onSelectProductToBuy: (product: Product) => void;
+  onClearThemeFilter: () => void;
+  onNavigateFilters: () => void;
 }
 
 export function HomeStorefrontView({
   userProfile,
   products,
+  activeThemeFilter,
+  cashbackPercentage,
   onOpenChat,
   onSelectProductToBuy,
+  onClearThemeFilter,
+  onNavigateFilters,
 }: HomeStorefrontViewProps) {
-  
+
   return (
     <div className="flex-1 flex flex-col p-8 max-w-6xl mx-auto w-full gap-8 overflow-y-auto custom-scrollbar animate-in fade-in duration-200">
       
       {/* Ultra Clean Header Bar */}
-      <div className="pb-4 border-b border-border/80">
-        <h2 className="font-heading font-extrabold text-2xl text-foreground tracking-tight">
-          Vitrine $Agent
-        </h2>
-        <p className="text-xs text-muted-foreground mt-1">
-          Artigos esportivos recomendados para o seu tamanho {userProfile.sizes.clothing} e calçado {userProfile.sizes.shoes}
-        </p>
+      <div className="pb-4 border-b border-border/80 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h2 className="font-heading font-extrabold text-2xl text-foreground tracking-tight">
+            Vitrine $Agent
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            Artigos esportivos recomendados para o seu tamanho {userProfile.sizes.clothing} e calçado {userProfile.sizes.shoes}
+          </p>
+        </div>
+
+        {activeThemeFilter ? (
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-primary/10 border border-primary/30">
+            <Sparkles className="w-4 h-4 text-primary shrink-0" />
+            <span className="text-xs text-primary font-semibold">
+              Vitrine priorizada pelo filtro <strong>{activeThemeFilter.name}</strong>
+            </span>
+            <button
+              onClick={onClearThemeFilter}
+              className="p-1 rounded-full text-primary/70 hover:text-primary hover:bg-primary/10 transition"
+              title="Remover filtro ativo"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={onNavigateFilters}
+            className="text-xs px-3.5 py-2 rounded-2xl bg-card border border-border text-muted-foreground hover:text-primary hover:border-primary/40 transition font-medium"
+          >
+            Configurar filtro temático
+          </button>
+        )}
       </div>
 
       {/* ------------------------------------------------------------- */}
@@ -171,7 +207,13 @@ export function HomeStorefrontView({
             let badgeText = `Tam: ${product.availableSizes[0]}`;
             let badgeStyle = 'bg-background/80 border border-border text-foreground';
 
-            if (product.availableSizes.includes(userProfile.sizes.clothing)) {
+            const matchesThemeFilter = !!activeThemeFilter?.colors.length &&
+              product.colors.some((c) => activeThemeFilter.colors.includes(c));
+
+            if (matchesThemeFilter) {
+              badgeText = activeThemeFilter!.name;
+              badgeStyle = 'bg-primary text-primary-foreground font-bold';
+            } else if (product.availableSizes.includes(userProfile.sizes.clothing)) {
               badgeText = `Match Tam. ${userProfile.sizes.clothing}`;
               badgeStyle = 'bg-primary text-primary-foreground font-bold';
             } else if (product.availableSizes.includes(userProfile.sizes.shoes)) {
@@ -229,7 +271,7 @@ export function HomeStorefrontView({
                       )}
                     </div>
                     <span className="text-[10px] text-primary font-mono-tech block mt-0.5">
-                      + R$ {product.cashbackReward || Math.round(product.price * 0.05)} Cashback
+                      + R$ {product.cashbackReward || Math.round(product.price * (cashbackPercentage / 100))} Cashback
                     </span>
                   </div>
 

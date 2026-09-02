@@ -154,8 +154,13 @@ export function getProductSuggestions(query: string, catalog: Product[], limit =
  * Reordenação dinâmica da vitrine (PLP): sem nenhuma busca ativa, o catálogo
  * já entra ordenado pelo quanto cada produto combina com tamanho, estilo,
  * cor favorita e orçamento do cliente — em vez da ordem fixa do catálogo.
+ *
+ * `themeColors` é o boost do filtro temático ativo (Central de Filtros
+ * Personalizados — ex.: "Torcedor Tricolor"): pesa mais que a cor favorita
+ * padrão do perfil pra garantir que escolher um tema realmente reordene a
+ * vitrine, mesmo quando o perfil já favorita várias cores.
  */
-export function sortProductsByProfileMatch(products: Product[], userProfile: UserProfile): Product[] {
+export function sortProductsByProfileMatch(products: Product[], userProfile: UserProfile, themeColors?: string[]): Product[] {
   return products
     .map((product, index) => {
       let score = 0;
@@ -166,6 +171,8 @@ export function sortProductsByProfileMatch(products: Product[], userProfile: Use
       score += product.tags.filter((tag) => userProfile.stylePreferences.includes(tag)).length * 2;
 
       if (product.colors.some((c) => userProfile.favoriteColors.includes(c))) score += 2;
+
+      if (themeColors?.length && product.colors.some((c) => themeColors.includes(c))) score += 8;
 
       if (!userProfile.maxBudget || product.price <= userProfile.maxBudget) score += 1;
 

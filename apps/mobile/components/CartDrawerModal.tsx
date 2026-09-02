@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, Image, StyleSheet } from 'react-native';
-import { Product, UserProfile } from '@cagent/shared';
+import { Coupon, Product, UserProfile } from '@cagent/shared';
 import { ThemeColors, useTheme } from '../theme';
 
 export interface CartItem {
@@ -17,6 +17,8 @@ interface CartDrawerModalProps {
   userProfile: UserProfile;
   onOpenComparePage: () => void;
   onCheckoutComplete: (payload: { productName: string; amount: number; cashbackEarned: number }) => void;
+  activeCoupon: Coupon | null;
+  cashbackPercentage: number;
 }
 
 export function CartDrawerModal({
@@ -28,6 +30,8 @@ export function CartDrawerModal({
   userProfile,
   onOpenComparePage,
   onCheckoutComplete,
+  activeCoupon,
+  cashbackPercentage,
 }: CartDrawerModalProps) {
   const { colors } = useTheme();
   const styles = getStyles(colors);
@@ -38,9 +42,13 @@ export function CartDrawerModal({
   const [purchasedCashback, setPurchasedCashback] = useState(0);
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
-  const discount = Math.round(subtotal * 0.1);
+  const discount = !activeCoupon
+    ? 0
+    : activeCoupon.discountType === 'percentage'
+      ? Math.round(subtotal * (activeCoupon.discountValue / 100))
+      : Math.min(activeCoupon.discountValue, subtotal);
   const finalTotal = Math.max(0, subtotal - discount);
-  const cashbackEstimated = Math.round(finalTotal * 0.05);
+  const cashbackEstimated = Math.round(finalTotal * (cashbackPercentage / 100));
 
   const handleClose = () => {
     setIsPurchased(false);
@@ -139,10 +147,14 @@ export function CartDrawerModal({
                 <Text style={styles.summaryLabel}>Subtotal:</Text>
                 <Text style={styles.summaryValue}>R$ {subtotal}</Text>
               </View>
-              <View style={styles.summaryRow}>
-                <Text style={styles.discountLabel}>🎁 Cupom DECO10 (10% OFF):</Text>
-                <Text style={styles.discountValue}>− R$ {discount}</Text>
-              </View>
+              {activeCoupon && (
+                <View style={styles.summaryRow}>
+                  <Text style={styles.discountLabel}>
+                    🎁 Cupom {activeCoupon.code} ({activeCoupon.discountType === 'percentage' ? `${activeCoupon.discountValue}% OFF` : `R$ ${activeCoupon.discountValue} OFF`}):
+                  </Text>
+                  <Text style={styles.discountValue}>− R$ {discount}</Text>
+                </View>
+              )}
               <View style={styles.cashbackBox}>
                 <Text style={styles.cashbackLabel}>🪙 Cashback a Ganhar:</Text>
                 <Text style={styles.cashbackValue}>+ R$ {cashbackEstimated}</Text>
